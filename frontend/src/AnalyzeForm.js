@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const BACKEND_URL = "https://medeus.onrender.com";
+const BACKEND_URL = "https://medeus.onrender.com/analyze";
 
 export default function AnalyzeForm() {
   const [file, setFile] = useState(null);
