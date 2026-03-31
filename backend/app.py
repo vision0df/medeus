@@ -1,72 +1,74 @@
-import os
-import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import requests
+import os
+from dotenv import load_dotenv
 
-# Инициализация Flask
+load_dotenv()
+
 app = Flask(__name__)
-CORS(app)  # Разрешаем фронтенду делать запросы к API
+CORS(app)
 
-# Получение ключей из Render Environment Variables
-OCR_KEY = os.environ.get("OCR_API_KEY")
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
+OCR_API_KEY = os.getenv("OCR_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Маршрут для распознавания файлов через OCR.Space
-@app.route("/ocr", methods=["POST"])
-def ocr():
-    file = request.files.get('file')
-    if not file:
-        return jsonify({"error": "No file uploaded"}), 400
+# Функция для отправки файла на OCR.Space
+def ocr_space(file_bytes):
+    url = "https://api.ocr.space/parse/image"
+    payload = {"apikey": OCR_API_KEY, "language": "rus"}
+    files = {"file": ("file", file_bytes)}
+    response = requests.post(url, files=files, data=payload)
+    result = response.json()
+    # Получаем распознанный текст
+    text = result["ParsedResults"][0]["ParsedText"]
+    return text
 
-    try:
-        response = requests.post(
-            "https://api.ocr.space/parse/image",
-            files={"file": (file.filename, file.read())},
-            data={"apikey": OCR_KEY, "language": "eng"}  # "rus" для русского языка
-        )
-        result = response.json()
-        text = result["ParsedResults"][0]["ParsedText"]
-    except Exception as e:
-        text = ""
-        print(f"OCR error: {e}")
+# Функция для отправки текста в Gemini
+def analyze_with_gemini(text, age, gender):
+    prompt = f"""
+    Ты медицинский ассистент. Дай расшифровку результатов анализов для человека:
+    Возраст: {age} лет
+    Пол: {gender}
+    Результаты анализов:
+    {text}
 
-    return jsonify({"text": text})
+    Дай объяснение простым языком и рекомендации.
+    """
+    url = "https://api.generativeai.google/v1beta2/models/text-bison-001:generateText"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {GEMINI_API_KEY}"
+    }
+    payload = {"prompt": prompt, "temperature": 0.2, "maxOutputTokens": 1000}
+    response = requests.post(url, headers=headers, json=payload)
+    result = response.json()
+    analysis = result.get("candidates", [{}])[0].get("content", "")
+    return analysis
 
-# Маршрут для расшифровки анализов через Gemini
+# Один эндпоинт для фронтенда
 @app.route("/analyze", methods=["POST"])
 def analyze():
-    data = request.json
-    text_from_ocr = data.get("text", "")
-    age = data.get("age", "")
-    gender = data.get("gender", "")
+    if "file" not in request.files:
+        return jsonify({"error": "Нет файла"}), 400
 
-    # -----------------------------
-    # Готовый промпт прямо в app.py
-    # -----------------------------
-    prompt = f"""
-Расшифруй медицинские анализы для человека:
-Пол: {gender}
-Возраст: {age} лет
+    file = request.files["file"]
+    age = request.form.get("age")
+    gender = request.form.get("gender")
 
-Текст анализов:
-{text_from_ocr}
-
-Выведи разбор анализов на понятном человеческом языке и дай рекомендации по здоровью.
-    """
+    if not age or not gender:
+        return jsonify({"error": "Не указан возраст или пол"}), 400
 
     try:
-        gemini_response = requests.post(
-            "https://api.generative-ai.google.com/v1beta2/models/text-bison-001:generate",
-            headers={"Authorization": f"Bearer {GEMINI_KEY}"},
-            json={"prompt": prompt}
-        )
-        analysis = gemini_response.json().get("output_text", "Ошибка генерации")
+        # 1️⃣ Отправляем файл на OCR
+        text = ocr_space(file.read())
+
+        # 2️⃣ Отправляем текст + возраст + пол в Gemini
+        analysis = analyze_with_gemini(text, age, gender)
+
+        # 3️⃣ Возвращаем готовый результат фронтенду
+        return jsonify({"analysis": analysis})
     except Exception as e:
-        analysis = "Ошибка при обращении к LLM"
-        print(f"Gemini error: {e}")
+        return jsonify({"error": str(e)}), 500
 
-    return jsonify({"analysis": analysis})
-
-# Запуск сервера
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
