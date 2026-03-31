@@ -1,0 +1,18 @@
+node_modules
+.env
+dist
+build
+.DS_Store
+# Node / React
+node_modules/
+build/
+.env
+
+# Python / Backend
+__pycache__/
+*.pyc
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
