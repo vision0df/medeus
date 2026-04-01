@@ -1178,7 +1178,7 @@ function formatResult(text) {
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
     .replace(/^## (.+)$/gm, '<h3>$1</h3>')
     .replace(/^# (.+)$/gm, '<h3>$1</h3>')
-    .replace(/норма /gi, '<span class="tag-normal">✓ норма</span>')
+    .replace(/(?<!\p{L})норма(?!\p{L})/giu, '<span class="tag-normal">✓ норма</span>')
     .replace(/выше нормы/gi, '<span class="tag-high">↑ выше нормы</span>')
     .replace(/ниже нормы/gi, '<span class="tag-low">↓ ниже нормы</span>')
     .replace(/\n\n/g, '</p><p>')
