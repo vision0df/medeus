@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Medeus — Умный анализ анализов</title>
+<title>Medeus</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -1178,7 +1178,7 @@ function formatResult(text) {
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
     .replace(/^## (.+)$/gm, '<h3>$1</h3>')
     .replace(/^# (.+)$/gm, '<h3>$1</h3>')
-    .replace(/норма/gi, '<span class="tag-normal">✓ норма</span>')
+    .replace(/норма /gi, '<span class="tag-normal">✓ норма</span>')
     .replace(/выше нормы/gi, '<span class="tag-high">↑ выше нормы</span>')
     .replace(/ниже нормы/gi, '<span class="tag-low">↓ ниже нормы</span>')
     .replace(/\n\n/g, '</p><p>')
