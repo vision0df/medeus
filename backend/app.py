@@ -1,15 +1,17 @@
 import os
 import requests
 import traceback
+import io
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from google import genai
+from PIL import Image
 
 app = Flask(__name__)
 CORS(app)
 
 # ========================
-# Ключи из Render
+# Ключи
 # ========================
 OCR_API_KEY = os.environ.get("OCR_API_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
@@ -18,9 +20,44 @@ print("OCR KEY:", "OK" if OCR_API_KEY else "MISSING", flush=True)
 print("GEMINI KEY:", "OK" if GEMINI_API_KEY else "MISSING", flush=True)
 
 # ========================
-# Новый клиент Gemini
+# Gemini клиент
 # ========================
 client = genai.Client(api_key=GEMINI_API_KEY)
+
+# ========================
+# Сжатие изображения
+# ========================
+def compress_image(file, max_size_mb=1):
+    max_bytes = max_size_mb * 1024 * 1024
+
+    file.seek(0)
+    image = Image.open(file)
+
+    # Конвертация (важно для PNG)
+    if image.mode in ("RGBA", "P"):
+        image = image.convert("RGB")
+
+    quality = 95
+    width, height = image.size
+
+    while True:
+        buffer = io.BytesIO()
+        image.save(buffer, format="JPEG", quality=quality)
+        size = buffer.tell()
+
+        if size <= max_bytes:
+            print(f"✅ Image compressed: {size/1024:.2f} KB", flush=True)
+            buffer.seek(0)
+            return buffer
+
+        quality -= 5
+
+        # если качество уже низкое — уменьшаем размер
+        if quality < 30:
+            width = int(width * 0.8)
+            height = int(height * 0.8)
+            image = image.resize((width, height))
+            quality = 85
 
 # ========================
 # OCR функция
@@ -31,8 +68,11 @@ def ocr_space(file, retries=3, timeout=120):
 
     for attempt in range(1, retries + 1):
         try:
-            file.seek(0)
-            files = {"file": (file.filename, file.read())}
+            compressed_file = compress_image(file)
+
+            files = {
+                "file": ("compressed.jpg", compressed_file)
+            }
 
             response = requests.post(url, data=payload, files=files, timeout=timeout)
             result = response.json()
@@ -72,14 +112,14 @@ def analyze_with_gemini(text, age, gender):
 Пациент:
 Возраст: {age}
 Пол: {gender}
+
 Анализы:
 {text}
 
 Задача:
-1. дай расшифровку анализов в таком виде:
-показатель - значение (норма/ выше нормы/ ниже нормы) (если выше или ниже нормы тогда кратко укажи почему это может быть)
-
-2. дай краткий вывод по анализам и дай рекомендации
+1. Объясни простым языком
+2. Укажи отклонения
+3. Дай рекомендации
 """
 
     try:
