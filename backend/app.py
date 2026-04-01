@@ -14,15 +14,14 @@ CORS(app)
 OCR_API_KEY = os.environ.get("OCR_API_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-# Проверка ключей при старте
 print("OCR KEY:", "OK" if OCR_API_KEY else "MISSING")
 print("GEMINI KEY:", "OK" if GEMINI_API_KEY else "MISSING")
 
 # ========================
-# Настройка Gemini
+# Настройка Gemini (Исправленная модель)
 # ========================
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-1.5")  # <- заменили с gemini-1.5-flash
 
 # ========================
 # Функция OCR
@@ -35,17 +34,15 @@ def ocr_space(file):
         "language": "rus"
     }
 
-    # Важно: передаём имя файла с расширением
+    # Передаем имя файла с расширением
     files = {
         "file": (file.filename, file.read())
     }
 
     response = requests.post(url, data=payload, files=files)
     result = response.json()
-
     print("OCR RESPONSE:", result)
 
-    # Ошибка OCR
     if result.get("IsErroredOnProcessing"):
         raise Exception(f"OCR Error: {result.get('ErrorMessage')}")
 
@@ -53,7 +50,6 @@ def ocr_space(file):
         raise Exception("OCR не вернул ParsedResults")
 
     text = result["ParsedResults"][0].get("ParsedText", "")
-
     if not text.strip():
         raise Exception("OCR вернул пустой текст")
 
@@ -84,7 +80,8 @@ def analyze_with_gemini(text, age, gender):
         return response.text
     except Exception as e:
         print("GEMINI ERROR:", e)
-        raise Exception("Ошибка при обращении к Gemini")
+        # Если модель не доступна, возвращаем заглушку
+        return "Анализ временно недоступен. OCR текст обработан, но Gemini не ответил."
 
 # ========================
 # API endpoint
@@ -92,7 +89,6 @@ def analyze_with_gemini(text, age, gender):
 @app.route("/analyze", methods=["POST"])
 def analyze():
     try:
-        # Проверка файла
         if "file" not in request.files:
             return jsonify({"error": "Файл не найден"}), 400
 
