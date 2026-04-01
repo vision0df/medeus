@@ -1,5 +1,6 @@
 import os
 import requests
+import traceback
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import google.generativeai as genai
@@ -7,31 +8,44 @@ import google.generativeai as genai
 app = Flask(__name__)
 CORS(app)
 
-# 🔐 Ключи из Render
+# ========================
+# Ключи из Render
+# ========================
 OCR_API_KEY = os.environ.get("OCR_API_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-# 🔹 Настройка Gemini
+# Проверка ключей при старте
+print("OCR KEY:", "OK" if OCR_API_KEY else "MISSING")
+print("GEMINI KEY:", "OK" if GEMINI_API_KEY else "MISSING")
+
+# ========================
+# Настройка Gemini
+# ========================
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-# 🔹 OCR функция
-def ocr_space(file_bytes):
+# ========================
+# Функция OCR
+# ========================
+def ocr_space(file):
     url = "https://api.ocr.space/parse/image"
+
     payload = {
         "apikey": OCR_API_KEY,
         "language": "rus"
     }
+
+    # Важно: передаём имя файла с расширением
     files = {
-        "file": ("file", file_bytes)
+        "file": (file.filename, file.read())
     }
 
-    response = requests.post(url, files=files, data=payload)
+    response = requests.post(url, data=payload, files=files)
     result = response.json()
 
     print("OCR RESPONSE:", result)
 
-    # Проверка ошибок OCR
+    # Ошибка OCR
     if result.get("IsErroredOnProcessing"):
         raise Exception(f"OCR Error: {result.get('ErrorMessage')}")
 
@@ -45,24 +59,24 @@ def ocr_space(file_bytes):
 
     return text
 
-
-# 🔹 Gemini анализ
+# ========================
+# Функция анализа через Gemini
+# ========================
 def analyze_with_gemini(text, age, gender):
     prompt = f"""
 Ты медицинский ассистент.
 
-Расшифруй медицинские анализы:
+Пациент:
+Возраст: {age}
 Пол: {gender}
-Возраст: {age} лет
 
-Текст анализов:
+Анализы:
 {text}
 
-1. Объясни показатели простым языком
-2. Укажи возможные отклонения
+Задача:
+1. Объясни простым языком
+2. Укажи отклонения
 3. Дай рекомендации
-
-Пиши понятно, как для обычного человека.
 """
 
     try:
@@ -72,8 +86,9 @@ def analyze_with_gemini(text, age, gender):
         print("GEMINI ERROR:", e)
         raise Exception("Ошибка при обращении к Gemini")
 
-
-# 🔹 Главный endpoint
+# ========================
+# API endpoint
+# ========================
 @app.route("/analyze", methods=["POST"])
 def analyze():
     try:
@@ -85,26 +100,29 @@ def analyze():
         age = request.form.get("age")
         gender = request.form.get("gender")
 
+        print("📥 FILE:", file.filename)
+        print("📥 AGE:", age)
+        print("📥 GENDER:", gender)
+
         if not age or not gender:
             return jsonify({"error": "Возраст или пол не указаны"}), 400
 
-        print("📥 Получен файл:", file.filename)
-
-        # 1️⃣ OCR
-        text = ocr_space(file.read())
+        # OCR
+        text = ocr_space(file)
         print("📄 OCR TEXT:", text[:200])
 
-        # 2️⃣ Gemini
+        # Gemini
         analysis = analyze_with_gemini(text, age, gender)
 
-        # 3️⃣ Ответ
         return jsonify({"analysis": analysis})
 
     except Exception as e:
-        print("❌ ERROR:", e)
+        print("🔥 ERROR:")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-
-# 🔹 Запуск
+# ========================
+# Запуск
+# ========================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
