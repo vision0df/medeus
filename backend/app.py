@@ -3,7 +3,7 @@ import requests
 import traceback
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import google.generativeai as genai
+from google import genai
 
 app = Flask(__name__)
 CORS(app)
@@ -14,17 +14,16 @@ CORS(app)
 OCR_API_KEY = os.environ.get("OCR_API_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-print("OCR KEY:", "OK" if OCR_API_KEY else "MISSING")
-print("GEMINI KEY:", "OK" if GEMINI_API_KEY else "MISSING")
+print("OCR KEY:", "OK" if OCR_API_KEY else "MISSING", flush=True)
+print("GEMINI KEY:", "OK" if GEMINI_API_KEY else "MISSING", flush=True)
 
 # ========================
-# Настройка Gemini
+# Новый клиент Gemini
 # ========================
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-2.5")  # исправленная модель
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 # ========================
-# Функция OCR с таймаутом и повторными попытками
+# OCR функция
 # ========================
 def ocr_space(file, retries=3, timeout=120):
     url = "https://api.ocr.space/parse/image"
@@ -32,13 +31,13 @@ def ocr_space(file, retries=3, timeout=120):
 
     for attempt in range(1, retries + 1):
         try:
-            # Сбрасываем курсор файла на начало перед чтением
             file.seek(0)
             files = {"file": (file.filename, file.read())}
 
             response = requests.post(url, data=payload, files=files, timeout=timeout)
             result = response.json()
-            print(f"OCR RESPONSE (attempt {attempt}):", result)
+
+            print(f"OCR RESPONSE (attempt {attempt}):", result, flush=True)
 
             if result.get("IsErroredOnProcessing"):
                 raise Exception(f"OCR Error: {result.get('ErrorMessage')}")
@@ -54,17 +53,19 @@ def ocr_space(file, retries=3, timeout=120):
             return text
 
         except requests.exceptions.Timeout:
-            print(f"⚠️ OCR тайм-аут на попытке {attempt}")
+            print(f"⚠️ OCR тайм-аут (попытка {attempt})", flush=True)
             if attempt == retries:
-                raise Exception("OCR Error: Тайм-аут сервиса после нескольких попыток")
+                raise Exception("OCR Error: Тайм-аут после нескольких попыток")
+
         except Exception as e:
-            # Любая другая ошибка — сразу выходим
             raise e
 
 # ========================
-# Функция анализа через Gemini
+# Gemini анализ
 # ========================
 def analyze_with_gemini(text, age, gender):
+    print("🧠 Gemini START", flush=True)
+
     prompt = f"""
 Ты медицинский ассистент.
 
@@ -80,13 +81,22 @@ def analyze_with_gemini(text, age, gender):
 2. Укажи отклонения
 3. Дай рекомендации
 """
+
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+
+        print("✅ Gemini RESPONSE:", response, flush=True)
+
         return response.text
+
     except Exception as e:
-        print("GEMINI ERROR:", e)
-        # Если модель не доступна, возвращаем заглушку
-        return "Анализ временно недоступен. OCR текст обработан, но Gemini не ответил."
+        print("🔥 GEMINI ERROR:", str(e), flush=True)
+        traceback.print_exc()
+
+        return f"Ошибка Gemini: {str(e)}"
 
 # ========================
 # API endpoint
@@ -94,6 +104,8 @@ def analyze_with_gemini(text, age, gender):
 @app.route("/analyze", methods=["POST"])
 def analyze():
     try:
+        print("🔥 /analyze HIT", flush=True)
+
         if "file" not in request.files:
             return jsonify({"error": "Файл не найден"}), 400
 
@@ -101,16 +113,16 @@ def analyze():
         age = request.form.get("age")
         gender = request.form.get("gender")
 
-        print("📥 FILE:", file.filename)
-        print("📥 AGE:", age)
-        print("📥 GENDER:", gender)
+        print("📥 FILE:", file.filename, flush=True)
+        print("📥 AGE:", age, flush=True)
+        print("📥 GENDER:", gender, flush=True)
 
         if not age or not gender:
             return jsonify({"error": "Возраст или пол не указаны"}), 400
 
         # OCR
         text = ocr_space(file)
-        print("📄 OCR TEXT (первые 200 символов):", text[:200])
+        print("📄 OCR TEXT:", text[:200], flush=True)
 
         # Gemini
         analysis = analyze_with_gemini(text, age, gender)
@@ -118,7 +130,7 @@ def analyze():
         return jsonify({"analysis": analysis})
 
     except Exception as e:
-        print("🔥 ERROR:")
+        print("🔥 ERROR:", flush=True)
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
