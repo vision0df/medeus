@@ -21,7 +21,7 @@ print("GEMINI KEY:", "OK" if GEMINI_API_KEY else "MISSING")
 # Настройка Gemini
 # ========================
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5")  # исправленная модель
+model = genai.GenerativeModel("gemini-2.5")  # исправленная модель
 
 # ========================
 # Функция OCR с таймаутом и повторными попытками
