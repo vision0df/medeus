@@ -18,42 +18,48 @@ print("OCR KEY:", "OK" if OCR_API_KEY else "MISSING")
 print("GEMINI KEY:", "OK" if GEMINI_API_KEY else "MISSING")
 
 # ========================
-# Настройка Gemini (Исправленная модель)
+# Настройка Gemini
 # ========================
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5")  # <- заменили с gemini-1.5-flash
+model = genai.GenerativeModel("gemini-1.5")  # исправленная модель
 
 # ========================
-# Функция OCR
+# Функция OCR с таймаутом и повторными попытками
 # ========================
-def ocr_space(file):
+def ocr_space(file, retries=3, timeout=120):
     url = "https://api.ocr.space/parse/image"
+    payload = {"apikey": OCR_API_KEY, "language": "rus"}
 
-    payload = {
-        "apikey": OCR_API_KEY,
-        "language": "rus"
-    }
+    for attempt in range(1, retries + 1):
+        try:
+            # Сбрасываем курсор файла на начало перед чтением
+            file.seek(0)
+            files = {"file": (file.filename, file.read())}
 
-    # Передаем имя файла с расширением
-    files = {
-        "file": (file.filename, file.read())
-    }
+            response = requests.post(url, data=payload, files=files, timeout=timeout)
+            result = response.json()
+            print(f"OCR RESPONSE (attempt {attempt}):", result)
 
-    response = requests.post(url, data=payload, files=files)
-    result = response.json()
-    print("OCR RESPONSE:", result)
+            if result.get("IsErroredOnProcessing"):
+                raise Exception(f"OCR Error: {result.get('ErrorMessage')}")
 
-    if result.get("IsErroredOnProcessing"):
-        raise Exception(f"OCR Error: {result.get('ErrorMessage')}")
+            parsed_results = result.get("ParsedResults")
+            if not parsed_results:
+                raise Exception("OCR не вернул ParsedResults")
 
-    if not result.get("ParsedResults"):
-        raise Exception("OCR не вернул ParsedResults")
+            text = parsed_results[0].get("ParsedText", "")
+            if not text.strip():
+                raise Exception("OCR вернул пустой текст")
 
-    text = result["ParsedResults"][0].get("ParsedText", "")
-    if not text.strip():
-        raise Exception("OCR вернул пустой текст")
+            return text
 
-    return text
+        except requests.exceptions.Timeout:
+            print(f"⚠️ OCR тайм-аут на попытке {attempt}")
+            if attempt == retries:
+                raise Exception("OCR Error: Тайм-аут сервиса после нескольких попыток")
+        except Exception as e:
+            # Любая другая ошибка — сразу выходим
+            raise e
 
 # ========================
 # Функция анализа через Gemini
@@ -74,7 +80,6 @@ def analyze_with_gemini(text, age, gender):
 2. Укажи отклонения
 3. Дай рекомендации
 """
-
     try:
         response = model.generate_content(prompt)
         return response.text
@@ -105,7 +110,7 @@ def analyze():
 
         # OCR
         text = ocr_space(file)
-        print("📄 OCR TEXT:", text[:200])
+        print("📄 OCR TEXT (первые 200 символов):", text[:200])
 
         # Gemini
         analysis = analyze_with_gemini(text, age, gender)
