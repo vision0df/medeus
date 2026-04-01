@@ -22,7 +22,7 @@ function App() {
 
     setLoading(true);
     try {
-      const response = await fetch("https://medeus.onrender.com", {
+      const response = await fetch("https://medeus.onrender.com/analyze", {
         method: "POST",
         body: formData,
       });
