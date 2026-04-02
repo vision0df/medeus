@@ -133,6 +133,7 @@ def analyze_with_gemini(file, age, gender):
 """
 
     try:
+        file.seek(0)
         file_bytes = file.read()
         mime_type = get_mime_type(file.filename)
         response = client.models.generate_content(
