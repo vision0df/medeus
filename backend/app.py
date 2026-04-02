@@ -113,7 +113,7 @@ def ocr_space(file, retries=3, timeout=120):
 # ========================
 # Gemini анализ
 # ========================
-def analyze_with_gemini(text, age, gender):
+def analyze_with_gemini(file, age, gender):
     print("🧠 Gemini START", flush=True)
 
     prompt = f"""
@@ -179,7 +179,7 @@ def analyze():
         print("📄 OCR TEXT:", text[:200], flush=True)
 
         # Gemini
-        analysis = analyze_with_gemini(text, age, gender)
+        analysis = analyze_with_gemini(file, age, gender)
 
         return jsonify({"analysis": analysis})
 
