@@ -24,6 +24,16 @@ print("GEMINI KEY:", "OK" if GEMINI_API_KEY else "MISSING", flush=True)
 # ========================
 client = genai.Client(api_key=GEMINI_API_KEY)
 
+def get_mime_type(filename):
+    ext = os.path.splitext(filename)[1].lower()
+    mime_types = {
+        ".pdf":  "application/pdf",
+        ".png":  "image/png",
+        ".jpg":  "image/jpeg",
+        ".jpeg": "image/jpeg",
+    }
+    return mime_types.get(ext, "image/jpeg")
+
 # ========================
 # Сжатие изображения
 # ========================
@@ -119,14 +129,17 @@ def analyze_with_gemini(text, age, gender):
 
 Возраст: {age}
 Пол: {gender}
-Текст анализов:
-{text}
 """
 
     try:
+        file_bytes = file.read()
+        mime_type = get_mime_type(file.filename)
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=prompt
+            contents=[
+            types.Part.from_bytes(data=file_bytes, mime_type=mime_type),
+            prompt
+            ]
         )
 
         print("✅ Gemini RESPONSE:", response, flush=True)
