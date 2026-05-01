@@ -432,7 +432,7 @@
 
 <!-- Header -->
 <header>
-  <a class="logo" href="#">
+  <a class="logo" href="index.html">
     <div class="logo-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
         <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
@@ -563,6 +563,16 @@
 
   makeToggle('pwToggle1', 'password', 'eyeIcon1');
   makeToggle('pwToggle2', 'password2', 'eyeIcon2');
+
+  // Register navigation
+  document.getElementById('registerBtn').addEventListener('click', () => {
+    const login = document.getElementById('login') ? document.getElementById('login').value.trim() : '';
+    const pw = document.getElementById('password').value;
+    const pw2 = document.getElementById('password2').value;
+    if (!pw || !pw2) { alert('Заполните все поля'); return; }
+    if (pw !== pw2) { alert('Пароли не совпадают'); return; }
+    window.location.href = 'cabinet.html';
+  });
 
   // Password strength
   const pw = document.getElementById('password');

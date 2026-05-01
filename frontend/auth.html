@@ -429,7 +429,7 @@
 
 <!-- Header -->
 <header>
-  <a class="logo" href="#">
+  <a class="logo" href="index.html">
     <div class="logo-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
         <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
@@ -499,7 +499,7 @@
       </div>
 
       <!-- Register button -->
-      <button class="btn-secondary" type="button" id="registerBtn">
+      <button href="register.html" class="btn-secondary" type="button" id="registerBtn">
         <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
@@ -547,6 +547,21 @@
   });
   document.getElementById('password').addEventListener('blur', function() {
     this.parentNode.querySelectorAll('svg')[0].style.stroke = '';
+  });
+
+  // Navigation
+  document.getElementById('loginBtn').addEventListener('click', () => {
+    const login = document.getElementById('login').value.trim();
+    const password = document.getElementById('password').value;
+    if (!login || !password) {
+      alert('Введите логин и пароль');
+      return;
+    }
+    window.location.href = 'cabinet.html';
+  });
+
+  document.getElementById('registerBtn').addEventListener('click', () => {
+    window.location.href = 'register.html';
   });
 </script>
 </body>
