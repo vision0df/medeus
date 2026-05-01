@@ -5,25 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // AI Analyzer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --orange: #FF5A00;
     --orange-dim: #CC4800;
     --orange-pale: rgba(255,90,0,0.08);
     --orange-border: rgba(255,90,0,0.3);
-    --white: #F5F4F0;
     --bg: #F2F1EE;
     --bg2: #ECEAE6;
     --bg3: #E4E2DE;
-    --panel: #ECEAE6;
     --line: rgba(0,0,0,0.12);
-    --line-orange: rgba(255,90,0,0.3);
     --text: #1A1714;
     --text-dim: #8C8480;
     --text-mid: #5A5650;
-    --mono: 'IBM Plex Mono', 'Share Tech Mono', monospace;
-    --pixel: 0px; /* sharp corners everywhere */
+    --mono: 'IBM Plex Mono', monospace;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,559 +31,305 @@
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
-    cursor: default;
   }
 
-
-
-  /* pixel grid bg */
   body::before {
     content: '';
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background-image:
       linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
       linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
     background-size: 32px 32px;
-    pointer-events: none;
-    z-index: 0;
+    pointer-events: none; z-index: 0;
   }
 
-  /* ─── HEADER ─── */
   header {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 48px;
-    height: 56px;
-    background: #ffffff;
-    border-bottom: 2px solid var(--text);
-    box-shadow: 0 2px 0 var(--orange);
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 56px;
+    background: #ffffff; border-bottom: 2px solid var(--text);
   }
 
-  /* top pixel accent line */
-  header::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: var(--orange);
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-  }
-
+  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
   .logo-icon {
-    width: 32px; height: 32px;
-    background: var(--orange);
+    width: 32px; height: 32px; background: var(--orange);
     display: flex; align-items: center; justify-content: center;
-    position: relative;
-    clip-path: polygon(4px 0%, 100% 0%, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0% 100%, 0% 4px);
+    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
   }
-
-  .logo-icon svg { width: 16px; height: 16px; fill: #0F0E0C; }
-
-  .logo-text {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
+  .logo-icon svg { width: 16px; height: 16px; }
+  .logo-text { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.1em; text-transform: uppercase; }
   .logo-text span { color: var(--orange); }
 
-  nav { display: flex; gap: 8px; align-items: center; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
 
   .nav-badge {
-    font-size: 10px;
-    font-weight: 400;
-    color: var(--orange);
-    background: var(--orange-pale);
-    border: 1px solid var(--orange-border);
-    padding: 4px 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    font-size: 11px; color: var(--orange);
+    background: var(--orange-pale); border: 1px solid var(--orange-border);
+    padding: 4px 10px; letter-spacing: 0.15em; text-transform: uppercase;
   }
-
   .nav-dot {
-    width: 6px; height: 6px;
-    background: var(--orange);
-    display: inline-block;
+    width: 6px; height: 6px; background: var(--orange);
+    display: inline-block; margin-right: 4px;
     animation: blink 1.2s step-end infinite;
-    margin-right: 4px;
   }
 
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+  .btn-auth {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 18px; background: var(--text); color: #ffffff;
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    text-decoration: none; border: none; outline: none; cursor: pointer;
+    transition: background 0.18s; white-space: nowrap;
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
   }
+  .btn-auth:hover { background: var(--orange); }
+  .btn-auth svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
-  /* ─── HERO ─── */
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes statusPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  @keyframes pixelSpin { 0%, 60%, 100% { opacity: 0.1; } 30% { opacity: 1; } }
+
   .hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 120px 48px 80px;
-    position: relative;
-    z-index: 1;
-    max-width: 1100px;
-    margin: 0 auto;
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    padding: 120px 48px 80px; position: relative; z-index: 1;
+    max-width: 860px; margin: 0 auto;
   }
 
   .hero-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 10px;
-    font-weight: 400;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--orange);
-    border: 1px solid var(--orange-border);
-    padding: 6px 14px;
-    margin-bottom: 40px;
-    animation: fadeIn 0.4s ease both;
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--orange); border: 1px solid var(--orange-border);
+    padding: 7px 16px; margin-bottom: 36px; animation: fadeIn 0.4s ease both;
   }
-
-  .hero-tag::before {
-    content: '>';
-    color: var(--orange);
-    animation: blink 1s step-end infinite;
-  }
+  .hero-tag::before { content: '>'; color: var(--orange); animation: blink 1s step-end infinite; }
 
   h1 {
-    font-size: clamp(36px, 5vw, 64px);
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -1px;
-    color: var(--text);
-    margin-bottom: 28px;
-    animation: fadeIn 0.4s 0.1s ease both;
+    font-size: clamp(36px, 5vw, 64px); font-weight: 700;
+    line-height: 1.1; letter-spacing: -1px; color: var(--text);
+    margin-bottom: 28px; animation: fadeIn 0.4s 0.1s ease both;
   }
-
-  h1 .accent {
-    color: var(--orange);
-    position: relative;
-    display: inline-block;
-  }
-
+  h1 .accent { color: var(--orange); position: relative; display: inline-block; }
   h1 .accent::after {
-    content: '';
-    position: absolute;
-    bottom: 2px; left: 0; right: 0;
-    height: 2px;
-    background: var(--orange);
+    content: ''; position: absolute; bottom: 2px; left: 0; right: 0;
+    height: 2px; background: var(--orange);
   }
 
   .hero-sub {
-    font-size: 13px;
-    line-height: 1.8;
-    color: var(--text-mid);
-    max-width: 480px;
-    font-weight: 400;
-    margin-bottom: 48px;
-    animation: fadeIn 0.4s 0.2s ease both;
-    letter-spacing: 0.03em;
+    font-size: 15px; line-height: 1.8; color: var(--text-mid);
+    max-width: 520px; margin-bottom: 48px;
+    animation: fadeIn 0.4s 0.2s ease both; letter-spacing: 0.03em;
   }
+  .hero-sub::before { content: '// '; color: var(--text-dim); }
 
-  .hero-sub::before {
-    content: '// ';
-    color: var(--text-dim);
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* terminal cursor */
   .cursor-blink {
-    display: inline-block;
-    width: 10px; height: 1.1em;
-    background: var(--orange);
-    vertical-align: text-bottom;
-    margin-left: 4px;
+    display: inline-block; width: 10px; height: 1.1em;
+    background: var(--orange); vertical-align: text-bottom; margin-left: 4px;
     animation: blink 0.9s step-end infinite;
   }
 
-  /* hero corner decorations */
-  .hero-corner {
-    position: absolute;
-    width: 24px; height: 24px;
-    border-color: var(--orange);
-    border-style: solid;
-    opacity: 0.4;
+  .btn-chamfer {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 16px 32px; background: var(--text); color: #ffffff;
+    font-family: var(--mono); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none;
+    cursor: pointer; border: none; outline: none;
+    transition: background 0.18s; white-space: nowrap; line-height: 1;
+    clip-path: polygon(12px 0%, 100% 0%, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0% 100%, 0% 12px);
   }
-  .hero-corner.tl { top: 80px; left: 48px; border-width: 2px 0 0 2px; }
-  .hero-corner.br { bottom: 80px; right: 48px; border-width: 0 2px 2px 0; }
-30% { opacity: 1; }
-    70% { transform: scaleY(1); opacity: 1; }
-    100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+  .btn-chamfer:hover { background: var(--orange); }
+  .btn-chamfer:active { background: var(--orange-dim); }
+  .btn-chamfer:disabled {
+    background: #C8C6C2; color: #888480; cursor: not-allowed;
   }
+  .btn-chamfer svg { width: 17px; height: 17px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
-  /* ─── CTA BUTTON ─── */
-  a.btn-analyze, button.btn-analyze {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 16px 28px;
-    background: #1A1714;
-    color: #ffffff !important;
-    border: none !important;
-    border-radius: 0 !important;
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.18s, box-shadow 0.18s;
-    text-decoration: none !important;
-    white-space: nowrap;
-    -webkit-appearance: none;
-    appearance: none;
-    box-shadow: none;
-    line-height: 1;
+  .section-label { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px; }
+  .section-title { font-size: 30px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 48px; color: var(--text); }
+
+  .main-section { padding: 80px 48px 100px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* ─── ANALYZER BORDER ─── */
+  /* outer: dark bg + clip = the visible chamfered border */
+  .analyzer-wrap {
+    background: var(--text);
+    clip-path: polygon(22px 0%, 100% 0%, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0% 100%, 0% 22px);
+    padding: 2px;
   }
-
-  a.btn-analyze:hover, button.btn-analyze:hover {
-    background: var(--orange);
-    box-shadow: 0 4px 20px rgba(255,90,0,0.25);
-  }
-
-  a.btn-analyze:active, button.btn-analyze:active {
-    background: var(--orange-dim);
-    box-shadow: none;
-  }
-
-  button.btn-analyze:disabled {
-    background: #C8C6C2;
-    color: #888480;
-    cursor: not-allowed;
-    box-shadow: none;
-    pointer-events: none;
-  }
-
-  a.btn-analyze svg, button.btn-analyze svg {
-    width: 17px;
-    height: 17px;
-    stroke: currentColor;
-    fill: none;
-    flex-shrink: 0;
-  }
-
-  #analyzeBtn { width: 100%; display: flex; }
-
-  /* ─── SECTION COMMON ─── */
-  .section-label {
-    font-size: 9px;
-    font-weight: 400;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--orange);
-    margin-bottom: 8px;
-  }
-
-  .section-title {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    margin-bottom: 48px;
-    color: var(--text);
-  }
-
-  /* ─── MAIN SECTION ─── */
-  .main-section {
-    padding: 80px 48px 100px;
-    max-width: 1100px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* ─── ANALYZER GRID ─── */
+  /* inner grid: slightly smaller clip so dark bg peeks through as border */
   .analyzer-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1px;
-    background: var(--line);
-    border: 1px solid var(--line);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line);
+    clip-path: polygon(20px 0%, 100% 0%, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0% 100%, 0% 20px);
   }
 
-  .analyzer-panel {
-    background: var(--bg2);
-    padding: 40px;
-  }
+  .analyzer-panel { background: var(--bg2); padding: 40px; }
 
-  /* panel header label */
   .panel-label {
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    padding: 8px 0;
-    margin-bottom: 28px;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim); padding: 8px 0; margin-bottom: 28px;
     border-bottom: 1px solid var(--line);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: flex; align-items: center; gap: 8px;
   }
+  .panel-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 13px; }
 
-  .panel-label::before {
-    content: '';
-    width: 20px; height: 1px;
-    background: var(--orange);
-  }
-
-  /* ─── UPLOAD ZONE ─── */
   .upload-zone {
-    border: 1px dashed var(--text-dim);
-    padding: 44px 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.15s;
-    position: relative;
-    margin-bottom: 24px;
-    background: var(--bg);
+    border: 1px dashed var(--text-dim); padding: 44px 24px;
+    text-align: center; cursor: pointer; transition: all 0.15s;
+    position: relative; margin-bottom: 24px; background: var(--bg);
   }
-
-  .upload-zone:hover,
-  .upload-zone.dragover {
-    border-color: var(--orange);
-    border-style: solid;
-    background: var(--orange-pale);
-  }
-
-  /* corner marks */
-  .upload-zone::before,
-  .upload-zone::after {
-    content: '';
-    position: absolute;
-    width: 12px; height: 12px;
-    border-color: var(--text-dim);
-    border-style: solid;
-    transition: border-color 0.15s;
-  }
-  .upload-zone::before { top: 6px; left: 6px; border-width: 1px 0 0 1px; }
-  .upload-zone::after { bottom: 6px; right: 6px; border-width: 0 1px 1px 0; }
-  .upload-zone:hover::before,
-  .upload-zone:hover::after { border-color: var(--orange); }
+  .upload-zone:hover, .upload-zone.dragover { border-color: var(--orange); border-style: solid; background: var(--orange-pale); }
 
   .upload-icon {
-    width: 48px; height: 48px;
-    background: var(--bg3);
+    width: 48px; height: 48px; background: var(--bg3);
     display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 18px;
-    transition: all 0.15s;
+    margin: 0 auto 18px; transition: all 0.15s;
+    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
   }
   .upload-zone:hover .upload-icon { background: var(--orange); }
-  .upload-icon svg { width: 22px; height: 22px; stroke: var(--text-mid); transition: stroke 0.15s; }
-  .upload-zone:hover .upload-icon svg { stroke: #0F0E0C; }
-
-  .upload-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 6px;
-    letter-spacing: 0.05em;
-  }
-
-  .upload-sub { font-size: 11px; color: var(--text-dim); }
-
-  .upload-formats {
-    font-size: 10px;
-    color: var(--text-dim);
-    margin-top: 10px;
-    letter-spacing: 0.15em;
-  }
-
-  .upload-formats span {
-    color: var(--orange);
-    opacity: 0.7;
-    margin: 0 4px;
-  }
-
+  .upload-icon svg { width: 22px; height: 22px; stroke: var(--text-mid); fill: none; transition: stroke 0.15s; }
+  .upload-zone:hover .upload-icon svg { stroke: #ffffff; }
+  .upload-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: 0.05em; }
+  .upload-sub { font-size: 12px; color: var(--text-dim); }
+  .upload-formats { font-size: 11px; color: var(--text-dim); margin-top: 10px; letter-spacing: 0.15em; }
+  .upload-formats span { color: var(--orange); opacity: 0.7; margin: 0 4px; }
   #fileInput { display: none; }
 
-  /* File preview */
   .file-preview {
-    display: none;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    background: var(--orange-pale);
-    border: 1px solid var(--orange-border);
-    margin-bottom: 24px;
+    display: none; align-items: center; gap: 12px;
+    padding: 12px 16px; background: var(--orange-pale);
+    border: 1px solid var(--orange-border); margin-bottom: 24px;
   }
   .file-preview.show { display: flex; }
 
   .file-preview-icon {
-    width: 36px; height: 36px;
-    background: var(--orange);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+    width: 36px; height: 36px; background: var(--orange);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
   }
-  .file-preview-icon svg { width: 16px; height: 16px; stroke: #0F0E0C; }
-
+  .file-preview-icon svg { width: 16px; height: 16px; stroke: #ffffff; fill: none; }
   .file-preview-info { flex: 1; min-width: 0; }
-  .file-preview-name { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .file-preview-size { font-size: 10px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.05em; }
+  .file-preview-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-preview-size { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
 
   .file-remove {
-    width: 26px; height: 26px;
-    border: 1px solid var(--line);
-    background: transparent;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    color: var(--text-dim); transition: all 0.15s; flex-shrink: 0;
+    width: 28px; height: 28px; position: relative;
+    background: transparent; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dim); transition: color 0.15s; flex-shrink: 0;
   }
-  .file-remove:hover { border-color: var(--orange); color: var(--orange); background: var(--orange-pale); }
-  .file-remove svg { width: 12px; height: 12px; stroke: currentColor; }
+  .file-remove::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--line);
+    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
+    transition: background 0.15s;
+  }
+  .file-remove::after {
+    content: ''; position: absolute; inset: 1px;
+    background: transparent;
+    clip-path: polygon(4px 0%, 100% 0%, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0% 100%, 0% 4px);
+    transition: background 0.15s;
+  }
+  .file-remove:hover::before { background: var(--orange); }
+  .file-remove:hover::after { background: var(--orange-pale); }
+  .file-remove:hover { color: var(--orange); }
+  .file-remove svg { width: 12px; height: 12px; stroke: currentColor; fill: none; position: relative; z-index: 1; }
 
-  /* ─── FORM FIELDS ─── */
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
   .form-group { display: flex; flex-direction: column; gap: 6px; }
 
   label {
-    font-size: 9px;
-    font-weight: 400;
-    color: var(--text-dim);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
+    font-size: 11px; color: var(--text-dim);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 5px;
   }
+  label::before { content: '/'; color: var(--text-dim); font-weight: 700; }
 
   input[type="number"], select {
     padding: 12px 14px;
-    border: 1px solid var(--line);
-    background: var(--bg);
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s;
-    appearance: none;
-    -webkit-appearance: none;
+    height: 46px;
+    border: 1px solid var(--line); border-left: 3px solid var(--bg3);
+    background: var(--bg); font-family: var(--mono);
+    font-size: 13px; color: var(--text); outline: none;
+    transition: border-color 0.15s, border-left-color 0.15s;
+    appearance: none; -webkit-appearance: none;
+    width: 100%;
   }
-
-  input[type="number"]:focus, select:focus {
-    border-color: var(--orange);
-    background: var(--orange-pale);
-  }
-
+  /* hide number spinners */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"] { -moz-appearance: textfield; }
+  input[type="number"]:focus, select:focus { border-color: var(--text); border-left-color: var(--orange); background: #fff; }
   input[type="number"]::placeholder { color: var(--text-dim); }
-
   select option { background: var(--bg2); color: var(--text); }
 
   .select-wrap { position: relative; }
   .select-wrap::after {
-    content: '▼';
-    position: absolute;
-    right: 14px; top: 50%;
-    transform: translateY(-50%);
-    font-size: 8px;
-    color: var(--text-dim);
-    pointer-events: none;
+    content: '▼'; position: absolute; right: 14px; top: 50%;
+    transform: translateY(-50%); font-size: 8px; color: var(--text-dim); pointer-events: none;
   }
 
-  /* ─── RIGHT PANEL ─── */
   .result-panel { display: flex; flex-direction: column; }
+  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .result-title { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.05em; }
 
-  .result-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
+  .result-status-wrap {
+    display: inline-block;
+    padding: 1px;
+    background: var(--text-dim);
+    clip-path: polygon(7px 0%, 100% 0%, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0% 100%, 0% 7px);
   }
-
-  .result-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 0.05em;
-  }
-
   .result-status {
-    font-size: 9px;
-    font-weight: 400;
-    letter-spacing: 0.15em;
-    padding: 4px 10px;
-    text-transform: uppercase;
+    display: block;
+    font-size: 10px; letter-spacing: 0.15em; padding: 4px 10px; text-transform: uppercase;
+    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
   }
-
-  .status-waiting { background: var(--bg3); color: var(--text-dim); border: 1px solid var(--line); }
+  .status-waiting { background: var(--bg3); color: var(--text-dim); }
+  .result-status-wrap.sw { background: var(--line); }
+  .result-status-wrap.sl { background: var(--orange); }
+  .result-status-wrap.sd { background: rgba(0,200,100,0.4); }
+  .result-status-wrap.se { background: rgba(255,60,60,0.4); }
   .status-loading { background: var(--orange-pale); color: var(--orange); border: 1px solid var(--orange-border); animation: statusPulse 1s ease infinite; }
   .status-done { background: rgba(0,200,100,0.08); color: #3DCC7A; border: 1px solid rgba(0,200,100,0.2); }
   .status-error { background: rgba(255,60,60,0.08); color: #FF5555; border: 1px solid rgba(255,60,60,0.2); }
 
-  @keyframes statusPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-
   .result-box {
-    flex: 1;
-    min-height: 360px;
-    background: var(--bg);
-    border: 1px solid var(--line);
-    padding: 24px;
-    overflow-y: auto;
-    position: relative;
-    font-size: 12px;
+    flex: 1; min-height: 360px; background: var(--bg);
+    border: 1px solid var(--line); padding: 24px;
+    overflow-y: auto; position: relative; font-size: 13px;
   }
 
-  /* Empty state */
   .empty-state {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
+    position: absolute; inset: 0; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 12px; color: var(--text-dim); text-align: center; padding: 24px;
   }
-
   .empty-icon {
-    width: 56px; height: 56px;
-    background: var(--bg3);
-    border: 1px solid var(--line);
+    width: 56px; height: 56px; position: relative;
     display: flex; align-items: center; justify-content: center;
   }
-  .empty-icon svg { width: 24px; height: 24px; stroke: var(--text-dim); }
+  .empty-icon::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--line);
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+  }
+  .empty-icon::after {
+    content: ''; position: absolute; inset: 1px;
+    background: var(--bg3);
+    clip-path: polygon(7px 0%, 100% 0%, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0% 100%, 0% 7px);
+  }
+  .empty-icon svg { position: relative; z-index: 1; }
+  .empty-icon svg { width: 24px; height: 24px; stroke: var(--text-dim); fill: none; }
+  .empty-text { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+  .empty-sub { font-size: 11px; color: var(--text-dim); line-height: 1.6; }
 
-  .empty-text { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
-  .empty-sub { font-size: 10px; color: var(--text-dim); line-height: 1.6; letter-spacing: 0.03em; }
-
-  /* Loader */
   .loader {
-    display: none;
-    flex-direction: column; align-items: center; justify-content: center;
-    position: absolute; inset: 0; gap: 20px;
-    background: var(--bg);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    position: absolute; inset: 0; gap: 20px; background: var(--bg);
   }
   .loader.show { display: flex; }
-
-  /* pixel spinner */
-  .loader-px {
-    width: 40px; height: 40px;
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(4, 1fr);
-    gap: 3px;
-  }
-  .loader-px span {
-    background: var(--orange);
-    animation: pixelSpin 1s step-end infinite;
-  }
+  .loader-px { width: 40px; height: 40px; display: grid; grid-template-columns: repeat(4,1fr); grid-template-rows: repeat(4,1fr); gap: 3px; }
+  .loader-px span { background: var(--orange); animation: pixelSpin 1s step-end infinite; }
   .loader-px span:nth-child(1)  { animation-delay: 0s; }
   .loader-px span:nth-child(2)  { animation-delay: 0.0625s; }
   .loader-px span:nth-child(3)  { animation-delay: 0.125s; }
@@ -604,206 +346,92 @@
   .loader-px span:nth-child(14) { animation-delay: 0.8125s; }
   .loader-px span:nth-child(15) { animation-delay: 0.875s; }
   .loader-px span:nth-child(16) { animation-delay: 0.9375s; }
+  .loader-text { font-size: 12px; color: var(--text-dim); text-align: center; line-height: 1.7; letter-spacing: 0.05em; }
 
-  @keyframes pixelSpin {
-    0%, 60%, 100% { opacity: 0.1; }
-    30% { opacity: 1; }
-  }
-
-  .loader-text {
-    font-size: 11px;
-    color: var(--text-dim);
-    text-align: center;
-    line-height: 1.7;
-    letter-spacing: 0.05em;
-  }
-
-  /* Result content */
-  .result-content { display: none; font-size: 12px; line-height: 1.8; color: var(--text-mid); }
+  .result-content { display: none; font-size: 13px; line-height: 1.8; color: var(--text-mid); }
   .result-content.show { display: block; animation: fadeIn 0.3s ease both; }
-
-  .result-content h3 {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin: 20px 0 10px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--line);
-  }
+  .result-content h3 { font-size: 12px; font-weight: 700; color: var(--text); letter-spacing: 0.15em; text-transform: uppercase; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
   .result-content h3:first-child { margin-top: 0; }
   .result-content p { margin-bottom: 10px; }
+  .result-content .tag-normal { display: inline-flex; align-items: center; gap: 4px; background: rgba(0,200,100,0.1); color: #3DCC7A; font-size: 10px; font-weight: 700; padding: 2px 6px; text-transform: uppercase; }
+  .result-content .tag-high   { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,60,60,0.1);  color: #FF5555; font-size: 10px; font-weight: 700; padding: 2px 6px; text-transform: uppercase; }
+  .result-content .tag-low    { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,200,0,0.1);  color: #C89000; font-size: 10px; font-weight: 700; padding: 2px 6px; text-transform: uppercase; }
 
-  .result-content .tag-normal {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(0,200,100,0.1); color: #3DCC7A;
-    font-size: 9px; font-weight: 700; padding: 2px 6px;
-    text-transform: uppercase; letter-spacing: 0.1em;
-  }
-  .result-content .tag-high {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(255,60,60,0.1); color: #FF5555;
-    font-size: 9px; font-weight: 700; padding: 2px 6px;
-    text-transform: uppercase; letter-spacing: 0.1em;
-  }
-  .result-content .tag-low {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(255,200,0,0.1); color: #FFD44D;
-    font-size: 9px; font-weight: 700; padding: 2px 6px;
-    text-transform: uppercase; letter-spacing: 0.1em;
-  }
-
-  /* Error display */
   .error-display {
     display: none; align-items: center; gap: 10px;
-    padding: 14px 16px;
-    background: rgba(255,60,60,0.08);
-    border: 1px solid rgba(255,60,60,0.25);
-    color: #FF5555; font-size: 11px; font-weight: 500;
+    padding: 14px 16px; background: rgba(255,60,60,0.08); border: 1px solid rgba(255,60,60,0.25);
+    color: #FF5555; font-size: 12px; font-weight: 500;
     position: absolute; inset: 16px; height: fit-content;
   }
   .error-display.show { display: flex; }
-  .error-display svg { width: 16px; height: 16px; stroke: currentColor; flex-shrink: 0; }
+  .error-display svg { width: 16px; height: 16px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
-  /* ─── HOW IT WORKS ─── */
   .steps-section {
-    background: #ffffff;
-    padding: 80px 48px;
-    border-top: 2px solid var(--text);
-    border-bottom: 2px solid var(--text);
-    position: relative;
-    z-index: 1;
+    background: #ffffff; padding: 80px 48px;
+    border-top: 2px solid var(--text); border-bottom: 2px solid var(--text);
+    position: relative; z-index: 1;
   }
-
   .steps-inner { max-width: 1100px; margin: 0 auto; }
-
-  .steps-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
-    background: var(--text);
-    border: 2px solid var(--text);
+  .steps-grid-wrap {
     margin-top: 48px;
+    padding: 2px;
+    background: var(--text);
+    clip-path: polygon(18px 0%, 100% 0%, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0% 100%, 0% 18px);
   }
-
-  .step-card {
-    background: #ffffff;
-    padding: 36px 32px;
-    position: relative;
-    overflow: hidden;
+  .steps-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 2px; background: var(--text);
+    clip-path: polygon(16px 0%, 100% 0%, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0% 100%, 0% 16px);
+  }
+  .step-card { background: #ffffff; padding: 36px 32px; position: relative; overflow: hidden; transition: background 0.15s; }
+  .step-card:hover { background: var(--bg); }
+  .step-num-bg { position: absolute; top: -10px; right: 16px; font-size: 80px; font-weight: 700; color: rgba(255,90,0,0.04); line-height: 1; pointer-events: none; letter-spacing: -4px; }
+  .step-num { font-size: 11px; font-weight: 700; color: var(--orange); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .step-num::before { content: ''; width: 16px; height: 1px; background: var(--orange); }
+  .step-icon {
+    width: 44px; height: 44px; position: relative;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 16px; transition: all 0.15s;
+  }
+  .step-icon::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--line);
+    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
+  }
+  .step-icon::after {
+    content: ''; position: absolute; inset: 1px;
+    background: var(--bg);
+    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
     transition: background 0.15s;
   }
-  .step-card:hover { background: var(--bg); }
+  .step-icon svg { position: relative; z-index: 1; }
+  .step-card:hover .step-icon::after { background: var(--orange); }
+  .step-card:hover .step-icon svg { stroke: #ffffff; }
+  .step-card:hover .step-icon::before { background: var(--orange); }
+  .step-card:hover .step-icon svg { stroke: #ffffff; }
+  .step-icon svg { width: 20px; height: 20px; stroke: var(--orange); fill: none; transition: stroke 0.15s; }
+  .step-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .step-desc { font-size: 12px; color: var(--text-dim); line-height: 1.7; letter-spacing: 0.03em; }
 
-  /* step number — big bg text */
-  .step-num-bg {
-    position: absolute;
-    top: -10px; right: 16px;
-    font-size: 80px;
-    font-weight: 700;
-    color: rgba(255,90,0,0.04);
-    line-height: 1;
-    pointer-events: none;
-    letter-spacing: -4px;
-  }
-
-  .step-num {
-    font-size: 9px;
-    font-weight: 700;
-    color: var(--orange);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .step-num::before {
-    content: '';
-    width: 16px; height: 1px;
-    background: var(--orange);
-  }
-
-  .step-icon {
-    width: 44px; height: 44px;
-    background: var(--bg);
-    border: 1px solid var(--line);
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 16px;
-    transition: all 0.15s;
-  }
-  .step-card:hover .step-icon { background: var(--orange); border-color: var(--orange); }
-  .step-card:hover .step-icon svg { stroke: #0F0E0C; }
-  .step-icon svg { width: 20px; height: 20px; stroke: var(--orange); transition: stroke 0.15s; }
-
-  .step-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 10px;
-    letter-spacing: -0.2px;
-  }
-
-  .step-desc {
-    font-size: 11px;
-    color: var(--text-dim);
-    line-height: 1.7;
-    font-weight: 400;
-    letter-spacing: 0.03em;
-  }
-
-  /* ─── FOOTER ─── */
   footer {
-    padding: 40px 48px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-width: 1400px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
-    border-top: 1px solid var(--line);
+    padding: 40px 48px; display: flex; align-items: center; justify-content: space-between;
+    max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; border-top: 1px solid var(--line);
   }
-
-  .footer-logo {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
+  .footer-logo { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.1em; text-transform: uppercase; }
   .footer-logo span { color: var(--orange); }
+  .footer-disclaimer { font-size: 11px; color: var(--text-dim); max-width: 380px; text-align: center; line-height: 1.7; }
+  .footer-copy { font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em; }
 
-  .footer-disclaimer {
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.05em;
-    max-width: 380px;
-    text-align: center;
-    line-height: 1.7;
-  }
-
-  .footer-copy {
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.1em;
-  }
-
-  /* ─── RESPONSIVE ─── */
   @media (max-width: 900px) {
     header { padding: 0 24px; }
     .hero { padding: 100px 24px 80px; }
-    .hero-corner.tl { left: 24px; }
-    .hero-corner.br { right: 24px; }
     .main-section { padding: 60px 24px 80px; }
+    .analyzer-wrap, .analyzer-grid { clip-path: none; }
     .analyzer-grid { grid-template-columns: 1fr; }
     .steps-section { padding: 60px 24px; }
-    .steps-grid { grid-template-columns: 1fr; }
+    .steps-grid { grid-template-columns: 1fr; clip-path: none; }
     footer { flex-direction: column; gap: 20px; text-align: center; padding: 32px 24px; }
+    .btn-auth span { display: none; }
   }
-
   @media (max-width: 600px) {
     h1 { font-size: 30px; }
     .form-row { grid-template-columns: 1fr; }
@@ -813,229 +441,169 @@
 </head>
 <body>
 
-<!-- Header -->
 <header>
   <a class="logo" href="#">
     <div class="logo-icon">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="#0F0E0C" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
+        <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
       </svg>
     </div>
     <div class="logo-text">Medeus<span>.</span></div>
   </a>
-  <nav>
+  <div class="header-right">
     <span class="nav-badge"><span class="nav-dot"></span>AI · Beta</span>
-  </nav>
+    <a href="auth.html" class="btn-auth">
+      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+      </svg>
+      <span>Войти</span>
+    </a>
+  </div>
 </header>
 
-<!-- Hero -->
 <section class="hero">
-  <div class="hero-corner tl"></div>
-  <div class="hero-corner br"></div>
-
   <div class="hero-tag">Медицинский ИИ-ассистент</div>
-
   <h1>Понять свои анализы<br>за <span class="accent">секунды</span><span class="cursor-blink"></span></h1>
-
   <p class="hero-sub">Загрузите фото или скан результатов — наш ИИ расшифрует каждый показатель и даст персональные рекомендации.</p>
-
-  <a href="#analyzer" style="
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-    padding:16px 28px;
-    background:#1A1714;
-    color:#ffffff;
-    text-decoration:none;
-    font-family:'IBM Plex Mono',monospace;
-    font-size:13px;
-    font-weight:700;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-    cursor:pointer;
-    margin-bottom:48px;
-    border:none;
-    line-height:1;
-  " onmouseover="this.style.background='#FF5A00'" onmouseout="this.style.background='#1A1714'">
+  <a href="#analyzer" class="btn-chamfer" style="margin-bottom:48px;"
+    onmouseover="this.style.background='#FF5A00'"
+    onmouseout="this.style.background='#1A1714'">
     <span>Начать анализ</span>
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
   </a>
-  </div>
-</div>
 </section>
 
-<!-- Analyzer -->
 <section class="main-section" id="analyzer">
   <div class="section-label">// 01 — Анализатор</div>
   <div class="section-title">Загрузите ваши анализы</div>
 
-  <div class="analyzer-grid">
-    <!-- Left: Upload form -->
-    <div class="analyzer-panel">
-      <div class="panel-label">Входные данные</div>
+  <div class="analyzer-wrap">
+    <div class="analyzer-grid">
+      <div class="analyzer-panel">
+        <div class="panel-label">Входные данные</div>
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="fileInput" accept="image/*,.pdf">
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="upload-title">Загрузите результаты анализов</div>
+          <div class="upload-sub">Перетащите файл или нажмите для выбора</div>
+          <div class="upload-formats"><span>PNG</span>·<span>JPG</span>·<span>JPEG</span>·<span>PDF</span></div>
+        </div>
 
-      <div class="upload-zone" id="uploadZone">
-        <input type="file" id="fileInput" accept="image/*,.pdf">
-        <div class="upload-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
+        <div class="file-preview" id="filePreview">
+          <div class="file-preview-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div class="file-preview-info">
+            <div class="file-preview-name" id="fileName">—</div>
+            <div class="file-preview-size" id="fileSize">—</div>
+          </div>
+          <button class="file-remove" id="fileRemove" title="Удалить файл">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
         </div>
-        <div class="upload-title">Загрузите результаты анализов</div>
-        <div class="upload-sub">Перетащите файл или нажмите для выбора</div>
-        <div class="upload-formats">
-          <span>PNG</span>·<span>JPG</span>·<span>JPEG</span>·<span>PDF</span>
-        </div>
-      </div>
 
-      <div class="file-preview" id="filePreview">
-        <div class="file-preview-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-          </svg>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="age">Возраст</label>
+            <input type="number" id="age" placeholder="30" min="1" max="120">
+          </div>
+          <div class="form-group">
+            <label for="gender">Пол</label>
+            <div class="select-wrap">
+              <select id="gender">
+                <option value="">— выберите —</option>
+                <option value="мужской">Мужской</option>
+                <option value="женский">Женский</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <div class="file-preview-info">
-          <div class="file-preview-name" id="fileName">—</div>
-          <div class="file-preview-size" id="fileSize">—</div>
-        </div>
-        <button class="file-remove" id="fileRemove" title="Удалить файл">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
+
+        <button id="analyzeBtn" disabled type="button" class="btn-chamfer" style="width:100%;">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <span>Анализировать</span>
         </button>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="age">Возраст</label>
-          <input type="number" id="age" placeholder="30" min="1" max="120">
+      <div class="analyzer-panel result-panel">
+        <div class="panel-label">Вывод системы</div>
+        <div class="result-header">
+          <div class="result-title">Результат анализа</div>
+          <div class="result-status-wrap sw"><div class="result-status status-waiting" id="resultStatus">Ожидание</div></div>
         </div>
-        <div class="form-group">
-          <label for="gender">Пол</label>
-          <div class="select-wrap">
-            <select id="gender">
-              <option value="">— выберите —</option>
-              <option value="мужской">Мужской</option>
-              <option value="женский">Женский</option>
-            </select>
+        <div class="result-box" id="resultBox">
+          <div class="empty-state" id="emptyState">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <div class="empty-text">Результат появится здесь</div>
+            <div class="empty-sub">Загрузите файл с анализами,<br>укажите возраст и пол</div>
           </div>
-        </div>
-      </div>
-
-      <button id="analyzeBtn" disabled type="button" style="
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:10px;
-        width:100%;
-        padding:16px 28px;
-        background:#C8C6C2;
-        color:#888480;
-        font-family:'IBM Plex Mono',monospace;
-        font-size:13px;
-        font-weight:700;
-        letter-spacing:0.08em;
-        text-transform:uppercase;
-        border:none;
-        cursor:not-allowed;
-        line-height:1;
-        -webkit-appearance:none;
-        appearance:none;
-        outline:none;
-      ">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="m21 21-4.35-4.35"/>
-        </svg>
-        <span>Анализировать</span>
-      </button>
-    </div>
-
-    <!-- Right: Result panel -->
-    <div class="analyzer-panel result-panel">
-      <div class="panel-label">Вывод системы</div>
-
-      <div class="result-header">
-        <div class="result-title">Результат анализа</div>
-        <div class="result-status status-waiting" id="resultStatus">Ожидание</div>
-      </div>
-
-      <div class="result-box" id="resultBox">
-        <div class="empty-state" id="emptyState">
-          <div class="empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          <div class="loader" id="loader">
+            <div class="loader-px">
+              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <div class="loader-text">ИИ анализирует показатели<br><span style="font-size:11px;color:var(--text-dim);">Это может занять до 30 секунд</span></div>
+          </div>
+          <div class="error-display" id="errorDisplay">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
+            <span id="errorText">Произошла ошибка</span>
           </div>
-          <div class="empty-text">Результат появится здесь</div>
-          <div class="empty-sub">Загрузите файл с анализами,<br>укажите возраст и пол</div>
+          <div class="result-content" id="resultContent"></div>
         </div>
-
-        <div class="loader" id="loader">
-          <div class="loader-px">
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-          </div>
-          <div class="loader-text">
-            ИИ анализирует показатели<br>
-            <span style="font-size:10px;color:var(--text-dim);letter-spacing:0.1em;">Это может занять до 30 секунд</span>
-          </div>
-        </div>
-
-        <div class="error-display" id="errorDisplay">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          <span id="errorText">Произошла ошибка</span>
-        </div>
-
-        <div class="result-content" id="resultContent"></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- How it works -->
 <section class="steps-section">
   <div class="steps-inner">
     <div class="section-label">// 02 — Как это работает</div>
     <div class="section-title">Три шага до ясности</div>
-
+    <div class="steps-grid-wrap">
     <div class="steps-grid">
       <div class="step-card">
         <div class="step-num-bg">01</div>
         <div class="step-num">01</div>
         <div class="step-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <path d="M3 9h18M9 21V9"/>
+            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
           </svg>
         </div>
         <div class="step-title">Сфотографируйте бланк</div>
         <div class="step-desc">Загрузите фото или скан результатов анализов в любом формате — мы сами распознаем текст.</div>
       </div>
-
       <div class="step-card">
         <div class="step-num-bg">02</div>
         <div class="step-num">02</div>
         <div class="step-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
           </svg>
         </div>
         <div class="step-title">Укажите данные</div>
         <div class="step-desc">Введите возраст и пол — это нужно для точного сравнения с референсными значениями.</div>
       </div>
-
       <div class="step-card">
         <div class="step-num-bg">03</div>
         <div class="step-num">03</div>
@@ -1051,7 +619,6 @@
   </div>
 </section>
 
-<!-- Footer -->
 <footer>
   <div class="footer-logo">Medeus<span>.</span></div>
   <div class="footer-disclaimer">
@@ -1063,7 +630,6 @@
 
 <script>
 const API_BASE = 'https://medeus.onrender.com';
-
 const fileInput = document.getElementById('fileInput');
 const uploadZone = document.getElementById('uploadZone');
 const filePreview = document.getElementById('filePreview');
@@ -1073,76 +639,50 @@ const fileRemove = document.getElementById('fileRemove');
 const ageInput = document.getElementById('age');
 const genderInput = document.getElementById('gender');
 const analyzeBtn = document.getElementById('analyzeBtn');
-
 const emptyState = document.getElementById('emptyState');
 const loader = document.getElementById('loader');
 const errorDisplay = document.getElementById('errorDisplay');
 const errorText = document.getElementById('errorText');
 const resultContent = document.getElementById('resultContent');
 const resultStatus = document.getElementById('resultStatus');
-
 let selectedFile = null;
 
 uploadZone.addEventListener('click', () => fileInput.click());
-
-uploadZone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  uploadZone.classList.add('dragover');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0]; if (file) handleFile(file);
 });
-
-uploadZone.addEventListener('dragleave', () => {
-  uploadZone.classList.remove('dragover');
-});
-
-uploadZone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  uploadZone.classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (file) handleFile(file);
-});
-
-fileInput.addEventListener('change', () => {
-  if (fileInput.files[0]) handleFile(fileInput.files[0]);
-});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
 
 function handleFile(file) {
-  selectedFile = file;
-  fileName.textContent = file.name;
+  selectedFile = file; fileName.textContent = file.name;
   fileSize.textContent = formatBytes(file.size);
-  uploadZone.style.display = 'none';
-  filePreview.classList.add('show');
-  checkForm();
+  uploadZone.style.display = 'none'; filePreview.classList.add('show'); checkForm();
 }
 
-function formatBytes(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
 }
 
 fileRemove.addEventListener('click', () => {
-  selectedFile = null;
-  fileInput.value = '';
-  filePreview.classList.remove('show');
-  uploadZone.style.display = '';
-  checkForm();
+  selectedFile = null; fileInput.value = '';
+  filePreview.classList.remove('show'); uploadZone.style.display = ''; checkForm();
 });
 
 function checkForm() {
   const valid = selectedFile && ageInput.value && genderInput.value;
   analyzeBtn.disabled = !valid;
   if (valid) {
-    analyzeBtn.style.background = '#1A1714';
-    analyzeBtn.style.color = '#ffffff';
-    analyzeBtn.style.cursor = 'pointer';
+    analyzeBtn.style.background = '#1A1714'; analyzeBtn.style.color = '#ffffff'; analyzeBtn.style.cursor = 'pointer';
     analyzeBtn.onmouseover = () => { analyzeBtn.style.background = '#FF5A00'; };
-    analyzeBtn.onmouseout = () => { analyzeBtn.style.background = '#1A1714'; };
+    analyzeBtn.onmouseout  = () => { analyzeBtn.style.background = '#1A1714'; };
   } else {
-    analyzeBtn.style.background = '#C8C6C2';
-    analyzeBtn.style.color = '#888480';
-    analyzeBtn.style.cursor = 'not-allowed';
-    analyzeBtn.onmouseover = null;
-    analyzeBtn.onmouseout = null;
+    analyzeBtn.style.background = '#C8C6C2'; analyzeBtn.style.color = '#888480'; analyzeBtn.style.cursor = 'not-allowed';
+    analyzeBtn.onmouseover = null; analyzeBtn.onmouseout = null;
   }
 }
 
@@ -1155,25 +695,20 @@ function setState(state, data) {
   errorDisplay.classList.remove('show');
   resultContent.classList.remove('show');
   resultStatus.className = 'result-status';
-
+  const wrap = resultStatus.parentElement;
+  wrap.className = 'result-status-wrap';
   if (state === 'empty') {
-    emptyState.style.display = '';
-    resultStatus.textContent = 'Ожидание';
-    resultStatus.classList.add('status-waiting');
+    emptyState.style.display = ''; resultStatus.textContent = 'Ожидание';
+    resultStatus.classList.add('status-waiting'); wrap.classList.add('sw');
   } else if (state === 'loading') {
-    loader.classList.add('show');
-    resultStatus.textContent = 'Анализирую...';
-    resultStatus.classList.add('status-loading');
+    loader.classList.add('show'); resultStatus.textContent = 'Анализирую...';
+    resultStatus.classList.add('status-loading'); wrap.classList.add('sl');
   } else if (state === 'done') {
-    resultContent.classList.add('show');
-    resultContent.innerHTML = formatResult(data);
-    resultStatus.textContent = 'Готово';
-    resultStatus.classList.add('status-done');
+    resultContent.classList.add('show'); resultContent.innerHTML = formatResult(data);
+    resultStatus.textContent = 'Готово'; resultStatus.classList.add('status-done'); wrap.classList.add('sd');
   } else if (state === 'error') {
-    errorDisplay.classList.add('show');
-    errorText.textContent = data || 'Произошла ошибка';
-    resultStatus.textContent = 'Ошибка';
-    resultStatus.classList.add('status-error');
+    errorDisplay.classList.add('show'); errorText.textContent = data || 'Произошла ошибка';
+    resultStatus.textContent = 'Ошибка'; resultStatus.classList.add('status-error'); wrap.classList.add('se');
   }
 }
 
@@ -1181,45 +716,29 @@ function formatResult(text) {
   let html = text
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^# (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^#{1,3} (.+)$/gm, '<h3>$1</h3>')
     .replace(/(?<!\p{L})норма(?!\p{L})/giu, '<span class="tag-normal">✓ норма</span>')
     .replace(/выше нормы/gi, '<span class="tag-high">↑ выше нормы</span>')
     .replace(/ниже нормы/gi, '<span class="tag-low">↓ ниже нормы</span>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>');
+    .replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
   return '<p>' + html + '</p>';
 }
 
 analyzeBtn.addEventListener('click', async () => {
   if (!selectedFile || !ageInput.value || !genderInput.value) return;
-
-  setState('loading');
-  analyzeBtn.disabled = true;
-
+  setState('loading'); analyzeBtn.disabled = true;
   const formData = new FormData();
-  formData.append('file', selectedFile);
-  formData.append('age', ageInput.value);
-  formData.append('gender', genderInput.value);
-
+  formData.append('file', selectedFile); formData.append('age', ageInput.value); formData.append('gender', genderInput.value);
   try {
-    const response = await fetch(`${API_BASE}/analyze`, {
-      method: 'POST',
-      body: formData,
-    });
-
+    const response = await fetch(`${API_BASE}/analyze`, { method: 'POST', body: formData });
     const data = await response.json();
-
     if (!response.ok) throw new Error(data.error || `Ошибка сервера: ${response.status}`);
     if (data.error) throw new Error(data.error);
-
     setState('done', data.analysis);
   } catch (err) {
     setState('error', err.message || 'Не удалось подключиться к серверу');
   } finally {
-    analyzeBtn.disabled = false;
-    checkForm();
+    analyzeBtn.disabled = false; checkForm();
   }
 });
 
