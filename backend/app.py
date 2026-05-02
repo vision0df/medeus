@@ -352,6 +352,117 @@ def delete_analysis(analysis_id):
 
 
 # ========================
+# API: /dashboard — всё за один запрос
+# ========================
+@app.route("/dashboard", methods=["GET"])
+def dashboard():
+    """
+    Один запрос к БД — возвращает history + indicators + recommendations.
+    Используется личным кабинетом вместо трёх отдельных вызовов.
+    """
+    try:
+        user = get_current_user(request.headers.get("Authorization"))
+
+        rows = db_select(
+            "analyses",
+            select="id,filename,analysis_name,age,gender,result,file_url,analysis_date,created_at",
+            filters={"user_id": user["id"]},
+        )
+
+        # ── History ──────────────────────────────────────────────────────────
+        history = rows  # уже готово
+
+        # ── Indicators ───────────────────────────────────────────────────────
+        merged: dict = {}
+        for row in rows:
+            result_text = row.get("result", "") or ""
+            row_date    = row.get("analysis_date") or ""
+            source      = row.get("analysis_name", "")
+
+            for line in result_text.splitlines():
+                line = line.strip()
+                if not line or line.startswith("—") or line.startswith("-"):
+                    continue
+                parts = [p.strip() for p in line.split(" - ")]
+                if len(parts) < 3:
+                    parts = [p.strip() for p in line.split(" — ")]
+                if len(parts) < 3:
+                    continue
+
+                name, value, status = parts[0], parts[1], parts[2].lower()
+
+                if len(name) < 2 or len(name) > 80:
+                    continue
+                if not any(c.isdigit() for c in value):
+                    continue
+
+                if "выше" in status:
+                    norm_status = "above"
+                elif "ниже" in status:
+                    norm_status = "below"
+                else:
+                    norm_status = "normal"
+
+                name_key = name.lower().strip()
+                existing = merged.get(name_key)
+                if existing is None or row_date > existing["date"]:
+                    merged[name_key] = {
+                        "name":   name,
+                        "value":  value,
+                        "status": norm_status,
+                        "date":   row_date,
+                        "source": source,
+                    }
+
+        indicators = sorted(merged.values(), key=lambda x: x["name"])
+
+        # ── Recommendations ──────────────────────────────────────────────────
+        REC_HEADERS = {
+            "рекоменда", "обратить внимание", "общее состояние",
+            "на что стоит", "вывод", "заключение",
+        }
+        seen_keys: set = set()
+        recs: list     = []
+
+        for row in sorted(rows, key=lambda r: r.get("analysis_date") or "", reverse=True):
+            result_text = row.get("result", "") or ""
+            source      = row.get("analysis_name", "")
+            in_rec      = False
+
+            for line in result_text.splitlines():
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                low = stripped.lower()
+
+                if any(h in low for h in REC_HEADERS):
+                    in_rec = True
+                    continue
+                if in_rec and " - " in stripped and any(c.isdigit() for c in stripped):
+                    in_rec = False
+                if in_rec and len(stripped) > 15:
+                    clean = stripped.lstrip("•·–—-→* ").strip()
+                    if len(clean) < 15:
+                        continue
+                    key = clean[:60].lower()
+                    if key not in seen_keys:
+                        seen_keys.add(key)
+                        recs.append({"text": clean, "source": source})
+
+        return jsonify({
+            "history":         history,
+            "indicators":      indicators,
+            "recommendations": recs[:20],
+        })
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ========================
 # API: /indicators — сводка уникальных показателей
 # ========================
 @app.route("/indicators", methods=["GET"])

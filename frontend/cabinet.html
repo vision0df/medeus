@@ -810,19 +810,21 @@ document.getElementById('logoutBtn')?.addEventListener('click', async e => {
   const session = await loadUser();
   if (!session) return;
 
-  const [histData, indData, recData] = await Promise.allSettled([
-    apiFetch('/history',         session),
-    apiFetch('/indicators',      session),
-    apiFetch('/recommendations', session),
-  ]);
+  try {
+    const data = await apiFetch('/dashboard', session);
+    if (!data) return;
 
-  const rows = histData.status === 'fulfilled' && histData.value ? histData.value.history        || [] : [];
-  const inds = indData.status  === 'fulfilled' && indData.value  ? indData.value.indicators      || [] : [];
-  const recs = recData.status  === 'fulfilled' && recData.value  ? recData.value.recommendations || [] : [];
-
-  renderHistory(rows);
-  renderIndicators(inds);
-  renderRecommendations(recs);
-  renderHealthScore(inds);
+    renderHistory(data.history             || []);
+    renderIndicators(data.indicators       || []);
+    renderRecommendations(data.recommendations || []);
+    renderHealthScore(data.indicators      || []);
+  } catch (e) {
+    console.error('Dashboard error:', e);
+    // Скрываем все лоадеры даже при ошибке
+    ['loaderSummary','loaderFiles','loaderRecs','loaderHealth'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    });
+  }
 })();
 </script>
