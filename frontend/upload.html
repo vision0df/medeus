@@ -548,15 +548,21 @@
 
         <div class="form-row" style="margin-top: 16px;">
           <div class="form-group" style="margin-bottom:0;">
-            <label for="analysisDate">Дата сдачи</label>
-            <input type="date" id="analysisDate">
+            <label for="patientAge">Возраст</label>
+            <input type="text" id="patientAge" placeholder="25" autocomplete="off">
           </div>
-          <div class="form-group" style="margin-bottom:0; justify-content: flex-end;">
-            <label style="visibility:hidden;">—</label>
-            <div style="font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; line-height: 1.6; padding-top: 4px;">
-              Дата нужна для<br>отслеживания динамики
-            </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="patientGender">Пол</label>
+            <select id="patientGender" style="padding:12px 14px;height:46px;border:1px solid var(--line);border-left:3px solid var(--bg3);background:var(--bg);font-family:var(--mono);font-size:13px;color:var(--text);outline:none;width:100%;appearance:none;">
+              <option value="мужской">Мужской</option>
+              <option value="женский">Женский</option>
+            </select>
           </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 16px;">
+          <label for="analysisDate">Дата сдачи</label>
+          <input type="date" id="analysisDate">
         </div>
 
         <!-- Buttons -->
@@ -653,7 +659,7 @@
 // ─── Проверка авторизации ───
 let currentSession = null;
 (async () => {
-  currentSession = await requireAuth(); // редиректит на auth.html если нет сессии
+  currentSession = await requireAuth();
 })();
 
 const fileInput      = document.getElementById('fileInput');
@@ -664,6 +670,8 @@ const fileSizeEl     = document.getElementById('fileSize');
 const fileRemove     = document.getElementById('fileRemove');
 const analysisName   = document.getElementById('analysisName');
 const analysisDate   = document.getElementById('analysisDate');
+const patientAge     = document.getElementById('patientAge');
+const patientGender  = document.getElementById('patientGender');
 const analyzeBtn     = document.getElementById('analyzeBtn');
 const saveBtn        = document.getElementById('saveBtn');
 
@@ -678,6 +686,7 @@ const toast          = document.getElementById('toast');
 
 let selectedFile = null;
 let analysisResult = null;
+let savedRecordId = null;
 
 // Set today's date by default
 const today = new Date().toISOString().split('T')[0];
@@ -685,21 +694,14 @@ analysisDate.value = today;
 
 // ─── UPLOAD ───
 uploadZone.addEventListener('click', () => fileInput.click());
-
-uploadZone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  uploadZone.classList.add('dragover');
-});
+uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
 uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
 uploadZone.addEventListener('drop', (e) => {
   e.preventDefault();
   uploadZone.classList.remove('dragover');
   if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
 });
-
-fileInput.addEventListener('change', () => {
-  if (fileInput.files[0]) handleFile(fileInput.files[0]);
-});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
 
 function handleFile(file) {
   selectedFile = file;
@@ -722,18 +724,19 @@ fileRemove.addEventListener('click', () => {
   filePreview.classList.remove('show');
   uploadZone.style.display = '';
   analysisResult = null;
+  savedRecordId = null;
   saveBtn.disabled = true;
   checkForm();
 });
 
 // ─── FORM VALIDATION ───
 function checkForm() {
-  const valid = selectedFile && analysisName.value.trim() && analysisDate.value;
+  const valid = selectedFile && analysisName.value.trim() && analysisDate.value && patientAge.value.trim();
   analyzeBtn.disabled = !valid;
 }
-
 analysisName.addEventListener('input', checkForm);
 analysisDate.addEventListener('change', checkForm);
+patientAge.addEventListener('input', checkForm);
 
 // ─── STATES ───
 function setState(state, data) {
@@ -782,14 +785,11 @@ function formatResult(text) {
 }
 
 // ─── ANALYZE ───
-// Бэкенд ожидает поля: file, age, gender
-// В поле "Название анализа" пользователь вводит произвольный текст,
-// поэтому передаём его как age (можно доработать UI при необходимости).
-// Если хотите добавить отдельные поля age/gender — добавьте их в HTML.
+// Бэкенд АВТОМАТИЧЕСКИ сохраняет результат в БД при /analyze
+// Кнопка "Сохранить" просто редиректит в кабинет
 analyzeBtn.addEventListener('click', async () => {
-  if (!selectedFile || !analysisName.value.trim() || !analysisDate.value) return;
+  if (!selectedFile || !analysisName.value.trim() || !analysisDate.value || !patientAge.value.trim()) return;
 
-  // Получаем свежую сессию перед запросом
   const session = await getCurrentSession();
   if (!session) { window.location.href = 'auth.html'; return; }
 
@@ -800,31 +800,25 @@ analyzeBtn.addEventListener('click', async () => {
 
   const formData = new FormData();
   formData.append('file', selectedFile);
-  // Бэкенд ожидает age и gender — парсим из поля названия или используем дефолты
-  // Для полноценной работы добавьте поля age/gender в HTML-форму
-  formData.append('age', analysisName.value.trim());  // временно: название как age
-  formData.append('gender', 'не указан');             // дефолт
+  formData.append('age', patientAge.value.trim());
+  formData.append('gender', patientGender.value);
 
   try {
     const response = await fetch(`${API_BASE}/analyze`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${session.access_token}`,
-      },
+      headers: { 'Authorization': `Bearer ${session.access_token}` },
       body: formData,
     });
 
     const data = await response.json();
 
-    if (response.status === 401) {
-      window.location.href = 'auth.html';
-      return;
-    }
+    if (response.status === 401) { window.location.href = 'auth.html'; return; }
     if (!response.ok) throw new Error(data.error || `Ошибка сервера: ${response.status}`);
     if (data.error) throw new Error(data.error);
 
     analysisResult = data.analysis;
     setState('done', analysisResult);
+    // Анализ уже сохранён в БД бэкендом — разблокируем кнопку перехода в кабинет
     saveBtn.disabled = false;
 
   } catch (err) {
@@ -836,7 +830,7 @@ analyzeBtn.addEventListener('click', async () => {
   }
 });
 
-// ─── SAVE — анализ уже сохранён в БД бэкендом, просто показываем тост ───
+// ─── SAVE — анализ уже в БД, просто переходим в кабинет ───
 saveBtn.addEventListener('click', () => {
   if (!analysisResult) return;
 
@@ -851,10 +845,7 @@ saveBtn.addEventListener('click', () => {
 
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 3000);
-
-  setTimeout(() => {
-    window.location.href = 'cabinet.html';
-  }, 2000);
+  setTimeout(() => { window.location.href = 'cabinet.html'; }, 1500);
 });
 
 // ─── INIT ───
