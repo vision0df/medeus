@@ -462,7 +462,13 @@
       <div class="card">
         <div class="card-header">
           <div class="card-label">01 — Сводка анализов</div>
-          <span class="card-badge badge-neutral" id="badge-summary">загрузка...</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span class="card-badge badge-neutral" id="badge-summary">загрузка...</span>
+            <a href="indicators.html" class="btn-sm">
+              <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              Показать все
+            </a>
+          </div>
         </div>
         <div class="card-body">
           <div class="summary-grid" id="summaryGrid">
@@ -473,14 +479,6 @@
           </div>
           <div class="summary-footer">
             <span id="summaryFooterText">—</span>
-            <a href="upload.html" class="btn-primary-sm">
-              <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-              Загрузить новый
-            </a>
           </div>
         </div>
       </div>
@@ -491,14 +489,27 @@
       <div class="card">
         <div class="card-header">
           <div class="card-label">02 — Загруженные анализы</div>
-          <span class="card-badge badge-neutral" id="badge-files">загрузка...</span>
+          <a href="upload.html" class="btn-primary-sm">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Загрузить новый
+          </a>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="display:flex;flex-direction:column;gap:0;">
           <div class="analyses-list" id="analysesList">
             <div class="card-loader" id="loaderFiles">
               <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
               <div class="loader-text">Загрузка анализов...</div>
             </div>
+          </div>
+          <div id="filesFooter" style="display:none;padding-top:12px;border-top:1px solid var(--line);margin-top:8px;">
+            <a href="analyses.html" class="btn-sm" style="width:100%;justify-content:center;">
+              <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              Показать все
+            </a>
           </div>
         </div>
       </div>
@@ -611,21 +622,20 @@ async function loadUser() {
 
 // ─── Блок 02: Загруженные анализы ────────────────────────────────────────────
 function renderHistory(rows) {
-  const list  = document.getElementById('analysesList');
-  const badge = document.getElementById('badge-files');
+  const list   = document.getElementById('analysesList');
   const loader = document.getElementById('loaderFiles');
+  const footer = document.getElementById('filesFooter');
   if (loader) loader.classList.add('hidden');
   if (!list) return;
 
   if (!rows.length) {
     list.innerHTML = '<div class="analyses-empty">Анализы ещё не загружены</div>';
-    if (badge) badge.textContent = '0 файлов';
     return;
   }
 
-  if (badge) badge.textContent = rows.length + ' ' + plural(rows.length, 'файл', 'файла', 'файлов');
-
-  list.innerHTML = rows.map(row => {
+  // Показываем только последние 4
+  const shown = rows.slice(0, 4);
+  list.innerHTML = shown.map(row => {
     const name  = escHtml(row.analysis_name || row.filename || '—');
     const aDate = row.analysis_date ? fmtDate(row.analysis_date) : fmtDate(row.created_at);
     return `
@@ -648,6 +658,9 @@ function renderHistory(rows) {
         </div>
       </div>`;
   }).join('');
+
+  // Кнопка «Показать все» если файлов больше 4
+  if (footer) footer.style.display = rows.length > 4 ? '' : 'none';
 }
 
 // ─── Блок 01: Сводка показателей ─────────────────────────────────────────────
