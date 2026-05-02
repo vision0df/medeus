@@ -12,6 +12,12 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app, origins=["https://medeus.vercel.app"])
 
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
+
+@app.errorhandler(413)
+def too_large(e):
+    return jsonify({"error": "Файл превышает максимальный размер 10 МБ"}), 413
+
 # ========================
 # Ключи
 # ========================

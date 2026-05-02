@@ -702,6 +702,11 @@ fileInput.addEventListener('change', () => {
 });
 
 function handleFile(file) {
+  const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+  if (file.size > MAX_SIZE) {
+    setState('error', { message: `Файл слишком большой: ${formatBytes(file.size)}. Максимум — 10 МБ.` });
+    return;
+  }
   selectedFile = file;
   fileNameEl.textContent = file.name;
   fileSizeEl.textContent = formatBytes(file.size);
