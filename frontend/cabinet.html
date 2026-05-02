@@ -806,13 +806,20 @@ document.getElementById('logoutBtn')?.addEventListener('click', async e => {
 });
 
 // ─── Инициализация ───────────────────────────────────────────────────────────
+function hideAllLoaders() {
+  ['loaderSummary','loaderFiles','loaderRecs','loaderHealth'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
+}
+
 (async () => {
   const session = await loadUser();
-  if (!session) return;
+  if (!session) { hideAllLoaders(); return; }
 
   try {
     const data = await apiFetch('/dashboard', session);
-    if (!data) return;
+    if (!data) { hideAllLoaders(); return; }
 
     renderHistory(data.history             || []);
     renderIndicators(data.indicators       || []);
@@ -820,11 +827,7 @@ document.getElementById('logoutBtn')?.addEventListener('click', async e => {
     renderHealthScore(data.indicators      || []);
   } catch (e) {
     console.error('Dashboard error:', e);
-    // Скрываем все лоадеры даже при ошибке
-    ['loaderSummary','loaderFiles','loaderRecs','loaderHealth'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.classList.add('hidden');
-    });
+    hideAllLoaders();
   }
 })();
 </script>
