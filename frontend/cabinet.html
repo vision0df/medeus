@@ -473,13 +473,12 @@
           </div>
           <div class="summary-footer">
             <span id="summaryFooterText">—</span>
-            <a href="upload.html" class="btn-primary-sm">
+            <a href="indicators.html" class="btn-primary-sm">
               <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
               </svg>
-              Загрузить новый
+              Показать все
             </a>
           </div>
         </div>
@@ -491,7 +490,14 @@
       <div class="card">
         <div class="card-header">
           <div class="card-label">02 — Загруженные анализы</div>
-          <span class="card-badge badge-neutral" id="badge-files">загрузка...</span>
+          <a href="upload.html" class="btn-primary-sm">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Загрузить новый
+          </a>
         </div>
         <div class="card-body">
           <div class="analyses-list" id="analysesList">
@@ -612,18 +618,14 @@ async function loadUser() {
 // ─── Блок 02: Загруженные анализы ────────────────────────────────────────────
 function renderHistory(rows) {
   const list  = document.getElementById('analysesList');
-  const badge = document.getElementById('badge-files');
   const loader = document.getElementById('loaderFiles');
   if (loader) loader.classList.add('hidden');
   if (!list) return;
 
   if (!rows.length) {
     list.innerHTML = '<div class="analyses-empty">Анализы ещё не загружены</div>';
-    if (badge) badge.textContent = '0 файлов';
     return;
   }
-
-  if (badge) badge.textContent = rows.length + ' ' + plural(rows.length, 'файл', 'файла', 'файлов');
 
   list.innerHTML = rows.map(row => {
     const name  = escHtml(row.analysis_name || row.filename || '—');

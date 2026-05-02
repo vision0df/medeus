@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medeus // Все показатели</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF5A00;
+    --orange-dim: #CC4800;
+    --orange-pale: rgba(255,90,0,0.08);
+    --orange-border: rgba(255,90,0,0.3);
+    --bg: #F2F1EE;
+    --bg2: #ECEAE6;
+    --bg3: #E4E2DE;
+    --white: #ffffff;
+    --text: #1A1714;
+    --text-mid: #5A5650;
+    --text-dim: #8C8480;
+    --line: rgba(0,0,0,0.1);
+    --green: #2E9E5B;
+    --green-pale: rgba(46,158,91,0.08);
+    --red: #D93535;
+    --red-pale: rgba(217,53,53,0.08);
+    --yellow: #C89000;
+    --yellow-pale: rgba(200,144,0,0.08);
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--mono);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none; z-index: 0;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes pixelSpin { 0%, 60%, 100% { opacity: 0.1; } 30% { opacity: 1; } }
+
+  /* ─── PIXEL LOADER ─── */
+  .card-loader {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; padding: 60px 24px; width: 100%;
+  }
+  .card-loader.hidden { display: none; }
+  .loader-px {
+    width: 32px; height: 32px;
+    display: grid; grid-template-columns: repeat(4,1fr); grid-template-rows: repeat(4,1fr); gap: 2px;
+  }
+  .loader-px span { background: var(--orange); animation: pixelSpin 1s step-end infinite; }
+  .loader-px span:nth-child(1)  { animation-delay: 0s; }
+  .loader-px span:nth-child(2)  { animation-delay: 0.0625s; }
+  .loader-px span:nth-child(3)  { animation-delay: 0.125s; }
+  .loader-px span:nth-child(4)  { animation-delay: 0.1875s; }
+  .loader-px span:nth-child(5)  { animation-delay: 0.25s; }
+  .loader-px span:nth-child(6)  { animation-delay: 0.3125s; }
+  .loader-px span:nth-child(7)  { animation-delay: 0.375s; }
+  .loader-px span:nth-child(8)  { animation-delay: 0.4375s; }
+  .loader-px span:nth-child(9)  { animation-delay: 0.5s; }
+  .loader-px span:nth-child(10) { animation-delay: 0.5625s; }
+  .loader-px span:nth-child(11) { animation-delay: 0.625s; }
+  .loader-px span:nth-child(12) { animation-delay: 0.6875s; }
+  .loader-px span:nth-child(13) { animation-delay: 0.75s; }
+  .loader-px span:nth-child(14) { animation-delay: 0.8125s; }
+  .loader-px span:nth-child(15) { animation-delay: 0.875s; }
+  .loader-px span:nth-child(16) { animation-delay: 0.9375s; }
+  .loader-text { font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; text-align: center; }
+
+  /* ─── HEADER ─── */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 56px;
+    background: var(--white); border-bottom: 2px solid var(--text);
+  }
+
+  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .logo-icon {
+    width: 30px; height: 30px; background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    clip-path: polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
+  }
+  .logo-icon svg { width: 14px; height: 14px; }
+  .logo-text { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.1em; text-transform: uppercase; }
+  .logo-text span { color: var(--orange); }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .user-badge {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: var(--text-mid); letter-spacing: 0.08em;
+  }
+  .user-avatar {
+    width: 28px; height: 28px;
+    background: var(--text); color: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    clip-path: polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
+  }
+
+  .btn-sm {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; background: var(--bg2);
+    color: var(--text-mid); border: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11px; font-weight: 400;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    text-decoration: none; cursor: pointer; outline: none;
+    transition: background 0.15s, color 0.15s; white-space: nowrap;
+  }
+  .btn-sm:hover { background: var(--bg3); color: var(--text); }
+  .btn-sm svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
+
+  .btn-primary-sm {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; background: var(--text); color: var(--white);
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    text-decoration: none; cursor: pointer; border: none; outline: none;
+    transition: background 0.15s; white-space: nowrap;
+    clip-path: polygon(7px 0%,100% 0%,100% calc(100% - 7px),calc(100% - 7px) 100%,0% 100%,0% 7px);
+  }
+  .btn-primary-sm:hover { background: var(--orange); }
+  .btn-primary-sm svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
+
+  /* ─── LAYOUT ─── */
+  .page {
+    flex: 1;
+    padding: 80px 48px 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    position: relative; z-index: 1;
+  }
+
+  .page-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--text);
+    animation: fadeIn 0.3s ease both;
+  }
+
+  .page-title-label {
+    font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--orange); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .page-title-label::before { content: '/'; font-weight: 700; }
+
+  .page-title {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.5px; color: var(--text);
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .cursor-blink {
+    display: inline-block; width: 10px; height: 1.1em;
+    background: var(--orange); vertical-align: text-bottom;
+    animation: blink 0.9s step-end infinite;
+  }
+
+  /* ─── FILTERS ─── */
+  .filters {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 24px; flex-wrap: wrap;
+    animation: fadeIn 0.35s ease both;
+  }
+
+  .filter-label {
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--text-dim); margin-right: 4px;
+  }
+
+  .filter-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px;
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--line); background: var(--white);
+    color: var(--text-dim); cursor: pointer; outline: none;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { background: var(--bg2); color: var(--text); }
+  .filter-btn.active { background: var(--text); color: var(--white); border-color: var(--text); }
+  .filter-btn.active-ok  { background: var(--green); color: var(--white); border-color: var(--green); }
+  .filter-btn.active-warn { background: var(--yellow); color: var(--white); border-color: var(--yellow); }
+  .filter-btn.active-alert { background: var(--red); color: var(--white); border-color: var(--red); }
+
+  .filter-dot {
+    width: 7px; height: 7px; border-radius: 0;
+    clip-path: polygon(2px 0%,100% 0%,100% calc(100% - 2px),calc(100% - 2px) 100%,0% 100%,0% 2px);
+    flex-shrink: 0;
+  }
+  .dot-all  { background: var(--text-dim); }
+  .dot-ok   { background: var(--green); }
+  .dot-warn { background: var(--yellow); }
+  .dot-alert { background: var(--red); }
+
+  /* ─── STATS ROW ─── */
+  .stats-row {
+    display: flex; gap: 12px; margin-bottom: 28px;
+    animation: fadeIn 0.4s ease both;
+  }
+
+  .stat-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; background: var(--white);
+    border-left: 3px solid var(--line);
+    font-size: 11px;
+  }
+  .stat-chip.ok   { border-left-color: var(--green); }
+  .stat-chip.warn { border-left-color: var(--yellow); }
+  .stat-chip.alert { border-left-color: var(--red); }
+
+  .stat-chip-num { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1; }
+  .stat-chip-label { font-size: 10px; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.4; }
+
+  /* ─── SEARCH ─── */
+  .search-wrap {
+    position: relative; margin-bottom: 20px;
+    animation: fadeIn 0.4s ease both;
+  }
+  .search-input {
+    width: 100%; padding: 10px 14px 10px 36px;
+    font-family: var(--mono); font-size: 12px; color: var(--text);
+    background: var(--white); border: 1px solid var(--line);
+    outline: none; letter-spacing: 0.03em;
+    transition: border-color 0.15s;
+  }
+  .search-input:focus { border-color: var(--orange); }
+  .search-input::placeholder { color: var(--text-dim); }
+  .search-icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    width: 14px; height: 14px; stroke: var(--text-dim); fill: none; pointer-events: none;
+  }
+
+  /* ─── TABLE ─── */
+  .table-wrap {
+    background: var(--text);
+    clip-path: polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px);
+    padding: 2px;
+    animation: fadeIn 0.45s ease both;
+  }
+
+  .table-inner {
+    background: var(--white);
+    clip-path: polygon(16px 0%,100% 0%,100% calc(100% - 16px),calc(100% - 16px) 100%,0% 100%,0% 16px);
+  }
+
+  .table-head {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 1fr 1.3fr;
+    padding: 12px 24px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--line);
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .table-body { display: flex; flex-direction: column; }
+
+  .table-row {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 1fr 1.3fr;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--line);
+    align-items: center;
+    transition: background 0.12s;
+    animation: fadeIn 0.3s ease both;
+  }
+  .table-row:last-child { border-bottom: none; }
+  .table-row:hover { background: var(--bg); }
+
+  .col-name {
+    font-size: 12px; font-weight: 600; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    padding-right: 12px;
+  }
+
+  .col-value {
+    font-size: 12px; font-weight: 700; color: var(--text);
+    letter-spacing: 0.02em;
+  }
+
+  .col-status {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .col-status .status-dot {
+    width: 7px; height: 7px; flex-shrink: 0;
+    clip-path: polygon(2px 0%,100% 0%,100% calc(100% - 2px),calc(100% - 2px) 100%,0% 100%,0% 2px);
+  }
+  .col-status.ok  { color: var(--green); }
+  .col-status.ok  .status-dot { background: var(--green); }
+  .col-status.warn { color: var(--yellow); }
+  .col-status.warn .status-dot { background: var(--yellow); }
+  .col-status.alert { color: var(--red); }
+  .col-status.alert .status-dot { background: var(--red); }
+
+  .col-date { font-size: 10px; color: var(--text-dim); letter-spacing: 0.03em; }
+
+  .col-source {
+    font-size: 10px; color: var(--text-dim);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    letter-spacing: 0.03em;
+  }
+
+  .empty-state {
+    text-align: center; padding: 60px 24px;
+    font-size: 12px; color: var(--text-dim); letter-spacing: 0.05em; line-height: 1.8;
+  }
+  .empty-state strong { display: block; font-size: 14px; color: var(--text); margin-bottom: 8px; }
+
+  .count-label {
+    font-size: 10px; color: var(--text-dim); padding: 10px 24px;
+    border-top: 1px solid var(--line); letter-spacing: 0.05em;
+  }
+
+  /* ─── STATUS BAR ─── */
+  .status-bar {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 36px;
+    background: var(--text);
+    color: rgba(255,255,255,0.45);
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .status-bar-dot {
+    display: inline-block; width: 5px; height: 5px;
+    background: var(--orange); margin-right: 6px;
+    animation: blink 1.4s step-end infinite;
+  }
+  .status-bar-right { color: rgba(255,255,255,0.3); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    header { padding: 0 24px; }
+    .page { padding: 72px 20px 48px; }
+    .table-head,
+    .table-row { grid-template-columns: 2fr 1fr 1fr; }
+    .table-head .col-date,
+    .table-head .col-source,
+    .table-row .col-date,
+    .table-row .col-source { display: none; }
+    .status-bar { padding: 0 24px; }
+    .stats-row { flex-wrap: wrap; }
+  }
+  @media (max-width: 560px) {
+    .table-head,
+    .table-row { grid-template-columns: 1.8fr 1fr 1fr; padding: 12px 16px; }
+    .table-head { padding: 10px 16px; }
+    .filters { gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <a class="logo" href="index.html">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
+        <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
+      </svg>
+    </div>
+    <div class="logo-text">Medeus<span>.</span></div>
+  </a>
+
+  <div class="header-right">
+    <div class="user-badge">
+      <div class="user-avatar" id="userAvatar">—</div>
+      <span id="userName"></span>
+    </div>
+    <a href="cabinet.html" class="btn-sm">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      Кабинет
+    </a>
+    <a href="upload.html" class="btn-primary-sm">
+      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      Загрузить
+    </a>
+    <a href="#" id="logoutBtn" class="btn-sm">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+      </svg>
+      Выйти
+    </a>
+  </div>
+</header>
+
+<!-- Page -->
+<main class="page">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title-label">Личный кабинет → Показатели</div>
+      <div class="page-title">Все показатели<span class="cursor-blink"></span></div>
+    </div>
+  </div>
+
+  <!-- Stats chips -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-chip">
+      <div class="stat-chip-num" id="statTotal">—</div>
+      <div class="stat-chip-label">Всего<br>показателей</div>
+    </div>
+    <div class="stat-chip ok">
+      <div class="stat-chip-num" id="statNormal">—</div>
+      <div class="stat-chip-label">В<br>норме</div>
+    </div>
+    <div class="stat-chip warn">
+      <div class="stat-chip-num" id="statAbove">—</div>
+      <div class="stat-chip-label">Выше<br>нормы</div>
+    </div>
+    <div class="stat-chip alert">
+      <div class="stat-chip-num" id="statBelow">—</div>
+      <div class="stat-chip-label">Ниже<br>нормы</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <span class="filter-label">Фильтр:</span>
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">
+      <span class="filter-dot dot-all"></span> Все
+    </button>
+    <button class="filter-btn" data-filter="normal" onclick="setFilter('normal')">
+      <span class="filter-dot dot-ok"></span> Норма
+    </button>
+    <button class="filter-btn" data-filter="above" onclick="setFilter('above')">
+      <span class="filter-dot dot-warn"></span> Выше нормы
+    </button>
+    <button class="filter-btn" data-filter="below" onclick="setFilter('below')">
+      <span class="filter-dot dot-alert"></span> Ниже нормы
+    </button>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+    </svg>
+    <input class="search-input" type="text" id="searchInput" placeholder="Поиск по названию показателя...">
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="table-inner">
+      <div class="table-head">
+        <div>Показатель</div>
+        <div>Значение</div>
+        <div>Статус</div>
+        <div>Дата</div>
+        <div>Источник</div>
+      </div>
+      <div class="table-body" id="tableBody">
+        <div class="card-loader" id="loader">
+          <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="loader-text">Загрузка показателей...</div>
+        </div>
+      </div>
+      <div class="count-label hidden" id="countLabel"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <div><span class="status-bar-dot"></span>Данные актуальны · <span id="statusDate">—</span></div>
+  <div class="status-bar-right">Medeus © 2026</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase.js"></script>
+<script>
+// ─── Utils ───────────────────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function fmtDate(str) {
+  if (!str) return '—';
+  const d = new Date(str);
+  return isNaN(d) ? str : d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+async function apiFetch(path, session) {
+  const r = await fetch(`${API_BASE}${path}`, {
+    headers: { 'Authorization': `Bearer ${session.access_token}` },
+  });
+  if (r.status === 401) { window.location.href = 'auth.html'; return null; }
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let allIndicators = [];
+let currentFilter = 'all';
+let searchQuery   = '';
+
+// ─── Status bar ──────────────────────────────────────────────────────────────
+document.getElementById('statusDate').textContent =
+  new Date().toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+async function loadUser() {
+  const session = await requireAuth();
+  if (!session) return null;
+  const email = session.user.email || '';
+  document.getElementById('userAvatar').textContent = email.slice(0, 2).toUpperCase();
+  const nameEl = document.getElementById('userName');
+  if (nameEl) nameEl.textContent = email;
+  return session;
+}
+
+// ─── Render ──────────────────────────────────────────────────────────────────
+function statusMeta(s) {
+  if (s === 'above') return { cls: 'warn', label: '↑ выше нормы' };
+  if (s === 'below') return { cls: 'alert', label: '↓ ниже нормы' };
+  return { cls: 'ok', label: '✓ норма' };
+}
+
+function renderTable() {
+  const body      = document.getElementById('tableBody');
+  const countEl   = document.getElementById('countLabel');
+  const loader    = document.getElementById('loader');
+  if (loader) loader.classList.add('hidden');
+
+  let filtered = allIndicators;
+
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(i => i.status === currentFilter);
+  }
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(i => i.name.toLowerCase().includes(q));
+  }
+
+  if (!filtered.length) {
+    body.innerHTML = `<div class="empty-state">
+      <strong>${allIndicators.length ? 'Ничего не найдено' : 'Нет данных'}</strong>
+      ${allIndicators.length
+        ? 'Попробуйте изменить фильтр или поисковый запрос'
+        : 'Загрузите анализы, чтобы увидеть показатели'}
+    </div>`;
+    if (countEl) { countEl.textContent = ''; countEl.classList.add('hidden'); }
+    return;
+  }
+
+  body.innerHTML = filtered.map((ind, idx) => {
+    const { cls, label } = statusMeta(ind.status);
+    return `
+      <div class="table-row" style="animation-delay:${Math.min(idx * 0.02, 0.4)}s">
+        <div class="col-name">${escHtml(ind.name)}</div>
+        <div class="col-value">${escHtml(ind.value)}</div>
+        <div class="col-status ${cls}"><span class="status-dot"></span>${label}</div>
+        <div class="col-date">${fmtDate(ind.date)}</div>
+        <div class="col-source">${escHtml(ind.source || '—')}</div>
+      </div>`;
+  }).join('');
+
+  if (countEl) {
+    countEl.textContent = `Показано: ${filtered.length} из ${allIndicators.length}`;
+    countEl.classList.remove('hidden');
+  }
+}
+
+function renderStats(indicators) {
+  const total  = indicators.length;
+  const normal = indicators.filter(i => i.status === 'normal').length;
+  const above  = indicators.filter(i => i.status === 'above').length;
+  const below  = indicators.filter(i => i.status === 'below').length;
+
+  document.getElementById('statTotal').textContent  = total;
+  document.getElementById('statNormal').textContent = normal;
+  document.getElementById('statAbove').textContent  = above;
+  document.getElementById('statBelow').textContent  = below;
+}
+
+// ─── Filter & Search ─────────────────────────────────────────────────────────
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.className = 'filter-btn';
+    if (btn.dataset.filter === f) {
+      btn.classList.add(f === 'all' ? 'active' : f === 'normal' ? 'active-ok' : f === 'above' ? 'active-warn' : 'active-alert');
+    }
+  });
+  renderTable();
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value.trim();
+  renderTable();
+});
+
+// ─── Logout ──────────────────────────────────────────────────────────────────
+document.getElementById('logoutBtn')?.addEventListener('click', async e => {
+  e.preventDefault();
+  await signOut();
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(async () => {
+  const session = await loadUser();
+  if (!session) return;
+
+  try {
+    const data = await apiFetch('/indicators', session);
+    if (!data) return;
+
+    allIndicators = data.indicators || [];
+    renderStats(allIndicators);
+    renderTable();
+  } catch (e) {
+    console.error('Indicators error:', e);
+    const loader = document.getElementById('loader');
+    if (loader) loader.innerHTML = '<div class="loader-text">Ошибка загрузки данных</div>';
+  }
+})();
+</script>
+</body>
+</html>
