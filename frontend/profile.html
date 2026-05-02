@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medeus // Профиль</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF5A00;
+    --orange-dim: #CC4800;
+    --orange-pale: rgba(255,90,0,0.08);
+    --orange-border: rgba(255,90,0,0.3);
+    --bg: #F2F1EE;
+    --bg2: #ECEAE6;
+    --bg3: #E4E2DE;
+    --white: #ffffff;
+    --text: #1A1714;
+    --text-mid: #5A5650;
+    --text-dim: #8C8480;
+    --line: rgba(0,0,0,0.1);
+    --green: #2E9E5B;
+    --green-pale: rgba(46,158,91,0.08);
+    --red: #D93535;
+    --red-pale: rgba(217,53,53,0.08);
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--mono);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none; z-index: 0;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes pixelSpin { 0%,60%,100%{opacity:0.1} 30%{opacity:1} }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-6px)}
+    40%{transform:translateX(6px)}
+    60%{transform:translateX(-4px)}
+    80%{transform:translateX(4px)}
+  }
+
+  /* ─── PIXEL LOADER ─── */
+  .page-loader {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; padding: 80px 24px;
+  }
+  .page-loader.hidden { display: none; }
+  .loader-px {
+    width: 32px; height: 32px;
+    display: grid; grid-template-columns: repeat(4,1fr); grid-template-rows: repeat(4,1fr); gap: 2px;
+  }
+  .loader-px span { background: var(--orange); animation: pixelSpin 1s step-end infinite; }
+  .loader-px span:nth-child(1)  { animation-delay: 0s; }
+  .loader-px span:nth-child(2)  { animation-delay: 0.0625s; }
+  .loader-px span:nth-child(3)  { animation-delay: 0.125s; }
+  .loader-px span:nth-child(4)  { animation-delay: 0.1875s; }
+  .loader-px span:nth-child(5)  { animation-delay: 0.25s; }
+  .loader-px span:nth-child(6)  { animation-delay: 0.3125s; }
+  .loader-px span:nth-child(7)  { animation-delay: 0.375s; }
+  .loader-px span:nth-child(8)  { animation-delay: 0.4375s; }
+  .loader-px span:nth-child(9)  { animation-delay: 0.5s; }
+  .loader-px span:nth-child(10) { animation-delay: 0.5625s; }
+  .loader-px span:nth-child(11) { animation-delay: 0.625s; }
+  .loader-px span:nth-child(12) { animation-delay: 0.6875s; }
+  .loader-px span:nth-child(13) { animation-delay: 0.75s; }
+  .loader-px span:nth-child(14) { animation-delay: 0.8125s; }
+  .loader-px span:nth-child(15) { animation-delay: 0.875s; }
+  .loader-px span:nth-child(16) { animation-delay: 0.9375s; }
+  .loader-text { font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; }
+
+  /* ─── HEADER ─── */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 56px;
+    background: var(--white); border-bottom: 2px solid var(--text);
+  }
+
+  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .logo-icon {
+    width: 30px; height: 30px; background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    clip-path: polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
+  }
+  .logo-icon svg { width: 14px; height: 14px; }
+  .logo-text { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.1em; text-transform: uppercase; }
+  .logo-text span { color: var(--orange); }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .user-badge {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: var(--text-mid); letter-spacing: 0.08em;
+  }
+  .user-avatar {
+    width: 28px; height: 28px;
+    background: var(--text); color: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    clip-path: polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
+  }
+
+  .btn-sm {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; background: var(--bg2);
+    color: var(--text-mid); border: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11px; font-weight: 400;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    text-decoration: none; cursor: pointer; outline: none;
+    transition: background 0.15s, color 0.15s; white-space: nowrap;
+  }
+  .btn-sm:hover { background: var(--bg3); color: var(--text); }
+  .btn-sm svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
+
+  /* ─── LAYOUT ─── */
+  .page {
+    flex: 1;
+    padding: 80px 48px 60px;
+    max-width: 860px;
+    margin: 0 auto;
+    width: 100%;
+    position: relative; z-index: 1;
+  }
+
+  .page-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--text);
+    animation: fadeIn 0.3s ease both;
+  }
+
+  .page-title-label {
+    font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--orange); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .page-title-label::before { content: '/'; font-weight: 700; }
+
+  .page-title {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.5px; color: var(--text);
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .cursor-blink {
+    display: inline-block; width: 10px; height: 1.1em;
+    background: var(--orange); vertical-align: text-bottom;
+    animation: blink 0.9s step-end infinite;
+  }
+
+  /* ─── CARDS ─── */
+  .card-wrap {
+    background: var(--text);
+    clip-path: polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px);
+    padding: 2px;
+    margin-bottom: 20px;
+    animation: fadeIn 0.4s ease both;
+  }
+  .card-wrap:nth-child(2) { animation-delay: 0.05s; }
+
+  .card {
+    background: var(--white);
+    clip-path: polygon(16px 0%,100% 0%,100% calc(100% - 16px),calc(100% - 16px) 100%,0% 100%,0% 16px);
+  }
+
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 24px 14px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg2);
+  }
+
+  .card-label {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim); display: flex; align-items: center; gap: 6px;
+  }
+  .card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
+
+  .card-body { padding: 28px 24px; }
+
+  /* ─── AVATAR BLOCK ─── */
+  .avatar-block {
+    display: flex; align-items: center; gap: 20px;
+    margin-bottom: 28px; padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .avatar-big {
+    width: 64px; height: 64px; flex-shrink: 0;
+    background: var(--text); color: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700;
+    clip-path: polygon(10px 0%,100% 0%,100% calc(100% - 10px),calc(100% - 10px) 100%,0% 100%,0% 10px);
+  }
+
+  .avatar-info { flex: 1; }
+  .avatar-name { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .avatar-email { font-size: 11px; color: var(--text-dim); letter-spacing: 0.03em; }
+
+  /* ─── FIELDS ─── */
+  .fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.full { grid-column: 1 / -1; }
+
+  .field-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--text-dim);
+  }
+
+  .field-value {
+    font-size: 13px; font-weight: 500; color: var(--text);
+    padding: 10px 14px; background: var(--bg);
+    border-left: 3px solid var(--line);
+    letter-spacing: 0.02em;
+  }
+  .field-value.readonly { color: var(--text-mid); }
+
+  /* ─── FORM INPUTS ─── */
+  .field-input {
+    width: 100%; padding: 10px 14px;
+    font-family: var(--mono); font-size: 13px; color: var(--text);
+    background: var(--bg); border: 1px solid var(--line);
+    outline: none; letter-spacing: 0.02em;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .field-input:focus { border-color: var(--orange); background: var(--white); }
+  .field-input::placeholder { color: var(--text-dim); }
+  .field-input:disabled { color: var(--text-dim); cursor: not-allowed; opacity: 0.7; }
+
+  select.field-input { cursor: pointer; }
+
+  /* ─── PASSWORD STRENGTH ─── */
+  .pw-strength { display: flex; gap: 4px; margin-top: 6px; }
+  .pw-strength-bar {
+    flex: 1; height: 3px; background: var(--bg3);
+    transition: background 0.3s;
+  }
+  .pw-strength-bar.weak   { background: var(--red); }
+  .pw-strength-bar.medium { background: var(--orange); }
+  .pw-strength-bar.strong { background: var(--green); }
+  .pw-strength-label {
+    font-size: 9px; color: var(--text-dim); letter-spacing: 0.1em;
+    text-transform: uppercase; margin-top: 4px;
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    height: 1px; background: var(--line);
+    margin: 24px 0;
+  }
+
+  /* ─── ALERT ─── */
+  .alert {
+    display: none; padding: 10px 14px;
+    font-size: 11px; letter-spacing: 0.03em; line-height: 1.5;
+    margin-top: 16px;
+  }
+  .alert.visible { display: flex; align-items: flex-start; gap: 8px; }
+  .alert.success { background: var(--green-pale); color: var(--green); border-left: 3px solid var(--green); }
+  .alert.error   { background: var(--red-pale);   color: var(--red);   border-left: 3px solid var(--red); animation: shake 0.35s ease; }
+  .alert svg { width: 14px; height: 14px; stroke: currentColor; fill: none; flex-shrink: 0; margin-top: 1px; }
+
+  /* ─── BUTTONS ─── */
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px; background: var(--text); color: var(--white);
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    border: none; cursor: pointer; outline: none;
+    transition: background 0.15s;
+    clip-path: polygon(8px 0%,100% 0%,100% calc(100% - 8px),calc(100% - 8px) 100%,0% 100%,0% 8px);
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--orange); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+
+  .btn-row { display: flex; align-items: center; justify-content: flex-end; margin-top: 24px; }
+
+  /* ─── STATUS BAR ─── */
+  .status-bar {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 36px;
+    background: var(--text);
+    color: rgba(255,255,255,0.45);
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .status-bar-dot {
+    display: inline-block; width: 5px; height: 5px;
+    background: var(--orange); margin-right: 6px;
+    animation: blink 1.4s step-end infinite;
+  }
+  .status-bar-right { color: rgba(255,255,255,0.3); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 700px) {
+    header { padding: 0 20px; }
+    .page { padding: 72px 20px 48px; }
+    .fields-grid { grid-template-columns: 1fr; }
+    .field.full { grid-column: auto; }
+    .status-bar { padding: 0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <a class="logo" href="index.html">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
+        <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
+      </svg>
+    </div>
+    <div class="logo-text">Medeus<span>.</span></div>
+  </a>
+
+  <div class="header-right">
+    <div class="user-badge">
+      <div class="user-avatar" id="userAvatar">—</div>
+      <span id="userName"></span>
+    </div>
+    <a href="cabinet.html" class="btn-sm">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+      Кабинет
+    </a>
+    <a href="#" id="logoutBtn" class="btn-sm">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+      </svg>
+      Выйти
+    </a>
+  </div>
+</header>
+
+<!-- Page -->
+<main class="page">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title-label">Личный кабинет → Профиль</div>
+      <div class="page-title">Мой профиль<span class="cursor-blink"></span></div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="loader-text">Загрузка профиля...</div>
+  </div>
+
+  <!-- Content (hidden until loaded) -->
+  <div id="profileContent" style="display:none">
+
+    <!-- ─── 01. ДАННЫЕ ПРОФИЛЯ ─── -->
+    <div class="card-wrap">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">01 — Данные профиля</div>
+        </div>
+        <div class="card-body">
+
+          <!-- Avatar -->
+          <div class="avatar-block">
+            <div class="avatar-big" id="avatarBig">—</div>
+            <div class="avatar-info">
+              <div class="avatar-name" id="profileName">—</div>
+              <div class="avatar-email" id="profileEmail">—</div>
+            </div>
+          </div>
+
+          <!-- Fields -->
+          <div class="fields-grid">
+            <div class="field full">
+              <div class="field-label">Электронная почта</div>
+              <div class="field-value readonly" id="displayEmail">—</div>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="inputName">Имя</label>
+              <input class="field-input" type="text" id="inputName" placeholder="Введите имя" autocomplete="name">
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="inputBirthDate">Дата рождения</label>
+              <input class="field-input" type="date" id="inputBirthDate" autocomplete="bday">
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="inputGender">Пол</label>
+              <select class="field-input" id="inputGender">
+                <option value="">— не указан —</option>
+                <option value="male">Мужской</option>
+                <option value="female">Женский</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="alert" id="alertProfile">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="alertProfileText"></span>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn-primary" id="btnSaveProfile">
+              <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              Сохранить
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 02. СМЕНА ПАРОЛЯ ─── -->
+    <div class="card-wrap" style="animation-delay:0.05s">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">02 — Смена пароля</div>
+        </div>
+        <div class="card-body">
+
+          <div class="fields-grid">
+            <div class="field full">
+              <label class="field-label" for="inputOldPw">Текущий пароль</label>
+              <input class="field-input" type="password" id="inputOldPw" placeholder="Введите текущий пароль" autocomplete="current-password">
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="inputNewPw">Новый пароль</label>
+              <input class="field-input" type="password" id="inputNewPw" placeholder="Минимум 8 символов" autocomplete="new-password">
+              <div class="pw-strength" id="pwStrengthBars">
+                <div class="pw-strength-bar" id="pwBar1"></div>
+                <div class="pw-strength-bar" id="pwBar2"></div>
+                <div class="pw-strength-bar" id="pwBar3"></div>
+                <div class="pw-strength-bar" id="pwBar4"></div>
+              </div>
+              <div class="pw-strength-label" id="pwStrengthLabel"></div>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="inputNewPw2">Повторите новый пароль</label>
+              <input class="field-input" type="password" id="inputNewPw2" placeholder="Повторите пароль" autocomplete="new-password">
+            </div>
+          </div>
+
+          <div class="alert" id="alertPw">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="alertPwText"></span>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn-primary" id="btnSavePw">
+              <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+              Сменить пароль
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /profileContent -->
+
+</main>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <div><span class="status-bar-dot"></span>Профиль · <span id="statusDate">—</span></div>
+  <div class="status-bar-right">Medeus © 2026</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase.js"></script>
+<script>
+// ─── Utils ───────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function fmtDate(str) {
+  if (!str) return '—';
+  const d = new Date(str + 'T00:00:00');
+  return isNaN(d) ? str : d.toLocaleDateString('ru-RU', { day:'2-digit', month:'long', year:'numeric' });
+}
+function genderLabel(g) {
+  if (g === 'male')   return 'Мужской';
+  if (g === 'female') return 'Женский';
+  return '—';
+}
+
+// ─── Status bar ──────────────────────────────────────────────────────────────
+document.getElementById('statusDate').textContent =
+  new Date().toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+// ─── Alert helpers ───────────────────────────────────────────────────────────
+function showAlert(id, textId, msg, type) {
+  const el = document.getElementById(id);
+  const tx = document.getElementById(textId);
+  if (!el || !tx) return;
+  tx.textContent = msg;
+  el.className = 'alert visible ' + type;
+  // void el.offsetWidth; // retrigger animation for errors
+  if (type === 'success') setTimeout(() => { el.className = 'alert'; }, 4000);
+}
+function hideAlert(id) {
+  const el = document.getElementById(id);
+  if (el) el.className = 'alert';
+}
+
+// ─── Password strength ───────────────────────────────────────────────────────
+function calcStrength(pw) {
+  let score = 0;
+  if (pw.length >= 8)  score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  return Math.min(score, 4);
+}
+
+document.getElementById('inputNewPw').addEventListener('input', e => {
+  const pw = e.target.value;
+  const score = pw ? calcStrength(pw) : 0;
+  const cls = score <= 1 ? 'weak' : score <= 2 ? 'medium' : 'strong';
+  const labels = ['', 'Слабый', 'Слабый', 'Средний', 'Надёжный'];
+  for (let i = 1; i <= 4; i++) {
+    const bar = document.getElementById('pwBar' + i);
+    bar.className = 'pw-strength-bar' + (i <= score ? ' ' + cls : '');
+  }
+  document.getElementById('pwStrengthLabel').textContent = pw ? labels[score] || 'Надёжный' : '';
+});
+
+// ─── Load profile ────────────────────────────────────────────────────────────
+let currentSession = null;
+
+async function loadProfile() {
+  const session = await requireAuth();
+  if (!session) return;
+  currentSession = session;
+
+  const email = session.user.email || '';
+
+  // Header badge
+  document.getElementById('userAvatar').textContent = email.slice(0, 2).toUpperCase();
+  document.getElementById('userName').textContent   = email;
+
+  // Avatar & email display
+  document.getElementById('avatarBig').textContent   = email.slice(0, 2).toUpperCase();
+  document.getElementById('profileEmail').textContent = email;
+  document.getElementById('displayEmail').textContent = email;
+
+  // Load from profiles table
+  const client = getSupabase();
+  const { data: profile, error } = await client
+    .from('profiles')
+    .select('full_name, gender, birth_date')
+    .eq('id', session.user.id)
+    .maybeSingle();
+
+  const fullName  = profile?.full_name  || '';
+  const gender    = profile?.gender     || '';
+  const birthDate = profile?.birth_date || '';
+
+  document.getElementById('profileName').textContent = fullName || email.split('@')[0];
+  document.getElementById('inputName').value      = fullName;
+  document.getElementById('inputGender').value    = gender;
+  document.getElementById('inputBirthDate').value = birthDate;
+
+  // Show content
+  document.getElementById('pageLoader').classList.add('hidden');
+  document.getElementById('profileContent').style.display = '';
+}
+
+// ─── Save profile ─────────────────────────────────────────────────────────────
+document.getElementById('btnSaveProfile').addEventListener('click', async () => {
+  const btn       = document.getElementById('btnSaveProfile');
+  const fullName  = document.getElementById('inputName').value.trim();
+  const gender    = document.getElementById('inputGender').value;
+  const birthDate = document.getElementById('inputBirthDate').value;
+
+  hideAlert('alertProfile');
+
+  if (!fullName) {
+    showAlert('alertProfile', 'alertProfileText', 'Введите имя', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.querySelector('span') && (btn.querySelector('span').textContent = 'Сохранение...');
+
+  try {
+    const client = getSupabase();
+    const { error } = await client
+      .from('profiles')
+      .upsert({
+        id:         currentSession.user.id,
+        full_name:  fullName,
+        gender:     gender || null,
+        birth_date: birthDate || null,
+      }, { onConflict: 'id' });
+
+    if (error) throw error;
+
+    // Update avatar display
+    document.getElementById('profileName').textContent = fullName;
+    document.getElementById('avatarBig').textContent   = fullName.slice(0, 2).toUpperCase();
+    document.getElementById('userAvatar').textContent  = fullName.slice(0, 2).toUpperCase();
+
+    showAlert('alertProfile', 'alertProfileText', 'Данные успешно сохранены', 'success');
+  } catch (e) {
+    showAlert('alertProfile', 'alertProfileText', 'Ошибка: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ─── Change password ──────────────────────────────────────────────────────────
+document.getElementById('btnSavePw').addEventListener('click', async () => {
+  const btn    = document.getElementById('btnSavePw');
+  const oldPw  = document.getElementById('inputOldPw').value;
+  const newPw  = document.getElementById('inputNewPw').value;
+  const newPw2 = document.getElementById('inputNewPw2').value;
+
+  hideAlert('alertPw');
+
+  if (!oldPw) {
+    showAlert('alertPw', 'alertPwText', 'Введите текущий пароль', 'error'); return;
+  }
+  if (newPw.length < 8) {
+    showAlert('alertPw', 'alertPwText', 'Новый пароль должен быть не менее 8 символов', 'error'); return;
+  }
+  if (newPw !== newPw2) {
+    showAlert('alertPw', 'alertPwText', 'Новые пароли не совпадают', 'error'); return;
+  }
+  if (oldPw === newPw) {
+    showAlert('alertPw', 'alertPwText', 'Новый пароль совпадает с текущим', 'error'); return;
+  }
+
+  btn.disabled = true;
+
+  try {
+    const client = getSupabase();
+    const email  = currentSession.user.email;
+
+    // Verify old password by re-signing in
+    const { error: signInError } = await client.auth.signInWithPassword({ email, password: oldPw });
+    if (signInError) {
+      showAlert('alertPw', 'alertPwText', 'Неверный текущий пароль', 'error');
+      btn.disabled = false;
+      return;
+    }
+
+    // Update password
+    const { error: updateError } = await client.auth.updateUser({ password: newPw });
+    if (updateError) throw updateError;
+
+    // Clear fields
+    document.getElementById('inputOldPw').value  = '';
+    document.getElementById('inputNewPw').value  = '';
+    document.getElementById('inputNewPw2').value = '';
+    // Reset strength bars
+    for (let i = 1; i <= 4; i++) document.getElementById('pwBar' + i).className = 'pw-strength-bar';
+    document.getElementById('pwStrengthLabel').textContent = '';
+
+    showAlert('alertPw', 'alertPwText', 'Пароль успешно изменён', 'success');
+  } catch (e) {
+    showAlert('alertPw', 'alertPwText', 'Ошибка: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ─── Logout ──────────────────────────────────────────────────────────────────
+document.getElementById('logoutBtn').addEventListener('click', async e => {
+  e.preventDefault();
+  await signOut();
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+loadProfile();
+</script>
+</body>
+</html>
