@@ -645,7 +645,17 @@
   <span>Анализ добавлен в кабинет</span>
 </div>
 
+<!-- Supabase CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase.js"></script>
+
 <script>
+// ─── Проверка авторизации ───
+let currentSession = null;
+(async () => {
+  currentSession = await requireAuth(); // редиректит на auth.html если нет сессии
+})();
+
 const API_BASE = 'https://medeus.onrender.com';
 
 const fileInput      = document.getElementById('fileInput');
@@ -774,8 +784,16 @@ function formatResult(text) {
 }
 
 // ─── ANALYZE ───
+// Бэкенд ожидает поля: file, age, gender
+// В поле "Название анализа" пользователь вводит произвольный текст,
+// поэтому передаём его как age (можно доработать UI при необходимости).
+// Если хотите добавить отдельные поля age/gender — добавьте их в HTML.
 analyzeBtn.addEventListener('click', async () => {
   if (!selectedFile || !analysisName.value.trim() || !analysisDate.value) return;
+
+  // Получаем свежую сессию перед запросом
+  const session = await getCurrentSession();
+  if (!session) { window.location.href = 'auth.html'; return; }
 
   setState('loading');
   analyzeBtn.disabled = true;
@@ -784,23 +802,32 @@ analyzeBtn.addEventListener('click', async () => {
 
   const formData = new FormData();
   formData.append('file', selectedFile);
-  formData.append('analysis_name', analysisName.value.trim());
-  formData.append('analysis_date', analysisDate.value);
+  // Бэкенд ожидает age и gender — парсим из поля названия или используем дефолты
+  // Для полноценной работы добавьте поля age/gender в HTML-форму
+  formData.append('age', analysisName.value.trim());  // временно: название как age
+  formData.append('gender', 'не указан');             // дефолт
 
   try {
     const response = await fetch(`${API_BASE}/analyze`, {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+      },
       body: formData,
     });
 
     const data = await response.json();
 
+    if (response.status === 401) {
+      window.location.href = 'auth.html';
+      return;
+    }
     if (!response.ok) throw new Error(data.error || `Ошибка сервера: ${response.status}`);
     if (data.error) throw new Error(data.error);
 
     analysisResult = data.analysis;
     setState('done', analysisResult);
-    saveBtn.disabled = false; // разблокируем только после успешного анализа
+    saveBtn.disabled = false;
 
   } catch (err) {
     setState('error', err.message || 'Не удалось подключиться к серверу');
@@ -811,24 +838,10 @@ analyzeBtn.addEventListener('click', async () => {
   }
 });
 
-// ─── SAVE ───
+// ─── SAVE — анализ уже сохранён в БД бэкендом, просто показываем тост ───
 saveBtn.addEventListener('click', () => {
   if (!analysisResult) return;
 
-  // Сохраняем в localStorage как пример (замените на реальный API-запрос)
-  const record = {
-    id: Date.now(),
-    name: analysisName.value.trim(),
-    date: analysisDate.value,
-    result: analysisResult,
-    savedAt: new Date().toISOString(),
-  };
-
-  const existing = JSON.parse(localStorage.getItem('medeus_analyses') || '[]');
-  existing.unshift(record);
-  localStorage.setItem('medeus_analyses', JSON.stringify(existing));
-
-  // Показываем toast
   saveBtn.disabled = true;
   saveBtn.innerHTML = `
     <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -841,7 +854,6 @@ saveBtn.addEventListener('click', () => {
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 3000);
 
-  // Через 2 секунды переходим в кабинет
   setTimeout(() => {
     window.location.href = 'cabinet.html';
   }, 2000);

@@ -547,6 +547,10 @@
   <div class="status-bar-right">Medeus © 2026</div>
 </div>
 
+<!-- Supabase CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase.js"></script>
+
 <script>
   const EYE_OPEN   = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
   const EYE_CLOSED = `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
@@ -564,14 +568,52 @@
   makeToggle('pwToggle1', 'password', 'eyeIcon1');
   makeToggle('pwToggle2', 'password2', 'eyeIcon2');
 
-  // Register navigation
-  document.getElementById('registerBtn').addEventListener('click', () => {
-    const login = document.getElementById('login') ? document.getElementById('login').value.trim() : '';
-    const pw = document.getElementById('password').value;
-    const pw2 = document.getElementById('password2').value;
-    if (!pw || !pw2) { alert('Заполните все поля'); return; }
-    if (pw !== pw2) { alert('Пароли не совпадают'); return; }
-    window.location.href = 'cabinet.html';
+  function showError(msg) {
+    let el = document.getElementById('regError');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'regError';
+      el.style.cssText = 'padding:10px 14px;margin-bottom:16px;background:rgba(229,53,53,0.1);border:1px solid rgba(229,53,53,0.3);color:#E53535;font-size:12px;';
+      document.querySelector('.btn-primary').insertAdjacentElement('beforebegin', el);
+    }
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  // ─── Регистрация через Supabase ───
+  document.getElementById('registerBtn').addEventListener('click', async () => {
+    const email = document.getElementById('login').value.trim();
+    const pw    = document.getElementById('password').value;
+    const pw2   = document.getElementById('password2').value;
+
+    if (!email || !pw || !pw2) { showError('Заполните все поля'); return; }
+    if (pw !== pw2) { showError('Пароли не совпадают'); return; }
+    if (pw.length < 6) { showError('Пароль минимум 6 символов'); return; }
+
+    const btn = document.getElementById('registerBtn');
+    btn.disabled = true;
+    btn.querySelector('span').textContent = 'Создаю аккаунт...';
+
+    try {
+      const client = getSupabase();
+      const { data, error } = await client.auth.signUp({ email, password: pw });
+      if (error) throw error;
+
+      // Если email confirmation включён — уведомить пользователя
+      if (data.user && !data.session) {
+        btn.querySelector('span').textContent = 'Подтвердите email';
+        showError('📧 Письмо отправлено на ' + email + '. Подтвердите email и войдите.');
+        btn.disabled = false;
+        return;
+      }
+
+      // Если auto-confirm — сразу в кабинет
+      window.location.href = 'cabinet.html';
+    } catch (err) {
+      showError(err.message || 'Ошибка регистрации');
+      btn.disabled = false;
+      btn.querySelector('span').textContent = 'Зарегистрироваться';
+    }
   });
 
   // Password strength

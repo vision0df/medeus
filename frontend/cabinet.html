@@ -405,7 +405,7 @@
       </svg>
       Анализ
     </a>
-    <a href="auth.html" class="btn-sm">
+    <a href="#" id="logoutBtn" class="btn-sm">
       <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
       </svg>
@@ -695,9 +695,104 @@
 
 <!-- Status bar -->
 <div class="status-bar">
-  <div><span class="status-bar-dot"></span>Данные актуальны · 14.04.2026</div>
+  <div><span class="status-bar-dot"></span>Данные актуальны · <span id="statusDate">—</span></div>
   <div class="status-bar-right">Medeus © 2026</div>
 </div>
 
-</body>
-</html>
+<!-- Supabase CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase.js"></script>
+
+<script>
+const API_BASE = 'https://medeus.onrender.com';
+
+// ─── Обновить дату в статусбаре ───
+document.getElementById('statusDate').textContent =
+  new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+// ─── Загрузить аватар/email пользователя ───
+async function loadUser() {
+  const session = await requireAuth(); // редирект если не залогинен
+  if (!session) return;
+
+  const email = session.user.email || '';
+  const initials = email.slice(0, 2).toUpperCase();
+
+  // Обновляем аватар и имя
+  document.querySelector('.user-avatar').textContent = initials;
+  const nameEl = document.querySelector('.user-badge span');
+  if (nameEl) nameEl.textContent = email;
+
+  return session;
+}
+
+// ─── Загрузить историю анализов ───
+async function loadHistory(session) {
+  try {
+    const response = await fetch(`${API_BASE}/history`, {
+      headers: { 'Authorization': `Bearer ${session.access_token}` },
+    });
+
+    if (response.status === 401) { window.location.href = 'auth.html'; return; }
+    if (!response.ok) return;
+
+    const data = await response.json();
+    const rows = data.history || [];
+
+    if (rows.length === 0) return;
+
+    // ─── Обновляем список анализов в блоке 02 ───
+    const list = document.querySelector('.analyses-list');
+    if (list) {
+      list.innerHTML = rows.map(row => {
+        const date = new Date(row.created_at).toLocaleDateString('ru-RU');
+        return `
+          <div class="analysis-row">
+            <div class="analysis-icon">
+              <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div class="analysis-info">
+              <div class="analysis-name">${escHtml(row.filename || '—')}</div>
+              <div class="analysis-meta">${date} · Возраст: ${escHtml(row.age || '—')} · ${escHtml(row.gender || '—')}</div>
+            </div>
+            <span class="analysis-status badge-neutral">готово</span>
+            <div class="analysis-arrow"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>`;
+      }).join('');
+
+      // Обновляем счётчик файлов
+      const badge = document.querySelector('.card-wrap:nth-child(3) .card-badge');
+      if (badge) badge.textContent = rows.length + ' ' + plural(rows.length, 'файл', 'файла', 'файлов');
+    }
+
+  } catch (e) {
+    console.error('История не загружена:', e);
+  }
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function plural(n, one, few, many) {
+  const mod10 = n % 10, mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+  return many;
+}
+
+// ─── Кнопка выхода ───
+document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  await signOut();
+});
+
+// ─── Инициализация ───
+(async () => {
+  const session = await loadUser();
+  if (session) await loadHistory(session);
+})();
+</script>
