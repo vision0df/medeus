@@ -396,8 +396,8 @@
 
   <div class="header-right">
     <div class="user-badge">
-      <div class="user-avatar">АП</div>
-      <span>Алексей П.</span>
+      <div class="user-avatar" id="userAvatar">—</div>
+      <span id="userName"></span>
     </div>
     <a href="index.html" class="btn-sm">
       <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -422,10 +422,7 @@
       <div class="page-title-label">Личный кабинет</div>
       <div class="page-title">Мои данные<span class="cursor-blink"></span></div>
     </div>
-    <div class="page-meta">
-      Последнее обновление<br>
-      14 апреля 2026 · 09:41
-    </div>
+    <div class="page-meta" id="pageMeta">—</div>
   </div>
 
   <div class="dashboard">
@@ -438,47 +435,11 @@
           <span class="card-badge badge-neutral" id="badge-summary">загрузка...</span>
         </div>
         <div class="card-body">
-          <div class="summary-grid">
-
-            <div class="summary-item ok">
-              <div class="summary-item-name">Гемоглобин</div>
-              <div class="summary-item-val">142 <span>г/л</span></div>
-              <div class="summary-item-status ok">✓ норма</div>
-            </div>
-
-            <div class="summary-item warn">
-              <div class="summary-item-name">Глюкоза</div>
-              <div class="summary-item-val">6.4 <span>ммоль/л</span></div>
-              <div class="summary-item-status warn">↑ выше нормы</div>
-            </div>
-
-            <div class="summary-item ok">
-              <div class="summary-item-name">Лейкоциты</div>
-              <div class="summary-item-val">5.8 <span>×10⁹/л</span></div>
-              <div class="summary-item-status ok">✓ норма</div>
-            </div>
-
-            <div class="summary-item alert">
-              <div class="summary-item-name">Холестерин</div>
-              <div class="summary-item-val">6.9 <span>ммоль/л</span></div>
-              <div class="summary-item-status alert">↑ выше нормы</div>
-            </div>
-
-            <div class="summary-item ok">
-              <div class="summary-item-name">Тромбоциты</div>
-              <div class="summary-item-val">230 <span>×10⁹/л</span></div>
-              <div class="summary-item-status ok">✓ норма</div>
-            </div>
-
-            <div class="summary-item ok">
-              <div class="summary-item-name">СОЭ</div>
-              <div class="summary-item-val">8 <span>мм/ч</span></div>
-              <div class="summary-item-status ok">✓ норма</div>
-            </div>
-
+          <div class="summary-grid" id="summaryGrid">
+            <div class="analyses-empty" style="grid-column:1/-1;padding:24px 0;">Загрузка показателей...</div>
           </div>
           <div class="summary-footer">
-            <span>Последний анализ: ОАК от 12.04.2026</span>
+            <span id="summaryFooterText">—</span>
             <a href="upload.html" class="btn-primary-sm">
               <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -500,68 +461,8 @@
           <span class="card-badge badge-neutral" id="badge-files">загрузка...</span>
         </div>
         <div class="card-body">
-          <div class="analyses-list">
-
-            <div class="analysis-row">
-              <div class="analysis-icon">
-                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                </svg>
-              </div>
-              <div class="analysis-info">
-                <div class="analysis-name">Общий анализ крови</div>
-                <div class="analysis-meta">12 апреля 2026 · PDF · 1.2 MB</div>
-              </div>
-              <span class="analysis-status badge-warn">2 откл.</span>
-              <div class="analysis-arrow"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
-            </div>
-
-            <div class="analysis-row">
-              <div class="analysis-icon">
-                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                </svg>
-              </div>
-              <div class="analysis-info">
-                <div class="analysis-name">Биохимия крови</div>
-                <div class="analysis-meta">5 марта 2026 · JPG · 840 KB</div>
-              </div>
-              <span class="analysis-status badge-ok">норма</span>
-              <div class="analysis-arrow"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
-            </div>
-
-            <div class="analysis-row">
-              <div class="analysis-icon">
-                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                </svg>
-              </div>
-              <div class="analysis-info">
-                <div class="analysis-name">Анализ мочи</div>
-                <div class="analysis-meta">18 января 2026 · PDF · 560 KB</div>
-              </div>
-              <span class="analysis-status badge-ok">норма</span>
-              <div class="analysis-arrow"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
-            </div>
-
-            <div class="analysis-row">
-              <div class="analysis-icon">
-                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                </svg>
-              </div>
-              <div class="analysis-info">
-                <div class="analysis-name">Гормоны щитовидной железы</div>
-                <div class="analysis-meta">2 декабря 2025 · PNG · 1.8 MB</div>
-              </div>
-              <span class="analysis-status badge-alert">1 откл.</span>
-              <div class="analysis-arrow"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
-            </div>
-
+          <div class="analyses-list" id="analysesList">
+            <div class="analyses-empty">Загрузка...</div>
           </div>
         </div>
       </div>
@@ -575,35 +476,8 @@
           <span class="card-badge badge-neutral" id="badge-recs">загрузка...</span>
         </div>
         <div class="card-body">
-          <div class="recs-list">
-
-            <div class="rec-item">
-              <div class="rec-icon">🩺</div>
-              <div class="rec-content">
-                <div class="rec-title">Консультация эндокринолога</div>
-                <div class="rec-desc">Уровень глюкозы 6.4 ммоль/л указывает на преддиабетическое состояние. Рекомендуется сдать тест на гликированный гемоглобин.</div>
-                <span class="rec-tag badge-alert">Приоритет</span>
-              </div>
-            </div>
-
-            <div class="rec-item">
-              <div class="rec-icon">🥗</div>
-              <div class="rec-content">
-                <div class="rec-title">Снизить потребление жиров</div>
-                <div class="rec-desc">Холестерин 6.9 ммоль/л — выше нормы. Ограничьте насыщенные жиры, добавьте омега-3 и клетчатку.</div>
-                <span class="rec-tag badge-warn">Рекомендуется</span>
-              </div>
-            </div>
-
-            <div class="rec-item">
-              <div class="rec-icon">🏃</div>
-              <div class="rec-content">
-                <div class="rec-title">Физическая активность</div>
-                <div class="rec-desc">30 минут кардионагрузки 4–5 раз в неделю поможет нормализовать глюкозу и холестерин.</div>
-                <span class="rec-tag badge-ok">Поддержание</span>
-              </div>
-            </div>
-
+          <div class="recs-list" id="recsList">
+            <div class="analyses-empty">Загрузка...</div>
           </div>
         </div>
       </div>
@@ -614,78 +488,20 @@
       <div class="card">
         <div class="card-header">
           <div class="card-label">04 — Общее состояние</div>
-          <span class="card-badge badge-warn">удовлетворительно</span>
+          <span class="card-badge badge-neutral" id="badge-health">загрузка...</span>
         </div>
         <div class="card-body">
-
           <div class="health-score-wrap">
             <div class="health-score-circle">
-              <div class="health-score-num">72</div>
+              <div class="health-score-num" id="healthScoreNum">—</div>
               <div class="health-score-label">из 100</div>
             </div>
             <div class="health-score-info">
-              <div class="health-score-title">Удовлетворительное состояние</div>
-              <div class="health-score-desc">
-                Большинство показателей в норме. Выявлены 2 отклонения — повышенные глюкоза и холестерин.<br>
-                Требуется консультация специалиста и коррекция питания.
-              </div>
+              <div class="health-score-title" id="healthScoreTitle">Загрузка...</div>
+              <div class="health-score-desc" id="healthScoreDesc"></div>
             </div>
           </div>
-
-          <div class="health-bars">
-
-            <div class="health-bar-row">
-              <div class="health-bar-top">
-                <span class="health-bar-name">Кровь</span>
-                <span class="health-bar-val">85%</span>
-              </div>
-              <div class="health-bar-track">
-                <div class="health-bar-fill ok" style="--w:85%; width:85%;"></div>
-              </div>
-            </div>
-
-            <div class="health-bar-row">
-              <div class="health-bar-top">
-                <span class="health-bar-name">Обмен веществ</span>
-                <span class="health-bar-val">58%</span>
-              </div>
-              <div class="health-bar-track">
-                <div class="health-bar-fill warn" style="--w:58%; width:58%;"></div>
-              </div>
-            </div>
-
-            <div class="health-bar-row">
-              <div class="health-bar-top">
-                <span class="health-bar-name">Сердечно-сосудистая</span>
-                <span class="health-bar-val">63%</span>
-              </div>
-              <div class="health-bar-track">
-                <div class="health-bar-fill warn" style="--w:63%; width:63%;"></div>
-              </div>
-            </div>
-
-            <div class="health-bar-row">
-              <div class="health-bar-top">
-                <span class="health-bar-name">Иммунитет</span>
-                <span class="health-bar-val">90%</span>
-              </div>
-              <div class="health-bar-track">
-                <div class="health-bar-fill ok" style="--w:90%; width:90%;"></div>
-              </div>
-            </div>
-
-            <div class="health-bar-row">
-              <div class="health-bar-top">
-                <span class="health-bar-name">Гормональный фон</span>
-                <span class="health-bar-val">47%</span>
-              </div>
-              <div class="health-bar-track">
-                <div class="health-bar-fill alert" style="--w:47%; width:47%;"></div>
-              </div>
-            </div>
-
-          </div>
-
+          <div class="health-bars" id="healthBars"></div>
         </div>
       </div>
     </div>
@@ -739,16 +555,23 @@ async function loadUser() {
   const session = await requireAuth();
   if (!session) return null;
   const email = session.user.email || '';
-  document.querySelector('.user-avatar').textContent = email.slice(0, 2).toUpperCase();
-  const nameEl = document.querySelector('.user-badge span');
+  document.getElementById('userAvatar').textContent = email.slice(0, 2).toUpperCase();
+  const nameEl = document.getElementById('userName');
   if (nameEl) nameEl.textContent = email;
+
+  // Дата последнего обновления в шапке страницы
+  const meta = document.getElementById('pageMeta');
+  if (meta) {
+    const now = new Date().toLocaleDateString('ru-RU', { day:'2-digit', month:'long', year:'numeric' });
+    meta.innerHTML = `Последнее обновление<br>${now}`;
+  }
   return session;
 }
 
 // ─── Блок 02: Загруженные анализы ────────────────────────────────────────────
 function renderHistory(rows) {
-  const list  = document.querySelector('.analyses-list');
-  const badge = document.querySelector('#badge-files');
+  const list  = document.getElementById('analysesList');
+  const badge = document.getElementById('badge-files');
   if (!list) return;
 
   if (!rows.length) {
@@ -786,8 +609,7 @@ function renderHistory(rows) {
 
 // ─── Блок 01: Сводка показателей ─────────────────────────────────────────────
 function statusClass(s) {
-  if (s === 'above' || s === 'below') return 'alert';
-  return 'ok';
+  return (s === 'above' || s === 'below') ? 'alert' : 'ok';
 }
 function statusLabel(s) {
   if (s === 'above') return '↑ выше нормы';
@@ -796,12 +618,14 @@ function statusLabel(s) {
 }
 
 function renderIndicators(indicators) {
-  const grid  = document.querySelector('.summary-grid');
-  const badge = document.querySelector('#badge-summary');
+  const grid   = document.getElementById('summaryGrid');
+  const badge  = document.getElementById('badge-summary');
+  const footer = document.getElementById('summaryFooterText');
   if (!grid) return;
 
   if (!indicators.length) {
-    grid.innerHTML = '<div class="analyses-empty" style="grid-column:1/-1">Показатели появятся после загрузки анализов</div>';
+    grid.innerHTML = '<div class="analyses-empty" style="grid-column:1/-1;padding:24px 0;">Показатели появятся после загрузки анализов</div>';
+    if (badge) { badge.textContent = 'нет данных'; }
     return;
   }
 
@@ -813,9 +637,7 @@ function renderIndicators(indicators) {
     badge.className = 'card-badge ' + (deviations ? 'badge-warn' : 'badge-ok');
   }
 
-  // Показываем все, но если больше 9 — лимитируем чтобы не рвать сетку
-  const shown = indicators.slice(0, 9);
-  grid.innerHTML = shown.map(ind => {
+  grid.innerHTML = indicators.slice(0, 9).map(ind => {
     const cls = statusClass(ind.status);
     return `
       <div class="summary-item ${cls}">
@@ -825,8 +647,6 @@ function renderIndicators(indicators) {
       </div>`;
   }).join('');
 
-  // Обновляем footer
-  const footer = document.querySelector('.summary-footer span');
   if (footer && indicators.length) {
     const last = indicators.reduce((a, b) => (a.date || '') > (b.date || '') ? a : b);
     footer.textContent = `Последний анализ: ${escHtml(last.source)} · ${fmtDate(last.date)}`;
@@ -837,8 +657,8 @@ function renderIndicators(indicators) {
 const REC_ICONS = ['🩺','🥗','🏃','💊','🧪','🫀','🧘','💧','🌿','🔬'];
 
 function renderRecommendations(recs) {
-  const list  = document.querySelector('.recs-list');
-  const badge = document.querySelector('#badge-recs');
+  const list  = document.getElementById('recsList');
+  const badge = document.getElementById('badge-recs');
   if (!list) return;
 
   if (!recs.length) {
@@ -847,7 +667,7 @@ function renderRecommendations(recs) {
     return;
   }
 
-  if (badge) { badge.textContent = 'требуют внимания'; badge.className = 'card-badge badge-alert'; }
+  if (badge) { badge.textContent = 'есть рекомендации'; badge.className = 'card-badge badge-warn'; }
 
   list.innerHTML = recs.slice(0, 8).map((rec, i) => `
     <div class="rec-item">
@@ -861,50 +681,53 @@ function renderRecommendations(recs) {
 
 // ─── Блок 04: Общее состояние ────────────────────────────────────────────────
 function renderHealthScore(indicators) {
-  if (!indicators.length) return;
+  const scoreEl = document.getElementById('healthScoreNum');
+  const titleEl = document.getElementById('healthScoreTitle');
+  const descEl  = document.getElementById('healthScoreDesc');
+  const badgeEl = document.getElementById('badge-health');
+  const barsEl  = document.getElementById('healthBars');
+
+  if (!indicators.length) {
+    if (scoreEl) scoreEl.textContent = '—';
+    if (titleEl) titleEl.textContent = 'Нет данных';
+    if (descEl)  descEl.textContent  = 'Загрузите анализы, чтобы увидеть общую картину здоровья.';
+    if (badgeEl) { badgeEl.textContent = 'нет данных'; badgeEl.className = 'card-badge badge-neutral'; }
+    return;
+  }
 
   const total     = indicators.length;
   const normalCnt = indicators.filter(i => i.status === 'normal').length;
   const score     = Math.round((normalCnt / total) * 100);
 
-  const scoreEl = document.querySelector('.health-score-num');
   if (scoreEl) scoreEl.textContent = score;
-
-  const titleEl = document.querySelector('.health-score-title');
-  const descEl  = document.querySelector('.health-score-desc');
-  const wrapEl  = document.querySelector('.card-wrap:last-child .card-badge');
 
   if (score >= 80) {
     if (titleEl) titleEl.textContent = 'Хорошее состояние';
     if (descEl)  descEl.textContent  = `${normalCnt} из ${total} показателей в норме. Продолжайте поддерживать здоровый образ жизни.`;
-    if (wrapEl)  { wrapEl.textContent = 'хорошо'; wrapEl.className = 'card-badge badge-ok'; }
+    if (badgeEl) { badgeEl.textContent = 'хорошо'; badgeEl.className = 'card-badge badge-ok'; }
   } else if (score >= 55) {
     if (titleEl) titleEl.textContent = 'Удовлетворительное состояние';
     if (descEl)  descEl.textContent  = `${normalCnt} из ${total} показателей в норме. Выявлены отклонения — рекомендуется консультация специалиста.`;
-    if (wrapEl)  { wrapEl.textContent = 'удовлетворительно'; wrapEl.className = 'card-badge badge-warn'; }
+    if (badgeEl) { badgeEl.textContent = 'удовлетворительно'; badgeEl.className = 'card-badge badge-warn'; }
   } else {
     if (titleEl) titleEl.textContent = 'Требует внимания';
     if (descEl)  descEl.textContent  = `${normalCnt} из ${total} показателей в норме. Обратитесь к врачу для детального обследования.`;
-    if (wrapEl)  { wrapEl.textContent = 'требует внимания'; wrapEl.className = 'card-badge badge-alert'; }
+    if (badgeEl) { badgeEl.textContent = 'требует внимания'; badgeEl.className = 'card-badge badge-alert'; }
   }
 
-  // Health bars — считаем по группам показателей
   const groups = {
-    'Кровь':              ['гемоглобин','лейкоцит','тромбоцит','соэ','эритроцит','гематокрит'],
-    'Обмен веществ':      ['глюкоза','холестерин','триглицерид','инсулин','мочевин','креатинин'],
-    'Печень':             ['алт','аст','билирубин','щелочная фосфатаза','гgt','alt','ast'],
-    'Иммунитет':          ['лимфоцит','моноцит','нейтрофил','базофил','эозинофил'],
-    'Гормональный фон':   ['ттг','т3','т4','кортизол','тестостерон','эстрадиол','фсг','лг'],
+    'Кровь':             ['гемоглобин','лейкоцит','тромбоцит','соэ','эритроцит','гематокрит'],
+    'Обмен веществ':     ['глюкоза','холестерин','триглицерид','инсулин','мочевин','креатинин'],
+    'Печень':            ['алт','аст','билирубин','щелочная','alt','ast'],
+    'Иммунитет':         ['лимфоцит','моноцит','нейтрофил','базофил','эозинофил'],
+    'Гормональный фон':  ['ттг','т3','т4','кортизол','тестостерон','эстрадиол','фсг','лг'],
   };
 
-  const barsEl = document.querySelector('.health-bars');
   if (!barsEl) return;
-
   const barRows = Object.entries(groups).map(([label, keys]) => {
-    const group     = indicators.filter(ind => keys.some(k => ind.name.toLowerCase().includes(k)));
+    const group = indicators.filter(ind => keys.some(k => ind.name.toLowerCase().includes(k)));
     if (!group.length) return null;
-    const okCnt     = group.filter(i => i.status === 'normal').length;
-    const pct       = Math.round((okCnt / group.length) * 100);
+    const pct       = Math.round((group.filter(i => i.status === 'normal').length / group.length) * 100);
     const fillClass = pct >= 80 ? 'ok' : pct >= 55 ? 'warn' : 'alert';
     return `
       <div class="health-bar-row">
@@ -918,30 +741,31 @@ function renderHealthScore(indicators) {
       </div>`;
   }).filter(Boolean);
 
-  if (barRows.length) barsEl.innerHTML = barRows.join('');
+  barsEl.innerHTML = barRows.length
+    ? barRows.join('')
+    : '<div class="analyses-empty">Недостаточно данных для разбивки по категориям</div>';
 }
 
-// ─── Выход ────────────────────────────────────────────────────────────────────
+// ─── Выход ───────────────────────────────────────────────────────────────────
 document.getElementById('logoutBtn')?.addEventListener('click', async e => {
   e.preventDefault();
   await signOut();
 });
 
-// ─── Инициализация ────────────────────────────────────────────────────────────
+// ─── Инициализация ───────────────────────────────────────────────────────────
 (async () => {
   const session = await loadUser();
   if (!session) return;
 
-  // Параллельно грузим все три источника
   const [histData, indData, recData] = await Promise.allSettled([
     apiFetch('/history',         session),
     apiFetch('/indicators',      session),
     apiFetch('/recommendations', session),
   ]);
 
-  const rows   = histData.status === 'fulfilled'  && histData.value  ? histData.value.history         || [] : [];
-  const inds   = indData.status  === 'fulfilled'  && indData.value   ? indData.value.indicators       || [] : [];
-  const recs   = recData.status  === 'fulfilled'  && recData.value   ? recData.value.recommendations  || [] : [];
+  const rows = histData.status === 'fulfilled' && histData.value ? histData.value.history        || [] : [];
+  const inds = indData.status  === 'fulfilled' && indData.value  ? indData.value.indicators      || [] : [];
+  const recs = recData.status  === 'fulfilled' && recData.value  ? recData.value.recommendations || [] : [];
 
   renderHistory(rows);
   renderIndicators(inds);
