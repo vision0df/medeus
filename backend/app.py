@@ -1,12 +1,13 @@
 import os
-import requests
 import traceback
-import io
+import httpx
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from google import genai
-from PIL import Image
 from google.genai import types
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -14,179 +15,202 @@ CORS(app)
 # ========================
 # Ключи
 # ========================
-OCR_API_KEY = os.environ.get("OCR_API_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+SUPABASE_URL   = os.environ.get("SUPABASE_URL")        # https://xxxx.supabase.co
+SUPABASE_KEY   = os.environ.get("SUPABASE_SERVICE_KEY") # sb_secret_...
 
-print("OCR KEY:", "OK" if OCR_API_KEY else "MISSING", flush=True)
-print("GEMINI KEY:", "OK" if GEMINI_API_KEY else "MISSING", flush=True)
+print("GEMINI KEY:",  "OK" if GEMINI_API_KEY else "MISSING", flush=True)
+print("SUPABASE URL:", "OK" if SUPABASE_URL  else "MISSING", flush=True)
+print("SUPABASE KEY:", "OK" if SUPABASE_KEY  else "MISSING", flush=True)
+
+gemini = genai.Client(api_key=GEMINI_API_KEY)
+
+# Общие заголовки для всех запросов к Supabase REST API
+SUPA_HEADERS = {
+    "apikey":        SUPABASE_KEY,
+    "Authorization": f"Bearer {SUPABASE_KEY}",
+    "Content-Type":  "application/json",
+    "Prefer":        "return=representation",
+}
 
 # ========================
-# Gemini клиент
+# Helpers
 # ========================
-client = genai.Client(api_key=GEMINI_API_KEY)
-
-def get_mime_type(filename):
+def get_mime_type(filename: str) -> str:
     ext = os.path.splitext(filename)[1].lower()
-    mime_types = {
+    return {
         ".pdf":  "application/pdf",
         ".png":  "image/png",
         ".jpg":  "image/jpeg",
         ".jpeg": "image/jpeg",
-    }
-    return mime_types.get(ext, "image/jpeg")
+    }.get(ext, "image/jpeg")
 
-# ========================
-# Сжатие изображения
-# ========================
-def compress_image(file, max_size_mb=1):
-    max_bytes = max_size_mb * 1024 * 1024
 
-    file.seek(0)
-    image = Image.open(file)
+def get_current_user(auth_header: str | None) -> dict:
+    """
+    Проверяет JWT токен через Supabase Auth REST API.
+    Возвращает dict с полями id, email и др.
+    """
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise ValueError("Требуется авторизация")
 
-    # Конвертация (важно для PNG)
-    if image.mode in ("RGBA", "P"):
-        image = image.convert("RGB")
+    token = auth_header.removeprefix("Bearer ").strip()
 
-    quality = 95
-    width, height = image.size
+    resp = httpx.get(
+        f"{SUPABASE_URL}/auth/v1/user",
+        headers={
+            "apikey":        SUPABASE_KEY,
+            "Authorization": f"Bearer {token}",
+        },
+        timeout=10,
+    )
 
-    while True:
-        buffer = io.BytesIO()
-        image.save(buffer, format="JPEG", quality=quality)
-        size = buffer.tell()
+    if resp.status_code != 200:
+        raise ValueError("Недействительный токен")
 
-        if size <= max_bytes:
-            print(f"✅ Image compressed: {size/1024:.2f} KB", flush=True)
-            buffer.seek(0)
-            return buffer
+    return resp.json()   # {"id": "...", "email": "...", ...}
 
-        quality -= 5
 
-        # если качество уже низкое — уменьшаем размер
-        if quality < 30:
-            width = int(width * 0.8)
-            height = int(height * 0.8)
-            image = image.resize((width, height))
-            quality = 85
+def db_insert(table: str, data: dict):
+    """Вставляет строку в таблицу через PostgREST."""
+    resp = httpx.post(
+        f"{SUPABASE_URL}/rest/v1/{table}",
+        headers=SUPA_HEADERS,
+        json=data,
+        timeout=10,
+    )
+    if resp.status_code not in (200, 201):
+        raise Exception(f"DB insert error {resp.status_code}: {resp.text}")
+    return resp.json()
 
-# ========================
-# OCR функция
-# ========================
-def ocr_space(file, retries=3, timeout=120):
-    url = "https://api.ocr.space/parse/image"
-    payload = {"apikey": OCR_API_KEY, "language": "rus"}
 
-    for attempt in range(1, retries + 1):
-        try:
-            compressed_file = compress_image(file)
+def db_select(table: str, select: str, filters: dict) -> list:
+    """Выбирает строки из таблицы через PostgREST."""
+    params = {"select": select, **{k: f"eq.{v}" for k, v in filters.items()},
+              "order": "created_at.desc"}
+    resp = httpx.get(
+        f"{SUPABASE_URL}/rest/v1/{table}",
+        headers=SUPA_HEADERS,
+        params=params,
+        timeout=10,
+    )
+    if resp.status_code != 200:
+        raise Exception(f"DB select error {resp.status_code}: {resp.text}")
+    return resp.json()
 
-            files = {
-                "file": ("compressed.jpg", compressed_file)
-            }
-
-            response = requests.post(url, data=payload, files=files, timeout=timeout)
-            result = response.json()
-
-            print(f"OCR RESPONSE (attempt {attempt}):", result, flush=True)
-
-            if result.get("IsErroredOnProcessing"):
-                raise Exception(f"OCR Error: {result.get('ErrorMessage')}")
-
-            parsed_results = result.get("ParsedResults")
-            if not parsed_results:
-                raise Exception("OCR не вернул ParsedResults")
-
-            text = parsed_results[0].get("ParsedText", "")
-            if not text.strip():
-                raise Exception("OCR вернул пустой текст")
-
-            return text
-
-        except requests.exceptions.Timeout:
-            print(f"⚠️ OCR тайм-аут (попытка {attempt})", flush=True)
-            if attempt == retries:
-                raise Exception("OCR Error: Тайм-аут после нескольких попыток")
-
-        except Exception as e:
-            raise e
 
 # ========================
 # Gemini анализ
 # ========================
-def analyze_with_gemini(file, age, gender):
+def analyze_with_gemini(file, age: str, gender: str) -> str:
     print("🧠 Gemini START", flush=True)
 
     prompt = f"""
 Ты — медицинский ассистент.
-Задача, выдать результат в строго заданной структуре
+Задача — выдать результат в строго заданной структуре.
 
-ВАЖНЫЕ ПРАВИЛА: 
-1. Если анализы есть — отвечай строго в формате:
-Название - значение - статус("норма", "выше нормы", "ниже нормы") 
-2. после анализов кратко распиши: общее состояние, на что стоит обратить внимание, рекомендации
+ПРАВИЛА:
+1. Если анализы найдены — отвечай строго в формате:
+   Название - значение - статус ("норма", "выше нормы", "ниже нормы")
+2. После таблицы анализов кратко напиши:
+   — Общее состояние
+   — На что стоит обратить внимание
+   — Рекомендации
 
 Возраст: {age}
 Пол: {gender}
 """
 
-    try:
-        file.seek(0)
-        file_bytes = file.read()
-        mime_type = get_mime_type(file.filename)
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=[
+    file.seek(0)
+    file_bytes = file.read()
+    mime_type  = get_mime_type(file.filename)
+
+    response = gemini.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=[
             types.Part.from_bytes(data=file_bytes, mime_type=mime_type),
-            prompt
-            ]
-        )
+            prompt,
+        ],
+    )
 
-        print("✅ Gemini RESPONSE:", response, flush=True)
+    print("✅ Gemini done", flush=True)
+    return response.text
 
-        return response.text
-
-    except Exception as e:
-        print("🔥 GEMINI ERROR:", str(e), flush=True)
-        traceback.print_exc()
-
-        return f"Ошибка Gemini: {str(e)}"
 
 # ========================
-# API endpoint
+# API: /analyze
 # ========================
 @app.route("/analyze", methods=["POST"])
 def analyze():
     try:
         print("🔥 /analyze HIT", flush=True)
 
+        # --- Auth ---
+        user = get_current_user(request.headers.get("Authorization"))
+        print(f"👤 user: {user['id']}", flush=True)
+
+        # --- Валидация входных данных ---
         if "file" not in request.files:
             return jsonify({"error": "Файл не найден"}), 400
 
-        file = request.files["file"]
-        age = request.form.get("age")
-        gender = request.form.get("gender")
-
-        print("📥 FILE:", file.filename, flush=True)
-        print("📥 AGE:", age, flush=True)
-        print("📥 GENDER:", gender, flush=True)
+        file   = request.files["file"]
+        age    = request.form.get("age", "").strip()
+        gender = request.form.get("gender", "").strip()
 
         if not age or not gender:
             return jsonify({"error": "Возраст или пол не указаны"}), 400
 
-        # OCR
-        text = ocr_space(file)
-        print("📄 OCR TEXT:", text[:200], flush=True)
+        print(f"📥 file={file.filename}  age={age}  gender={gender}", flush=True)
 
-        # Gemini
+        # --- Gemini анализ ---
         analysis = analyze_with_gemini(file, age, gender)
 
+        # --- Сохранение в Supabase DB ---
+        db_insert("analyses", {
+            "user_id":  user["id"],
+            "filename": file.filename,
+            "age":      age,
+            "gender":   gender,
+            "result":   analysis,
+        })
+
+        print("💾 Saved to DB", flush=True)
+
         return jsonify({"analysis": analysis})
+
+    except ValueError as e:
+        # ошибки авторизации и валидации
+        return jsonify({"error": str(e)}), 401
 
     except Exception as e:
         print("🔥 ERROR:", flush=True)
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+# ========================
+# API: /history  — история анализов пользователя
+# ========================
+@app.route("/history", methods=["GET"])
+def history():
+    try:
+        user = get_current_user(request.headers.get("Authorization"))
+
+        rows = db_select(
+            "analyses",
+            select="id,filename,age,gender,result,created_at",
+            filters={"user_id": user["id"]},
+        )
+
+        return jsonify({"history": rows})
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 
 # ========================
 # Запуск
