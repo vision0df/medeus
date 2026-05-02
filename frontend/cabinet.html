@@ -435,7 +435,7 @@
       <div class="card">
         <div class="card-header">
           <div class="card-label">01 — Сводка анализов</div>
-          <span class="card-badge badge-warn">2 отклонения</span>
+          <span class="card-badge badge-neutral" id="badge-summary">загрузка...</span>
         </div>
         <div class="card-body">
           <div class="summary-grid">
@@ -497,7 +497,7 @@
       <div class="card">
         <div class="card-header">
           <div class="card-label">02 — Загруженные анализы</div>
-          <span class="card-badge badge-neutral">4 файла</span>
+          <span class="card-badge badge-neutral" id="badge-files">загрузка...</span>
         </div>
         <div class="card-body">
           <div class="analyses-list">
@@ -572,7 +572,7 @@
       <div class="card">
         <div class="card-header">
           <div class="card-label">03 — Рекомендации</div>
-          <span class="card-badge badge-alert">требуют внимания</span>
+          <span class="card-badge badge-neutral" id="badge-recs">загрузка...</span>
         </div>
         <div class="card-body">
           <div class="recs-list">
@@ -706,104 +706,246 @@
 <script>
 const API_BASE = 'https://medeus.onrender.com';
 
-// ─── Обновить дату в статусбаре ───
+// ─── Utils ───────────────────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function plural(n, one, few, many) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+  return many;
+}
+function fmtDate(str) {
+  if (!str) return '—';
+  const d = new Date(str);
+  return isNaN(d) ? str : d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+async function apiFetch(path, session) {
+  const r = await fetch(`${API_BASE}${path}`, {
+    headers: { 'Authorization': `Bearer ${session.access_token}` },
+  });
+  if (r.status === 401) { window.location.href = 'auth.html'; return null; }
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+// ─── Статусбар ───────────────────────────────────────────────────────────────
 document.getElementById('statusDate').textContent =
-  new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  new Date().toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' });
 
-// ─── Загрузить аватар/email пользователя ───
+// ─── Пользователь ────────────────────────────────────────────────────────────
 async function loadUser() {
-  const session = await requireAuth(); // редирект если не залогинен
-  if (!session) return;
-
+  const session = await requireAuth();
+  if (!session) return null;
   const email = session.user.email || '';
-  const initials = email.slice(0, 2).toUpperCase();
-
-  // Обновляем аватар и имя
-  document.querySelector('.user-avatar').textContent = initials;
+  document.querySelector('.user-avatar').textContent = email.slice(0, 2).toUpperCase();
   const nameEl = document.querySelector('.user-badge span');
   if (nameEl) nameEl.textContent = email;
-
   return session;
 }
 
-// ─── Загрузить историю анализов ───
-async function loadHistory(session) {
-  try {
-    const response = await fetch(`${API_BASE}/history`, {
-      headers: { 'Authorization': `Bearer ${session.access_token}` },
-    });
+// ─── Блок 02: Загруженные анализы ────────────────────────────────────────────
+function renderHistory(rows) {
+  const list  = document.querySelector('.analyses-list');
+  const badge = document.querySelector('#badge-files');
+  if (!list) return;
 
-    if (response.status === 401) { window.location.href = 'auth.html'; return; }
-    if (!response.ok) return;
+  if (!rows.length) {
+    list.innerHTML = '<div class="analyses-empty">Анализы ещё не загружены</div>';
+    if (badge) badge.textContent = '0 файлов';
+    return;
+  }
 
-    const data = await response.json();
-    const rows = data.history || [];
+  if (badge) badge.textContent = rows.length + ' ' + plural(rows.length, 'файл', 'файла', 'файлов');
 
-    if (rows.length === 0) return;
+  list.innerHTML = rows.map(row => {
+    const name  = escHtml(row.analysis_name || row.filename || '—');
+    const aDate = row.analysis_date ? fmtDate(row.analysis_date) : fmtDate(row.created_at);
+    return `
+      <div class="analysis-row" onclick="location.href='analysis.html?id=${row.id}'" style="cursor:pointer;">
+        <div class="analysis-icon">
+          <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <div class="analysis-info">
+          <div class="analysis-name">${name}</div>
+          <div class="analysis-meta">${aDate}</div>
+        </div>
+        <span class="analysis-status badge-neutral">готово</span>
+        <div class="analysis-arrow">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+      </div>`;
+  }).join('');
+}
 
-    // ─── Обновляем список анализов в блоке 02 ───
-    const list = document.querySelector('.analyses-list');
-    if (list) {
-      if (rows.length === 0) {
-        list.innerHTML = '<div class="analyses-empty">Анализы ещё не загружены</div>';
-      } else {
-        list.innerHTML = rows.map(row => {
-          const date = new Date(row.created_at).toLocaleDateString('ru-RU');
-          const aDate = row.analysis_date
-            ? new Date(row.analysis_date).toLocaleDateString('ru-RU')
-            : null;
-          const name = row.analysis_name || row.filename || '—';
-          const meta = aDate
-            ? `Загружен: ${date} · Сдан: ${aDate}`
-            : `Загружен: ${date}`;
-          return `
-            <div class="analysis-row" onclick="location.href='analysis.html?id=${row.id}'" style="cursor:pointer;">
-              <div class="analysis-icon">
-                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                </svg>
-              </div>
-              <div class="analysis-info">
-                <div class="analysis-name">${escHtml(name)}</div>
-                <div class="analysis-meta">${meta}</div>
-              </div>
-              <span class="analysis-status badge-neutral">готово</span>
-              <div class="analysis-arrow"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
-            </div>`;
-        }).join('');
-      }
+// ─── Блок 01: Сводка показателей ─────────────────────────────────────────────
+function statusClass(s) {
+  if (s === 'above' || s === 'below') return 'alert';
+  return 'ok';
+}
+function statusLabel(s) {
+  if (s === 'above') return '↑ выше нормы';
+  if (s === 'below') return '↓ ниже нормы';
+  return '✓ норма';
+}
 
-      // Обновляем счётчик файлов
-      const badge = document.querySelector('.card-wrap:nth-child(3) .card-badge');
-      if (badge) badge.textContent = rows.length + ' ' + plural(rows.length, 'файл', 'файла', 'файлов');
-    }
+function renderIndicators(indicators) {
+  const grid  = document.querySelector('.summary-grid');
+  const badge = document.querySelector('#badge-summary');
+  if (!grid) return;
 
-  } catch (e) {
-    console.error('История не загружена:', e);
+  if (!indicators.length) {
+    grid.innerHTML = '<div class="analyses-empty" style="grid-column:1/-1">Показатели появятся после загрузки анализов</div>';
+    return;
+  }
+
+  const deviations = indicators.filter(i => i.status !== 'normal').length;
+  if (badge) {
+    badge.textContent = deviations
+      ? deviations + ' ' + plural(deviations, 'отклонение', 'отклонения', 'отклонений')
+      : 'всё в норме';
+    badge.className = 'card-badge ' + (deviations ? 'badge-warn' : 'badge-ok');
+  }
+
+  // Показываем все, но если больше 9 — лимитируем чтобы не рвать сетку
+  const shown = indicators.slice(0, 9);
+  grid.innerHTML = shown.map(ind => {
+    const cls = statusClass(ind.status);
+    return `
+      <div class="summary-item ${cls}">
+        <div class="summary-item-name">${escHtml(ind.name)}</div>
+        <div class="summary-item-val">${escHtml(ind.value)}</div>
+        <div class="summary-item-status ${cls}">${statusLabel(ind.status)}</div>
+      </div>`;
+  }).join('');
+
+  // Обновляем footer
+  const footer = document.querySelector('.summary-footer span');
+  if (footer && indicators.length) {
+    const last = indicators.reduce((a, b) => (a.date || '') > (b.date || '') ? a : b);
+    footer.textContent = `Последний анализ: ${escHtml(last.source)} · ${fmtDate(last.date)}`;
   }
 }
 
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+// ─── Блок 03: Рекомендации ───────────────────────────────────────────────────
+const REC_ICONS = ['🩺','🥗','🏃','💊','🧪','🫀','🧘','💧','🌿','🔬'];
+
+function renderRecommendations(recs) {
+  const list  = document.querySelector('.recs-list');
+  const badge = document.querySelector('#badge-recs');
+  if (!list) return;
+
+  if (!recs.length) {
+    list.innerHTML = '<div class="analyses-empty">Рекомендации появятся после загрузки анализов</div>';
+    if (badge) { badge.textContent = 'нет данных'; badge.className = 'card-badge badge-neutral'; }
+    return;
+  }
+
+  if (badge) { badge.textContent = 'требуют внимания'; badge.className = 'card-badge badge-alert'; }
+
+  list.innerHTML = recs.slice(0, 8).map((rec, i) => `
+    <div class="rec-item">
+      <div class="rec-icon">${REC_ICONS[i % REC_ICONS.length]}</div>
+      <div class="rec-content">
+        <div class="rec-desc">${escHtml(rec.text)}</div>
+        <span class="rec-tag badge-neutral">${escHtml(rec.source)}</span>
+      </div>
+    </div>`).join('');
 }
 
-function plural(n, one, few, many) {
-  const mod10 = n % 10, mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return one;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
-  return many;
+// ─── Блок 04: Общее состояние ────────────────────────────────────────────────
+function renderHealthScore(indicators) {
+  if (!indicators.length) return;
+
+  const total     = indicators.length;
+  const normalCnt = indicators.filter(i => i.status === 'normal').length;
+  const score     = Math.round((normalCnt / total) * 100);
+
+  const scoreEl = document.querySelector('.health-score-num');
+  if (scoreEl) scoreEl.textContent = score;
+
+  const titleEl = document.querySelector('.health-score-title');
+  const descEl  = document.querySelector('.health-score-desc');
+  const wrapEl  = document.querySelector('.card-wrap:last-child .card-badge');
+
+  if (score >= 80) {
+    if (titleEl) titleEl.textContent = 'Хорошее состояние';
+    if (descEl)  descEl.textContent  = `${normalCnt} из ${total} показателей в норме. Продолжайте поддерживать здоровый образ жизни.`;
+    if (wrapEl)  { wrapEl.textContent = 'хорошо'; wrapEl.className = 'card-badge badge-ok'; }
+  } else if (score >= 55) {
+    if (titleEl) titleEl.textContent = 'Удовлетворительное состояние';
+    if (descEl)  descEl.textContent  = `${normalCnt} из ${total} показателей в норме. Выявлены отклонения — рекомендуется консультация специалиста.`;
+    if (wrapEl)  { wrapEl.textContent = 'удовлетворительно'; wrapEl.className = 'card-badge badge-warn'; }
+  } else {
+    if (titleEl) titleEl.textContent = 'Требует внимания';
+    if (descEl)  descEl.textContent  = `${normalCnt} из ${total} показателей в норме. Обратитесь к врачу для детального обследования.`;
+    if (wrapEl)  { wrapEl.textContent = 'требует внимания'; wrapEl.className = 'card-badge badge-alert'; }
+  }
+
+  // Health bars — считаем по группам показателей
+  const groups = {
+    'Кровь':              ['гемоглобин','лейкоцит','тромбоцит','соэ','эритроцит','гематокрит'],
+    'Обмен веществ':      ['глюкоза','холестерин','триглицерид','инсулин','мочевин','креатинин'],
+    'Печень':             ['алт','аст','билирубин','щелочная фосфатаза','гgt','alt','ast'],
+    'Иммунитет':          ['лимфоцит','моноцит','нейтрофил','базофил','эозинофил'],
+    'Гормональный фон':   ['ттг','т3','т4','кортизол','тестостерон','эстрадиол','фсг','лг'],
+  };
+
+  const barsEl = document.querySelector('.health-bars');
+  if (!barsEl) return;
+
+  const barRows = Object.entries(groups).map(([label, keys]) => {
+    const group     = indicators.filter(ind => keys.some(k => ind.name.toLowerCase().includes(k)));
+    if (!group.length) return null;
+    const okCnt     = group.filter(i => i.status === 'normal').length;
+    const pct       = Math.round((okCnt / group.length) * 100);
+    const fillClass = pct >= 80 ? 'ok' : pct >= 55 ? 'warn' : 'alert';
+    return `
+      <div class="health-bar-row">
+        <div class="health-bar-top">
+          <span class="health-bar-name">${label}</span>
+          <span class="health-bar-val">${pct}%</span>
+        </div>
+        <div class="health-bar-track">
+          <div class="health-bar-fill ${fillClass}" style="--w:${pct}%; width:${pct}%;"></div>
+        </div>
+      </div>`;
+  }).filter(Boolean);
+
+  if (barRows.length) barsEl.innerHTML = barRows.join('');
 }
 
-// ─── Кнопка выхода ───
-document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+// ─── Выход ────────────────────────────────────────────────────────────────────
+document.getElementById('logoutBtn')?.addEventListener('click', async e => {
   e.preventDefault();
   await signOut();
 });
 
-// ─── Инициализация ───
+// ─── Инициализация ────────────────────────────────────────────────────────────
 (async () => {
   const session = await loadUser();
-  if (session) await loadHistory(session);
+  if (!session) return;
+
+  // Параллельно грузим все три источника
+  const [histData, indData, recData] = await Promise.allSettled([
+    apiFetch('/history',         session),
+    apiFetch('/indicators',      session),
+    apiFetch('/recommendations', session),
+  ]);
+
+  const rows   = histData.status === 'fulfilled'  && histData.value  ? histData.value.history         || [] : [];
+  const inds   = indData.status  === 'fulfilled'  && indData.value   ? indData.value.indicators       || [] : [];
+  const recs   = recData.status  === 'fulfilled'  && recData.value   ? recData.value.recommendations  || [] : [];
+
+  renderHistory(rows);
+  renderIndicators(inds);
+  renderRecommendations(recs);
+  renderHealthScore(inds);
 })();
 </script>

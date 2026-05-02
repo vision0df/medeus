@@ -213,6 +213,24 @@ def analyze():
         file_bytes = file.read()
         mime_type  = get_mime_type(file.filename)
 
+        # ── Проверяем дубликат файла по SHA-256 хэшу ──
+        import hashlib
+        file_hash = hashlib.sha256(file_bytes).hexdigest()
+
+        existing = db_select(
+            "analyses",
+            select="id,analysis_name,analysis_date",
+            filters={"user_id": user["id"], "file_hash": file_hash},
+        )
+        if existing:
+            dup = existing[0]
+            dup_name = dup.get("analysis_name") or "—"
+            dup_date = dup.get("analysis_date") or ""
+            msg = f"Этот файл уже загружен как «{dup_name}»"
+            if dup_date:
+                msg += f" (дата анализа: {dup_date})"
+            return jsonify({"error": msg}), 409
+
         # Загружаем файл в Storage
         file_url = upload_file_to_storage(user["id"], file.filename, file_bytes, mime_type)
         print(f"📦 File uploaded: {file_url}", flush=True)
@@ -229,6 +247,7 @@ def analyze():
             "gender":        gender,
             "result":        analysis,
             "file_url":      file_url,
+            "file_hash":     file_hash,
         }
         if analysis_date:
             row["analysis_date"] = analysis_date
@@ -324,6 +343,160 @@ def delete_analysis(analysis_id):
         print(f"🗑️ Deleted from Storage: {file_url}", flush=True)
 
         return jsonify({"ok": True})
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ========================
+# API: /indicators — сводка уникальных показателей
+# ========================
+@app.route("/indicators", methods=["GET"])
+def indicators():
+    """
+    Парсим все result из БД пользователя.
+    Формат строки в result:
+      Название - значение - статус
+    Берём последнее значение по analysis_date для каждого уникального показателя.
+    """
+    try:
+        user = get_current_user(request.headers.get("Authorization"))
+
+        rows = db_select(
+            "analyses",
+            select="result,analysis_date,analysis_name",
+            filters={"user_id": user["id"]},
+        )
+
+        # Словарь: имя_показателя -> {value, unit, status, date, source}
+        merged: dict = {}
+
+        for row in rows:
+            result_text = row.get("result", "") or ""
+            row_date    = row.get("analysis_date") or ""
+            source      = row.get("analysis_name", "")
+
+            for line in result_text.splitlines():
+                line = line.strip()
+                if not line or line.startswith("—") or line.startswith("-"):
+                    continue
+                # Ищем паттерн: Название - значение - статус
+                parts = [p.strip() for p in line.split(" - ")]
+                if len(parts) < 3:
+                    parts = [p.strip() for p in line.split(" — ")]
+                if len(parts) < 3:
+                    continue
+
+                name   = parts[0]
+                value  = parts[1]
+                status = parts[2].lower()
+
+                # Фильтруем явно нечисловые / служебные строки
+                if len(name) < 2 or len(name) > 80:
+                    continue
+                if not any(c.isdigit() for c in value):
+                    continue
+
+                # Нормализуем статус
+                if "выше" in status:
+                    norm_status = "above"
+                elif "ниже" in status:
+                    norm_status = "below"
+                elif "норм" in status:
+                    norm_status = "normal"
+                else:
+                    norm_status = "normal"
+
+                name_key = name.lower().strip()
+
+                # Обновляем если запись новее
+                existing = merged.get(name_key)
+                if existing is None or row_date > existing["date"]:
+                    merged[name_key] = {
+                        "name":   name,
+                        "value":  value,
+                        "status": norm_status,
+                        "date":   row_date,
+                        "source": source,
+                    }
+
+        result_list = sorted(merged.values(), key=lambda x: x["name"])
+        return jsonify({"indicators": result_list})
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ========================
+# API: /recommendations — уникальные рекомендации
+# ========================
+@app.route("/recommendations", methods=["GET"])
+def recommendations():
+    """
+    Извлекаем блок рекомендаций из каждого result.
+    Gemini пишет их после таблицы показателей, под заголовками вроде
+    'Рекомендации', 'На что обратить внимание', 'Общее состояние'.
+    Дедублируем по смыслу (первые 60 символов как ключ).
+    """
+    try:
+        user = get_current_user(request.headers.get("Authorization"))
+
+        rows = db_select(
+            "analyses",
+            select="result,analysis_date,analysis_name",
+            filters={"user_id": user["id"]},
+        )
+
+        seen_keys: set = set()
+        recs: list     = []
+
+        # Заголовки секций рекомендаций от Gemini
+        REC_HEADERS = {
+            "рекоменда", "обратить внимание", "общее состояние",
+            "на что стоит", "вывод", "заключение",
+        }
+
+        for row in sorted(rows, key=lambda r: r.get("analysis_date") or "", reverse=True):
+            result_text = row.get("result", "") or ""
+            source      = row.get("analysis_name", "")
+            in_rec      = False
+
+            for line in result_text.splitlines():
+                stripped = line.strip()
+                if not stripped:
+                    continue
+
+                low = stripped.lower()
+
+                # Переключаемся в режим рекомендаций
+                if any(h in low for h in REC_HEADERS):
+                    in_rec = True
+                    continue
+
+                # Выходим из блока если снова таблица (содержит " - " с цифрами)
+                if in_rec and " - " in stripped and any(c.isdigit() for c in stripped):
+                    in_rec = False
+
+                if in_rec and len(stripped) > 15:
+                    # Убираем маркеры списка
+                    clean = stripped.lstrip("•·–—-→* ").strip()
+                    if len(clean) < 15:
+                        continue
+                    key = clean[:60].lower()
+                    if key not in seen_keys:
+                        seen_keys.add(key)
+                        recs.append({
+                            "text":   clean,
+                            "source": source,
+                        })
+
+        return jsonify({"recommendations": recs[:20]})  # не более 20
 
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
