@@ -53,6 +53,36 @@
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
   @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
   @keyframes barGrow { from{width:0} to{width:var(--w)} }
+  @keyframes pixelSpin { 0%, 60%, 100% { opacity: 0.1; } 30% { opacity: 1; } }
+
+  /* ─── PIXEL LOADER ─── */
+  .card-loader {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; padding: 40px 24px; width: 100%;
+  }
+  .card-loader.hidden { display: none; }
+  .loader-px {
+    width: 32px; height: 32px;
+    display: grid; grid-template-columns: repeat(4,1fr); grid-template-rows: repeat(4,1fr); gap: 2px;
+  }
+  .loader-px span { background: var(--orange); animation: pixelSpin 1s step-end infinite; }
+  .loader-px span:nth-child(1)  { animation-delay: 0s; }
+  .loader-px span:nth-child(2)  { animation-delay: 0.0625s; }
+  .loader-px span:nth-child(3)  { animation-delay: 0.125s; }
+  .loader-px span:nth-child(4)  { animation-delay: 0.1875s; }
+  .loader-px span:nth-child(5)  { animation-delay: 0.25s; }
+  .loader-px span:nth-child(6)  { animation-delay: 0.3125s; }
+  .loader-px span:nth-child(7)  { animation-delay: 0.375s; }
+  .loader-px span:nth-child(8)  { animation-delay: 0.4375s; }
+  .loader-px span:nth-child(9)  { animation-delay: 0.5s; }
+  .loader-px span:nth-child(10) { animation-delay: 0.5625s; }
+  .loader-px span:nth-child(11) { animation-delay: 0.625s; }
+  .loader-px span:nth-child(12) { animation-delay: 0.6875s; }
+  .loader-px span:nth-child(13) { animation-delay: 0.75s; }
+  .loader-px span:nth-child(14) { animation-delay: 0.8125s; }
+  .loader-px span:nth-child(15) { animation-delay: 0.875s; }
+  .loader-px span:nth-child(16) { animation-delay: 0.9375s; }
+  .loader-text { font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; text-align: center; }
 
   /* ─── HEADER ─── */
   header {
@@ -436,7 +466,10 @@
         </div>
         <div class="card-body">
           <div class="summary-grid" id="summaryGrid">
-            <div class="analyses-empty" style="grid-column:1/-1;padding:24px 0;">Загрузка показателей...</div>
+            <div class="card-loader" id="loaderSummary">
+              <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              <div class="loader-text">Загрузка показателей...</div>
+            </div>
           </div>
           <div class="summary-footer">
             <span id="summaryFooterText">—</span>
@@ -462,7 +495,10 @@
         </div>
         <div class="card-body">
           <div class="analyses-list" id="analysesList">
-            <div class="analyses-empty">Загрузка...</div>
+            <div class="card-loader" id="loaderFiles">
+              <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              <div class="loader-text">Загрузка анализов...</div>
+            </div>
           </div>
         </div>
       </div>
@@ -477,7 +513,10 @@
         </div>
         <div class="card-body">
           <div class="recs-list" id="recsList">
-            <div class="analyses-empty">Загрузка...</div>
+            <div class="card-loader" id="loaderRecs">
+              <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              <div class="loader-text">Загрузка рекомендаций...</div>
+            </div>
           </div>
         </div>
       </div>
@@ -491,15 +530,19 @@
           <span class="card-badge badge-neutral" id="badge-health">загрузка...</span>
         </div>
         <div class="card-body">
-          <div class="health-score-wrap">
+          <div class="health-score-wrap" id="healthScoreWrap" style="display:none">
             <div class="health-score-circle">
               <div class="health-score-num" id="healthScoreNum">—</div>
               <div class="health-score-label">из 100</div>
             </div>
             <div class="health-score-info">
-              <div class="health-score-title" id="healthScoreTitle">Загрузка...</div>
+              <div class="health-score-title" id="healthScoreTitle"></div>
               <div class="health-score-desc" id="healthScoreDesc"></div>
             </div>
+          </div>
+          <div class="card-loader" id="loaderHealth">
+            <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="loader-text">Вычисление показателей...</div>
           </div>
           <div class="health-bars" id="healthBars"></div>
         </div>
@@ -572,6 +615,8 @@ async function loadUser() {
 function renderHistory(rows) {
   const list  = document.getElementById('analysesList');
   const badge = document.getElementById('badge-files');
+  const loader = document.getElementById('loaderFiles');
+  if (loader) loader.classList.add('hidden');
   if (!list) return;
 
   if (!rows.length) {
@@ -621,6 +666,8 @@ function renderIndicators(indicators) {
   const grid   = document.getElementById('summaryGrid');
   const badge  = document.getElementById('badge-summary');
   const footer = document.getElementById('summaryFooterText');
+  const loader = document.getElementById('loaderSummary');
+  if (loader) loader.classList.add('hidden');
   if (!grid) return;
 
   if (!indicators.length) {
@@ -659,6 +706,8 @@ const REC_ICONS = ['🩺','🥗','🏃','💊','🧪','🫀','🧘','💧','🌿
 function renderRecommendations(recs) {
   const list  = document.getElementById('recsList');
   const badge = document.getElementById('badge-recs');
+  const loader = document.getElementById('loaderRecs');
+  if (loader) loader.classList.add('hidden');
   if (!list) return;
 
   if (!recs.length) {
@@ -681,11 +730,15 @@ function renderRecommendations(recs) {
 
 // ─── Блок 04: Общее состояние ────────────────────────────────────────────────
 function renderHealthScore(indicators) {
-  const scoreEl = document.getElementById('healthScoreNum');
-  const titleEl = document.getElementById('healthScoreTitle');
-  const descEl  = document.getElementById('healthScoreDesc');
-  const badgeEl = document.getElementById('badge-health');
-  const barsEl  = document.getElementById('healthBars');
+  const scoreEl  = document.getElementById('healthScoreNum');
+  const titleEl  = document.getElementById('healthScoreTitle');
+  const descEl   = document.getElementById('healthScoreDesc');
+  const badgeEl  = document.getElementById('badge-health');
+  const barsEl   = document.getElementById('healthBars');
+  const loaderEl = document.getElementById('loaderHealth');
+  const wrapEl   = document.getElementById('healthScoreWrap');
+  if (loaderEl) loaderEl.classList.add('hidden');
+  if (wrapEl)   wrapEl.style.display = '';
 
   if (!indicators.length) {
     if (scoreEl) scoreEl.textContent = '—';
