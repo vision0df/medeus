@@ -744,24 +744,35 @@ async function loadHistory(session) {
     // ─── Обновляем список анализов в блоке 02 ───
     const list = document.querySelector('.analyses-list');
     if (list) {
-      list.innerHTML = rows.map(row => {
-        const date = new Date(row.created_at).toLocaleDateString('ru-RU');
-        return `
-          <div class="analysis-row">
-            <div class="analysis-icon">
-              <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-              </svg>
-            </div>
-            <div class="analysis-info">
-              <div class="analysis-name">${escHtml(row.filename || '—')}</div>
-              <div class="analysis-meta">${date} · Возраст: ${escHtml(row.age || '—')} · ${escHtml(row.gender || '—')}</div>
-            </div>
-            <span class="analysis-status badge-neutral">готово</span>
-            <div class="analysis-arrow"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
-          </div>`;
-      }).join('');
+      if (rows.length === 0) {
+        list.innerHTML = '<div class="analyses-empty">Анализы ещё не загружены</div>';
+      } else {
+        list.innerHTML = rows.map(row => {
+          const date = new Date(row.created_at).toLocaleDateString('ru-RU');
+          const aDate = row.analysis_date
+            ? new Date(row.analysis_date).toLocaleDateString('ru-RU')
+            : null;
+          const name = row.analysis_name || row.filename || '—';
+          const meta = aDate
+            ? `Загружен: ${date} · Сдан: ${aDate}`
+            : `Загружен: ${date}`;
+          return `
+            <div class="analysis-row" onclick="location.href='analysis.html?id=${row.id}'" style="cursor:pointer;">
+              <div class="analysis-icon">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
+              <div class="analysis-info">
+                <div class="analysis-name">${escHtml(name)}</div>
+                <div class="analysis-meta">${meta}</div>
+              </div>
+              <span class="analysis-status badge-neutral">готово</span>
+              <div class="analysis-arrow"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+            </div>`;
+        }).join('');
+      }
 
       // Обновляем счётчик файлов
       const badge = document.querySelector('.card-wrap:nth-child(3) .card-badge');

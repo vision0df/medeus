@@ -800,10 +800,10 @@ analyzeBtn.addEventListener('click', async () => {
 
   const formData = new FormData();
   formData.append('file', selectedFile);
-  // Бэкенд ожидает age и gender — парсим из поля названия или используем дефолты
-  // Для полноценной работы добавьте поля age/gender в HTML-форму
-  formData.append('age', analysisName.value.trim());  // временно: название как age
-  formData.append('gender', 'не указан');             // дефолт
+  formData.append('analysis_name', analysisName.value.trim());
+  formData.append('analysis_date', analysisDate.value || '');
+  formData.append('age', analysisName.value.trim());  // бэкенд пока использует age для промпта
+  formData.append('gender', 'не указан');
 
   try {
     const response = await fetch(`${API_BASE}/analyze`, {

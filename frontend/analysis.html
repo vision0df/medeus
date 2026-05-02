@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medeus // Анализ</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF5A00;
+    --orange-dim: #CC4800;
+    --orange-pale: rgba(255,90,0,0.08);
+    --bg: #F2F1EE;
+    --bg2: #ECEAE6;
+    --bg3: #E4E2DE;
+    --white: #ffffff;
+    --text: #1A1714;
+    --text-mid: #5A5650;
+    --text-dim: #8C8480;
+    --line: rgba(0,0,0,0.1);
+    --green: #2E9E5B;
+    --green-pale: rgba(46,158,91,0.08);
+    --red: #D93535;
+    --red-pale: rgba(217,53,53,0.08);
+    --yellow: #C89000;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--mono);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none; z-index: 0;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ─── HEADER ─── */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 56px;
+    background: var(--white); border-bottom: 2px solid var(--text);
+  }
+
+  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .logo-icon {
+    width: 30px; height: 30px; background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    clip-path: polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
+  }
+  .logo-icon svg { width: 14px; height: 14px; }
+  .logo-text { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.1em; text-transform: uppercase; }
+  .logo-text span { color: var(--orange); }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .btn-sm {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; background: var(--bg2);
+    color: var(--text-mid); border: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11px; font-weight: 400;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    text-decoration: none; cursor: pointer; outline: none;
+    transition: background 0.15s, color 0.15s; white-space: nowrap;
+  }
+  .btn-sm:hover { background: var(--bg3); color: var(--text); }
+  .btn-sm svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
+
+  .btn-danger {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; background: var(--red-pale);
+    color: var(--red); border: 1px solid rgba(217,53,53,0.25);
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; outline: none;
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+  .btn-danger svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
+
+  /* ─── LAYOUT ─── */
+  .page {
+    flex: 1;
+    padding: 80px 48px 60px;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    position: relative; z-index: 1;
+  }
+
+  .page-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--text);
+    animation: fadeIn 0.3s ease both;
+  }
+
+  .page-title-label {
+    font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--orange); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .page-title-label::before { content: '/'; font-weight: 700; }
+
+  .page-title {
+    font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: var(--text);
+  }
+
+  /* ─── CARD ─── */
+  .card-wrap {
+    background: var(--text);
+    clip-path: polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px);
+    padding: 2px;
+    margin-bottom: 20px;
+    animation: fadeIn 0.4s ease both;
+  }
+
+  .card {
+    background: var(--white);
+    clip-path: polygon(16px 0%,100% 0%,100% calc(100% - 16px),calc(100% - 16px) 100%,0% 100%,0% 16px);
+  }
+
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg2);
+  }
+
+  .card-label {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim); display: flex; align-items: center; gap: 6px;
+  }
+  .card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
+
+  .card-body { padding: 24px; }
+
+  /* ─── META GRID ─── */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 0;
+  }
+
+  .meta-item { display: flex; flex-direction: column; gap: 4px; }
+  .meta-key {
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .meta-val {
+    font-size: 13px; font-weight: 600; color: var(--text);
+  }
+
+  /* ─── FILE PREVIEW ─── */
+  .file-preview {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    min-height: 200px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .file-preview img {
+    max-width: 100%;
+    max-height: 500px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .file-preview-pdf {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; padding: 40px;
+    color: var(--text-dim);
+  }
+
+  .file-preview-pdf svg { width: 48px; height: 48px; stroke: var(--text-dim); fill: none; }
+  .file-preview-pdf span { font-size: 12px; letter-spacing: 0.05em; }
+
+  .file-open-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    background: var(--text); color: var(--white);
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    text-decoration: none; cursor: pointer; border: none;
+    transition: background 0.15s;
+    clip-path: polygon(7px 0%,100% 0%,100% calc(100% - 7px),calc(100% - 7px) 100%,0% 100%,0% 7px);
+  }
+  .file-open-btn:hover { background: var(--orange); }
+  .file-open-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+
+  /* ─── AI RESULT ─── */
+  .result-body {
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* ─── DELETE CONFIRM ─── */
+  .delete-confirm {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .delete-confirm.show { display: flex; }
+
+  .delete-dialog {
+    background: var(--white);
+    border: 2px solid var(--text);
+    padding: 32px;
+    max-width: 380px;
+    width: 90%;
+    animation: fadeIn 0.2s ease both;
+  }
+
+  .delete-dialog-title {
+    font-size: 16px; font-weight: 700; margin-bottom: 10px;
+  }
+
+  .delete-dialog-desc {
+    font-size: 12px; color: var(--text-dim); line-height: 1.6; margin-bottom: 24px;
+  }
+
+  .delete-dialog-btns {
+    display: flex; gap: 10px;
+  }
+
+  .btn-cancel {
+    flex: 1; padding: 12px;
+    background: var(--bg2); color: var(--text-mid);
+    border: 1px solid var(--line);
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; outline: none; transition: background 0.15s;
+  }
+  .btn-cancel:hover { background: var(--bg3); }
+
+  .btn-confirm-delete {
+    flex: 1; padding: 12px;
+    background: var(--red); color: #fff;
+    border: none;
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; outline: none; transition: background 0.15s;
+  }
+  .btn-confirm-delete:hover { background: #b02020; }
+  .btn-confirm-delete:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* ─── LOADING / ERROR ─── */
+  .state-loading, .state-error {
+    text-align: center; padding: 80px 24px;
+    font-size: 12px; color: var(--text-dim); letter-spacing: 0.05em;
+    animation: fadeIn 0.3s ease both;
+  }
+  .state-error { color: var(--red); }
+
+  /* ─── STATUS BAR ─── */
+  .status-bar {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 36px;
+    background: var(--text);
+    color: rgba(255,255,255,0.45);
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .status-bar-dot {
+    display: inline-block; width: 5px; height: 5px;
+    background: var(--orange); margin-right: 6px;
+    animation: blink 1.4s step-end infinite;
+  }
+  .status-bar-right { color: rgba(255,255,255,0.3); }
+
+  @media (max-width: 700px) {
+    header { padding: 0 20px; }
+    .page { padding: 72px 16px 48px; }
+    .meta-grid { grid-template-columns: 1fr 1fr; }
+    .status-bar { padding: 0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="index.html">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
+        <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
+      </svg>
+    </div>
+    <div class="logo-text">Medeus<span>.</span></div>
+  </a>
+
+  <div class="header-right">
+    <a href="cabinet.html" class="btn-sm">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M5 12l7-7M5 12l7 7"/>
+      </svg>
+      Назад
+    </a>
+    <button class="btn-danger" id="deleteBtn">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6"/>
+        <path d="M9 6V4h6v2"/>
+      </svg>
+      Удалить
+    </button>
+  </div>
+</header>
+
+<main class="page" id="mainContent">
+  <div class="state-loading">Загрузка анализа...</div>
+</main>
+
+<!-- Подтверждение удаления -->
+<div class="delete-confirm" id="deleteConfirm">
+  <div class="delete-dialog">
+    <div class="delete-dialog-title">Удалить анализ?</div>
+    <div class="delete-dialog-desc">Файл и результат будут удалены безвозвратно. Это действие нельзя отменить.</div>
+    <div class="delete-dialog-btns">
+      <button class="btn-cancel" id="cancelDelete">Отмена</button>
+      <button class="btn-confirm-delete" id="confirmDelete">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <div><span class="status-bar-dot"></span>Просмотр анализа</div>
+  <div class="status-bar-right">Medeus © 2026</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase.js"></script>
+
+<script>
+  function escHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function formatDate(str) {
+    if (!str) return '—';
+    // ISO date "2026-04-12" or datetime
+    const d = new Date(str);
+    if (isNaN(d)) return str;
+    return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  function isPdf(filename) {
+    return String(filename).toLowerCase().endsWith('.pdf');
+  }
+
+  // Получаем ID из URL (?id=xxx)
+  const params = new URLSearchParams(location.search);
+  const analysisId = params.get('id');
+
+  if (!analysisId) {
+    document.getElementById('mainContent').innerHTML =
+      '<div class="state-error">ID анализа не указан</div>';
+  }
+
+  async function loadAnalysis() {
+    const session = await requireAuth();
+    if (!session) return;
+
+    try {
+      const resp = await fetch(`${API_BASE}/analysis/${analysisId}`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+
+      if (resp.status === 401) { window.location.href = 'auth.html'; return; }
+      if (resp.status === 404) {
+        document.getElementById('mainContent').innerHTML =
+          '<div class="state-error">Анализ не найден</div>';
+        return;
+      }
+      if (!resp.ok) throw new Error('Ошибка сервера');
+
+      const { analysis } = await resp.json();
+      renderAnalysis(analysis);
+
+    } catch (e) {
+      document.getElementById('mainContent').innerHTML =
+        `<div class="state-error">Ошибка загрузки: ${escHtml(e.message)}</div>`;
+    }
+  }
+
+  function renderAnalysis(a) {
+    const name    = a.analysis_name || a.filename || '—';
+    const created = formatDate(a.created_at);
+    const aDate   = formatDate(a.analysis_date);
+    const gender  = a.gender === 'male' ? 'Мужской' : a.gender === 'female' ? 'Женский' : (a.gender || '—');
+
+    // File preview block
+    let fileBlock = '';
+    if (a.file_url) {
+      if (isPdf(a.filename)) {
+        fileBlock = `
+          <div class="file-preview">
+            <div class="file-preview-pdf">
+              <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+              <span>${escHtml(a.filename)}</span>
+              <a href="${escHtml(a.file_url)}" target="_blank" class="file-open-btn">
+                <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Открыть PDF
+              </a>
+            </div>
+          </div>`;
+      } else {
+        fileBlock = `
+          <div class="file-preview">
+            <img src="${escHtml(a.file_url)}" alt="${escHtml(a.filename)}">
+          </div>`;
+      }
+    }
+
+    document.getElementById('mainContent').innerHTML = `
+      <div class="page-header">
+        <div>
+          <div class="page-title-label">Анализ</div>
+          <div class="page-title">${escHtml(name)}</div>
+        </div>
+      </div>
+
+      <!-- Мета -->
+      <div class="card-wrap">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-label">Информация</div>
+          </div>
+          <div class="card-body">
+            <div class="meta-grid">
+              <div class="meta-item">
+                <div class="meta-key">Загружен</div>
+                <div class="meta-val">${created}</div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-key">Дата сдачи</div>
+                <div class="meta-val">${aDate}</div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-key">Пол</div>
+                <div class="meta-val">${escHtml(gender)}</div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-key">Возраст</div>
+                <div class="meta-val">${escHtml(a.age || '—')}</div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-key">Файл</div>
+                <div class="meta-val">${escHtml(a.filename || '—')}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      ${fileBlock ? `
+      <!-- Файл -->
+      <div class="card-wrap" style="animation-delay:0.05s">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-label">Файл анализа</div>
+          </div>
+          <div class="card-body" style="padding:0">
+            ${fileBlock}
+          </div>
+        </div>
+      </div>` : ''}
+
+      <!-- Результат ИИ -->
+      <div class="card-wrap" style="animation-delay:0.1s">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-label">Результат анализа ИИ</div>
+          </div>
+          <div class="card-body">
+            <div class="result-body">${escHtml(a.result || 'Результат отсутствует')}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ─── Удаление ───
+  document.getElementById('deleteBtn').addEventListener('click', () => {
+    document.getElementById('deleteConfirm').classList.add('show');
+  });
+
+  document.getElementById('cancelDelete').addEventListener('click', () => {
+    document.getElementById('deleteConfirm').classList.remove('show');
+  });
+
+  document.getElementById('confirmDelete').addEventListener('click', async () => {
+    const btn = document.getElementById('confirmDelete');
+    btn.disabled = true;
+    btn.textContent = 'Удаляю...';
+
+    const session = await getCurrentSession();
+    if (!session) { window.location.href = 'auth.html'; return; }
+
+    try {
+      const resp = await fetch(`${API_BASE}/analysis/${analysisId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+
+      if (!resp.ok) throw new Error('Ошибка удаления');
+      window.location.href = 'cabinet.html';
+
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = 'Удалить';
+      alert('Ошибка: ' + e.message);
+    }
+  });
+
+  // ─── Init ───
+  if (analysisId) loadAnalysis();
+</script>
+</body>
+</html>
