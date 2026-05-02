@@ -417,8 +417,9 @@ def dashboard():
         indicators = sorted(merged.values(), key=lambda x: x["name"])
 
         # ── Recommendations ──────────────────────────────────────────────────
-        REC_HEADERS = {
-            "рекоменда", "обратить внимание", "общее состояние",
+        REC_START_HEADERS = {"рекоменда"}
+        REC_STOP_HEADERS  = {
+            "обратить внимание", "общее состояние",
             "на что стоит", "вывод", "заключение",
         }
         seen_keys: set = set()
@@ -435,8 +436,11 @@ def dashboard():
                     continue
                 low = stripped.lower()
 
-                if any(h in low for h in REC_HEADERS):
+                if any(h in low for h in REC_START_HEADERS):
                     in_rec = True
+                    continue
+                if in_rec and any(h in low for h in REC_STOP_HEADERS):
+                    in_rec = False
                     continue
                 if in_rec and " - " in stripped and any(c.isdigit() for c in stripped):
                     in_rec = False
@@ -568,8 +572,9 @@ def recommendations():
         recs: list     = []
 
         # Заголовки секций рекомендаций от Gemini
-        REC_HEADERS = {
-            "рекоменда", "обратить внимание", "общее состояние",
+        REC_START_HEADERS = {"рекоменда"}
+        REC_STOP_HEADERS  = {
+            "обратить внимание", "общее состояние",
             "на что стоит", "вывод", "заключение",
         }
 
@@ -586,8 +591,13 @@ def recommendations():
                 low = stripped.lower()
 
                 # Переключаемся в режим рекомендаций
-                if any(h in low for h in REC_HEADERS):
+                if any(h in low for h in REC_START_HEADERS):
                     in_rec = True
+                    continue
+
+                # Выходим если началась другая секция
+                if in_rec and any(h in low for h in REC_STOP_HEADERS):
+                    in_rec = False
                     continue
 
                 # Выходим из блока если снова таблица (содержит " - " с цифрами)
