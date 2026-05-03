@@ -59,6 +59,7 @@
   .card-loader {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 16px; padding: 40px 24px; width: 100%;
+    grid-column: 1 / -1; /* растягиваем на всю ширину грида блока 1 */
   }
   .card-loader.hidden { display: none; }
   .loader-px {
@@ -104,32 +105,42 @@
 
   .header-right { display: flex; align-items: center; gap: 12px; }
 
-  /* ─── HEADER UNIFIED BUTTONS ─── */
-  .btn-nav, .btn-nav-ghost {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 18px; background: var(--text); color: #ffffff;
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    text-decoration: none; border: none; outline: none; cursor: pointer;
-    transition: background 0.18s; white-space: nowrap;
-    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+  .user-badge {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: var(--text-mid);
+    letter-spacing: 0.08em;
   }
-  .btn-nav:hover, .btn-nav-ghost:hover { background: var(--orange); }
-  .btn-nav svg, .btn-nav-ghost svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
-  .btn-nav.btn-danger { background: #c0392b; }
-  .btn-nav.btn-danger:hover { background: #e74c3c; }
-  /* ─── CARD CTA BUTTONS ─── */
+  .user-avatar {
+    width: 28px; height: 28px;
+    background: var(--text); color: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    clip-path: polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
+  }
+
+  .btn-sm {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 14px; background: var(--bg2); color: var(--text-mid);
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    text-decoration: none; border: 1px solid var(--line); outline: none; cursor: pointer;
+    transition: background 0.15s, color 0.15s; white-space: nowrap;
+    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
+  }
+  .btn-sm:hover { background: var(--bg3); color: var(--text); }
+  .btn-sm svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
+
   .btn-primary-sm {
     display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 18px; background: var(--text); color: #ffffff;
+    padding: 8px 16px; background: var(--text); color: #ffffff;
     font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    text-decoration: none; border: none; outline: none; cursor: pointer;
-    transition: background 0.18s; white-space: nowrap;
-    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    text-decoration: none; cursor: pointer; border: none; outline: none;
+    transition: background 0.15s; white-space: nowrap;
+    clip-path: polygon(7px 0%, 100% 0%, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0% 100%, 0% 7px);
   }
   .btn-primary-sm:hover { background: var(--orange); }
-  .btn-primary-sm svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  .btn-primary-sm svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
   /* ─── LAYOUT ─── */
   .page {
@@ -200,6 +211,7 @@
     clip-path: polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px);
     padding: 2px;
     animation: fadeIn 0.4s ease both;
+    align-self: stretch;
   }
   .card-wrap:nth-child(2) { animation-delay: 0.05s; }
   .card-wrap:nth-child(3) { animation-delay: 0.10s; }
@@ -213,6 +225,8 @@
     height: 100%;
     display: flex; flex-direction: column;
   }
+
+  /* Блоки 2 и 3 — контент прижат к верху, footer к низу через margin-top: auto */
 
   .card-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -236,53 +250,104 @@
   .badge-alert { background: var(--red-pale); color: var(--red); }
   .badge-neutral { background: var(--bg3); color: var(--text-dim); }
 
-  .card-body { padding: 24px; flex: 1; }
+  .card-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
 
-  /* ─── BLOCK 1: СВОДКА АНАЛИЗОВ ─── */
-  #loaderSummary {
-    grid-column: 1 / -1;
-    min-height: 120px;
+  /* ─── BLOCK 1: СИЛУЭТ + ГРУППЫ АНАЛИЗОВ ─── */
+  .summary-body {
+    display: grid; grid-template-columns: 240px 1fr; gap: 0;
+    flex: 1; min-height: 260px;
   }
 
-  .summary-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-    margin-bottom: 20px;
+  /* Левая панель — силуэт */
+  .silhouette-panel {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px 16px; border-right: 1px solid var(--line);
+    background: var(--bg); position: relative; gap: 8px;
+  }
+  .silhouette-wrap {
+    position: relative; width: 100px; flex-shrink: 0;
+  }
+  .silhouette-wrap svg { width: 100%; height: auto; display: block; }
+
+  /* Зоны силуэта — кликабельные пути */
+  .silhouette-wrap svg .body-zone {
+    transition: opacity 0.2s;
+    cursor: default;
+  }
+  .silhouette-wrap svg .body-zone.ok    { fill: rgba(46,158,91,0.22);  stroke: var(--green);  stroke-width: 1; }
+  .silhouette-wrap svg .body-zone.warn  { fill: rgba(200,144,0,0.22);  stroke: var(--yellow); stroke-width: 1; }
+  .silhouette-wrap svg .body-zone.alert { fill: rgba(217,53,53,0.22);  stroke: var(--red);    stroke-width: 1; }
+  .silhouette-wrap svg .body-zone.none  { fill: rgba(0,0,0,0.05);      stroke: var(--line);   stroke-width: 1; }
+
+  /* Контур тела */
+  .silhouette-wrap svg .body-outline { fill: none; stroke: var(--text); stroke-width: 1.2; opacity: 0.25; }
+
+  .silhouette-label {
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim); text-align: center;
+  }
+  .silhouette-score {
+    font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -1px; line-height: 1;
+  }
+  .silhouette-score-label {
+    font-size: 9px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase;
   }
 
-  .summary-item {
-    background: var(--bg); padding: 14px 16px;
-    border-left: 3px solid var(--line);
-    transition: border-color 0.15s;
-  }
-  .summary-item.ok   { border-left-color: var(--green); }
-  .summary-item.warn { border-left-color: var(--yellow); }
-  .summary-item.alert{ border-left-color: var(--red); }
-
-  .summary-item-name {
-    font-size: 10px; font-weight: 400; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;
+  /* Правая панель — группы */
+  .groups-panel {
+    display: flex; flex-direction: column; padding: 20px 28px; gap: 11px; justify-content: center;
   }
 
-  .summary-item-val {
-    font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.5px;
+  .group-row {
+    display: flex; align-items: center; gap: 12px;
   }
-  .summary-item-val span { font-size: 11px; font-weight: 400; color: var(--text-dim); margin-left: 3px; }
+  .group-dot {
+    width: 8px; height: 8px; flex-shrink: 0;
+    clip-path: polygon(2px 0%,100% 0%,100% calc(100% - 2px),calc(100% - 2px) 100%,0% 100%,0% 2px);
+  }
+  .group-dot.ok    { background: var(--green); }
+  .group-dot.warn  { background: var(--yellow); }
+  .group-dot.alert { background: var(--red); }
+  .group-dot.none  { background: var(--bg3); }
 
-  .summary-item-status {
-    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 4px;
+  .group-name {
+    font-size: 10px; font-weight: 600; color: var(--text); letter-spacing: 0.08em;
+    min-width: 90px; text-transform: uppercase;
   }
-  .summary-item-status.ok   { color: var(--green); }
-  .summary-item-status.warn { color: var(--yellow); }
-  .summary-item-status.alert{ color: var(--red); }
+  .group-bar-wrap {
+    flex: 1; height: 5px; background: var(--bg3); position: relative; overflow: hidden;
+  }
+  .group-bar-fill {
+    position: absolute; top: 0; left: 0; height: 100%;
+    animation: barGrow 0.9s ease both;
+  }
+  .group-bar-fill.ok    { background: var(--green); }
+  .group-bar-fill.warn  { background: var(--yellow); }
+  .group-bar-fill.alert { background: var(--red); }
+  .group-bar-fill.none  { background: var(--bg3); width: 0 !important; }
+
+  .group-status {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    min-width: 80px; text-align: right;
+  }
+  .group-status.ok    { color: var(--green); }
+  .group-status.warn  { color: var(--yellow); }
+  .group-status.alert { color: var(--red); }
+  .group-status.none  { color: var(--text-dim); }
+
+  .group-count {
+    font-size: 10px; color: var(--text-dim); min-width: 24px; text-align: right;
+  }
 
   .summary-footer {
     display: flex; align-items: center; justify-content: space-between;
     font-size: 10px; color: var(--text-dim); letter-spacing: 0.05em;
-    padding-top: 16px; border-top: 1px solid var(--line);
+    padding: 14px 24px; border-top: 1px solid var(--line);
+    margin-top: 0;
   }
 
   /* ─── CARD FOOTER (show-all button) ─── */
-  .card-footer { display: block; border-top: 2px solid var(--text); }
+  .card-footer { display: block; border-top: 2px solid var(--text); margin-top: auto; }
   .card-footer.hidden { display: none; }
   .btn-show-all {
     display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -427,14 +492,20 @@
     .page { padding: 72px 20px 48px; }
     .dashboard { grid-template-columns: 1fr; }
     .col-full { grid-column: auto; }
-    .summary-grid { grid-template-columns: 1fr 1fr; }
+    .summary-body { grid-template-columns: 1fr; }
+    .silhouette-panel { flex-direction: row; gap: 20px; border-right: none; border-bottom: 1px solid var(--line); padding: 16px 24px; }
+    .silhouette-wrap { width: 52px; }
     .status-bar { padding: 0 24px; }
   }
   @media (max-width: 500px) {
-    .summary-grid { grid-template-columns: 1fr; }
     header { padding: 0 16px; height: 52px; }
     .logo-text { font-size: 13px; }
-
+    .user-badge span#userName { display: none; }
+    .btn-sm span { display: none; }
+    .btn-sm { padding: 7px 10px; }
+    .btn-sm svg { width: 14px; height: 14px; }
+    .groups-panel { padding: 16px; }
+    .group-name { min-width: 80px; }
   }
 </style>
 </head>
@@ -442,7 +513,7 @@
 
 <!-- Header -->
 <header>
-  <a class="logo" href="cabinet.html">
+  <a class="logo" href="index.html">
     <div class="logo-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
         <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
@@ -451,16 +522,22 @@
     <div class="logo-text">Medeus<span>.</span></div>
   </a>
 
-    <div class="header-right">
-    <div class="user-badge" id="userBadge" style="display:none">
+  <div class="header-right">
+    <div class="user-badge">
       <div class="user-avatar" id="userAvatar">—</div>
-
+      <span id="userName"></span>
     </div>
-    <a href="profile.html" class="btn-nav-ghost">
+    <a href="profile.html" class="btn-sm">
       <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
       </svg>
-      <span>Профиль</span>
+      Профиль
+    </a>
+    <a href="#" id="logoutBtn" class="btn-sm">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+      </svg>
+      Выйти
     </a>
   </div>
 </header>
@@ -499,13 +576,36 @@
           <div class="card-label">01 — Сводка анализов</div>
           <span class="card-badge badge-neutral" id="badge-summary">загрузка...</span>
         </div>
-        <div class="card-body">
-          <div class="summary-grid" id="summaryGrid">
-            <div class="card-loader" id="loaderSummary">
-              <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-              <div class="loader-text">Загрузка показателей...</div>
-            </div>
+        <div class="card-body" style="padding:0; overflow:hidden;">
+
+          <!-- Лоадер (пока данные не загружены) -->
+          <div class="card-loader" id="loaderSummary" style="min-height:220px;">
+            <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="loader-text">Загрузка показателей...</div>
           </div>
+
+          <!-- Основной контент -->
+          <div class="summary-body" id="summaryBody" style="display:none;">
+
+            <!-- Силуэт человека -->
+            <div class="silhouette-panel">
+              <div class="silhouette-wrap" id="silhouetteWrap">
+                <!-- SVG вставляется JS -->
+              </div>
+              <div class="silhouette-label" id="silhouetteLabel">—</div>
+              <div style="text-align:center; margin-top:4px;">
+                <div class="silhouette-score" id="silhouetteScore">—</div>
+                <div class="silhouette-score-label">из 100</div>
+              </div>
+            </div>
+
+            <!-- Группы анализов -->
+            <div class="groups-panel" id="groupsPanel">
+              <!-- Заполняется JS -->
+            </div>
+
+          </div>
+
           <div class="summary-footer">
             <span id="summaryFooterText">—</span>
             <a href="indicators.html" class="btn-primary-sm">
@@ -653,14 +753,23 @@ async function loadUser() {
   const session = await requireAuth();
   if (!session) return null;
   const email = session.user.email || '';
-  document.getElementById('userBadge').style.display='flex'; document.getElementById('userAvatar').textContent = email.slice(0, 2).toUpperCase();
+  document.getElementById('userAvatar').textContent = email.slice(0, 2).toUpperCase();
+  const nameEl = document.getElementById('userName');
+  if (nameEl) nameEl.textContent = email;
 
-  // Дата последнего обновления в шапке страницы
   const meta = document.getElementById('pageMeta');
   if (meta) {
     const now = new Date().toLocaleDateString('ru-RU', { day:'2-digit', month:'long', year:'numeric' });
     meta.innerHTML = `Последнее обновление<br>${now}`;
   }
+
+  // Загружаем пол из профиля
+  try {
+    const client = getSupabase();
+    const { data } = await client.from('profiles').select('gender').eq('id', session.user.id).single();
+    if (data?.gender) session._gender = data.gender;
+  } catch (e) {}
+
   return session;
 }
 
@@ -705,51 +814,180 @@ function renderHistory(rows) {
   if (footer && rows.length > 4) footer.classList.remove('hidden');
 }
 
-// ─── Блок 01: Сводка показателей ─────────────────────────────────────────────
-function statusClass(s) {
-  return (s === 'above' || s === 'below') ? 'alert' : 'ok';
-}
-function statusLabel(s) {
-  if (s === 'above') return '↑ выше нормы';
-  if (s === 'below') return '↓ ниже нормы';
-  return '✓ норма';
+// ─── SVG силуэты с зонами подсветки ────────────────────────────────────────
+// Зоны: zone-blood (грудь/живот), zone-hormones (голова+таз), zone-infection (лимфоузлы=шея+пах),
+//        zone-bio (низ живота), zone-diag (всё тело — контур)
+// Каждая зона — отдельный path с классом body-zone и data-group
+
+function buildSilhouetteSVG(sex) {
+  // Общая система координат viewBox="0 0 100 220"
+  // Тело: голова cy=22, шея 38-46, плечи 46, торс 46-130, таз 130-150, ноги 150-210
+
+  const isFemale = sex && sex.toLowerCase().includes('жен');
+
+  // Контур тела (outline) — мужской vs женский
+  const outline = isFemale
+    ? `<!-- outline female -->
+       <ellipse class="body-outline" cx="50" cy="22" rx="16" ry="18"/>
+       <path class="body-outline" d="M37 39 Q34 46 34 52 Q22 56 20 68 Q18 80 26 90 Q16 102 18 118 Q20 130 32 134 L68 134 Q80 130 82 118 Q84 102 74 90 Q82 80 80 68 Q78 56 66 52 Q66 46 63 39"/>
+       <path class="body-outline" d="M32 134 L28 190 Q27 196 32 198"/>
+       <path class="body-outline" d="M68 134 L72 190 Q73 196 68 198"/>`
+    : `<!-- outline male -->
+       <ellipse class="body-outline" cx="50" cy="22" rx="16" ry="18"/>
+       <path class="body-outline" d="M37 39 Q34 46 34 52 Q20 56 20 70 L20 130 Q20 138 50 138 Q80 138 80 130 L80 70 Q80 56 66 52 Q66 46 63 39"/>
+       <path class="body-outline" d="M32 138 L28 190 Q27 196 32 198"/>
+       <path class="body-outline" d="M68 138 L72 190 Q73 196 68 198"/>`;
+
+  // Зоны подсветки
+  // 1. Кровь → грудь и живот (центр туловища)
+  const zoneBlood = isFemale
+    ? `<ellipse class="body-zone" data-group="blood" cx="50" cy="88" rx="20" ry="28"/>`
+    : `<rect class="body-zone" data-group="blood" x="28" y="62" width="44" height="56" rx="4"/>`;
+
+  // 2. Гормоны → голова + нижний таз
+  const zoneHormones = isFemale
+    ? `<ellipse class="body-zone" data-group="hormones" cx="50" cy="22" rx="14" ry="16"/>
+       <ellipse class="body-zone" data-group="hormones" cx="50" cy="122" rx="18" ry="12"/>`
+    : `<ellipse class="body-zone" data-group="hormones" cx="50" cy="22" rx="14" ry="16"/>
+       <ellipse class="body-zone" data-group="hormones" cx="50" cy="126" rx="20" ry="10"/>`;
+
+  // 3. Инфекции → шея + подмышки (лимфоузлы)
+  const zoneInfection =
+    `<ellipse class="body-zone" data-group="infection" cx="50" cy="43" rx="7" ry="6"/>
+     <ellipse class="body-zone" data-group="infection" cx="22" cy="72" rx="6" ry="8"/>
+     <ellipse class="body-zone" data-group="infection" cx="78" cy="72" rx="6" ry="8"/>`;
+
+  // 4. Биоматериалы → низ живота / мочеполовая
+  const zoneBio = isFemale
+    ? `<ellipse class="body-zone" data-group="bio" cx="50" cy="118" rx="16" ry="14"/>`
+    : `<ellipse class="body-zone" data-group="bio" cx="50" cy="122" rx="16" ry="12"/>`;
+
+  // 5. Диагностика → лёгкие / сердце (верхняя часть груди)
+  const zoneDiag =
+    `<ellipse class="body-zone" data-group="diag" cx="37" cy="72" rx="10" ry="14"/>
+     <ellipse class="body-zone" data-group="diag" cx="63" cy="72" rx="10" ry="14"/>`;
+
+  return `<svg viewBox="0 0 100 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+  ${zoneBlood}
+  ${zoneHormones}
+  ${zoneInfection}
+  ${zoneBio}
+  ${zoneDiag}
+  ${outline}
+</svg>`;
 }
 
-function renderIndicators(indicators) {
-  const grid   = document.getElementById('summaryGrid');
-  const badge  = document.getElementById('badge-summary');
-  const footer = document.getElementById('summaryFooterText');
-  const loader = document.getElementById('loaderSummary');
-  if (loader) loader.classList.add('hidden');
-  if (!grid) return;
+// ─── Группы анализов ────────────────────────────────────────────────────────
+const GROUPS = [
+  {
+    id: 'blood',
+    name: 'Кровь',
+    keys: ['гемоглобин','лейкоцит','тромбоцит','соэ','эритроцит','гематокрит','холестерин','глюкоза','билирубин','алт','аст','alt','ast','мочевин','креатинин','триглицерид','фибриноген','мно','протромбин','лимфоцит','нейтрофил','моноцит','базофил','эозинофил'],
+  },
+  {
+    id: 'hormones',
+    name: 'Гормоны',
+    keys: ['ттг','т3','т4','кортизол','тестостерон','эстрадиол','фсг','лг','пролактин','инсулин','dhea','dheas','прогестерон'],
+  },
+  {
+    id: 'infection',
+    name: 'Инфекции',
+    keys: ['антитела','иммуноглобулин','igg','igm','iga','covid','вич','hiv','гепатит','hepatitis','цмв','вэб','токсоплазм','хламид','микоплазм','ureaplasma','сифилис','herpes'],
+  },
+  {
+    id: 'bio',
+    name: 'Биоматериалы',
+    keys: ['моча','белок в моче','глюкоза в моче','лейкоциты в моче','эритроциты в моче','кал','копрограмм','спермограмм','мазок'],
+  },
+  {
+    id: 'diag',
+    name: 'Диагностика',
+    keys: ['экг','эхо','узи','рентген','кт','мрт','спирометр','денситометр'],
+  },
+];
 
+// ─── Блок 01: Силуэт + группы ─────────────────────────────────────────────
+function renderIndicators(indicators, gender) {
+  const loaderEl  = document.getElementById('loaderSummary');
+  const bodyEl    = document.getElementById('summaryBody');
+  const badgeEl   = document.getElementById('badge-summary');
+  const footerEl  = document.getElementById('summaryFooterText');
+  const silEl     = document.getElementById('silhouetteWrap');
+  const silLabel  = document.getElementById('silhouetteLabel');
+  const scoreEl   = document.getElementById('silhouetteScore');
+  const groupsEl  = document.getElementById('groupsPanel');
+
+  if (loaderEl) loaderEl.classList.add('hidden');
+  if (bodyEl)   bodyEl.style.display = '';
+
+  // Вставляем SVG силуэт
+  if (silEl) silEl.innerHTML = buildSilhouetteSVG(gender);
+  if (silLabel) {
+    const g = (gender || '').toLowerCase();
+    silLabel.textContent = g.includes('муж') ? 'Мужской' : g.includes('жен') ? 'Женский' : 'Пол не указан';
+  }
+
+  // Считаем статус по каждой группе
+  const groupStatus = {};
+  GROUPS.forEach(gr => {
+    const matched = indicators.filter(ind =>
+      gr.keys.some(k => ind.name.toLowerCase().includes(k))
+    );
+    if (!matched.length) { groupStatus[gr.id] = { cls: 'none', pct: 0, count: 0 }; return; }
+    const pct = Math.round((matched.filter(i => i.status === 'normal').length / matched.length) * 100);
+    const cls = pct >= 80 ? 'ok' : pct >= 50 ? 'warn' : 'alert';
+    groupStatus[gr.id] = { cls, pct, count: matched.length };
+  });
+
+  // Подсвечиваем зоны на силуэте
+  if (silEl) {
+    silEl.querySelectorAll('.body-zone').forEach(el => {
+      const gid = el.dataset.group;
+      const st  = groupStatus[gid];
+      if (st) el.classList.add(st.cls);
+    });
+  }
+
+  // Общий скор
   if (!indicators.length) {
-    grid.innerHTML = '<div class="analyses-empty" style="grid-column:1/-1;padding:24px 0;">Показатели появятся после загрузки анализов</div>';
-    if (badge) { badge.textContent = 'нет данных'; }
-    return;
+    if (scoreEl) scoreEl.textContent = '—';
+    if (badgeEl) { badgeEl.textContent = 'нет данных'; badgeEl.className = 'card-badge badge-neutral'; }
+  } else {
+    const total  = indicators.length;
+    const normal = indicators.filter(i => i.status === 'normal').length;
+    const score  = Math.round((normal / total) * 100);
+    if (scoreEl) scoreEl.textContent = score;
+    const deviations = total - normal;
+    if (badgeEl) {
+      badgeEl.textContent = deviations
+        ? deviations + ' ' + plural(deviations, 'отклонение', 'отклонения', 'отклонений')
+        : 'всё в норме';
+      badgeEl.className = 'card-badge ' + (deviations ? 'badge-warn' : 'badge-ok');
+    }
   }
 
-  const deviations = indicators.filter(i => i.status !== 'normal').length;
-  if (badge) {
-    badge.textContent = deviations
-      ? deviations + ' ' + plural(deviations, 'отклонение', 'отклонения', 'отклонений')
-      : 'всё в норме';
-    badge.className = 'card-badge ' + (deviations ? 'badge-warn' : 'badge-ok');
+  // Список групп справа
+  if (groupsEl) {
+    groupsEl.innerHTML = GROUPS.map(gr => {
+      const st = groupStatus[gr.id];
+      const label = st.cls === 'ok' ? '✓ норма' : st.cls === 'warn' ? '! внимание' : st.cls === 'alert' ? '✕ отклонение' : 'нет данных';
+      return `
+        <div class="group-row">
+          <div class="group-dot ${st.cls}"></div>
+          <span class="group-name">${gr.name}</span>
+          <div class="group-bar-wrap"><div class="group-bar-fill ${st.cls}" style="width:${st.pct}%"></div></div>
+          <span class="group-count">${st.count || ''}</span>
+          <span class="group-status ${st.cls}">${label}</span>
+        </div>`;
+    }).join('');
   }
 
-  grid.innerHTML = indicators.slice(0, 9).map(ind => {
-    const cls = statusClass(ind.status);
-    return `
-      <div class="summary-item ${cls}">
-        <div class="summary-item-name">${escHtml(ind.name)}</div>
-        <div class="summary-item-val">${escHtml(ind.value)}</div>
-        <div class="summary-item-status ${cls}">${statusLabel(ind.status)}</div>
-      </div>`;
-  }).join('');
-
-  if (footer && indicators.length) {
+  // Footer
+  if (footerEl && indicators.length) {
     const last = indicators.reduce((a, b) => (a.date || '') > (b.date || '') ? a : b);
-    footer.textContent = `Последний анализ: ${escHtml(last.source)} · ${fmtDate(last.date)}`;
+    footerEl.textContent = `Последний анализ: ${escHtml(last.source)} · ${fmtDate(last.date)}`;
+  } else if (footerEl) {
+    footerEl.textContent = 'Анализы ещё не загружены';
   }
 }
 
@@ -909,7 +1147,7 @@ function invalidateCache() {
   const cached = loadCache(userId);
   if (cached) {
     renderHistory(cached.history             || []);
-    renderIndicators(cached.indicators       || []);
+    renderIndicators(cached.indicators       || [], session._gender || '');
     renderRecommendations(cached.recommendations || []);
     renderHealthScore(cached.indicators      || []);
   }
@@ -922,7 +1160,7 @@ function invalidateCache() {
     saveCache(userId, data);
 
     renderHistory(data.history             || []);
-    renderIndicators(data.indicators       || []);
+    renderIndicators(data.indicators       || [], session._gender || '');
     renderRecommendations(data.recommendations || []);
     renderHealthScore(data.indicators      || []);
   } catch (e) {
