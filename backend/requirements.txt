@@ -4,5 +4,5 @@ flask-limiter
 google-genai
 httpx
 python-dotenv
-python-magic
 gunicorn
+python-magic-bin
