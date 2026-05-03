@@ -169,25 +169,26 @@ def delete_file_from_storage(file_url: str):
 
 
 # ========================
-# Gemini анализ
+# ШАГ 1: Извлечение показателей из документа
 # ========================
-def analyze_with_gemini(file_bytes: bytes, filename: str, age: str, gender: str) -> str:
-    print("🧠 Gemini START", flush=True)
+def extract_indicators_from_file(file_bytes: bytes, filename: str) -> str:
+    """
+    Только извлекает сырые показатели из файла.
+    Возвращает JSON-массив объектов {name, value, unit}.
+    """
+    print("🔍 Gemini EXTRACT START", flush=True)
 
-    prompt = f"""
-Ты — медицинский ассистент.
-Задача — выдать результат в строго заданной структуре.
+    prompt = """
+Ты — парсер медицинских документов. Твоя единственная задача — извлечь все числовые показатели из документа.
 
 ПРАВИЛА:
-1. Если анализы найдены — отвечай строго в формате:
-   Название - значение - статус ("норма", "выше нормы", "ниже нормы")
-2. После таблицы анализов кратко напиши:
-   — Общее состояние
-   — На что стоит обратить внимание
-   — Рекомендации
-
-Возраст: {age}
-Пол: {gender}
+1. Верни ТОЛЬКО валидный JSON-массив, без каких-либо пояснений, без markdown-блоков.
+2. Каждый элемент массива: {"name": "...", "value": "...", "unit": "..."}
+3. name — оригинальное название показателя из документа
+4. value — только числовое значение (например "5.4")
+5. unit — единица измерения (например "г/л", "ммоль/л", "%" и т.п.), если не указана — пустая строка
+6. Если в документе нет медицинских показателей — верни пустой массив: []
+7. НЕ интерпретируй, НЕ добавляй статус, НЕ пиши ничего кроме JSON.
 """
 
     mime_type = get_mime_type(filename)
@@ -200,12 +201,219 @@ def analyze_with_gemini(file_bytes: bytes, filename: str, age: str, gender: str)
         ],
     )
 
-    print("✅ Gemini done", flush=True)
+    print("✅ Gemini EXTRACT done", flush=True)
+    return response.text.strip()
+
+
+# ========================
+# ШАГ 2: Анализ проверенных показателей + рекомендации
+# ========================
+def analyze_verified_indicators(indicators_json: str, age: str, gender: str) -> str:
+    """
+    Принимает проверенные пользователем показатели (JSON),
+    нормализует их и возвращает полный анализ с рекомендациями.
+    """
+    print("🧠 Gemini ANALYZE START", flush=True)
+
+    prompt = f"""
+Ты — медицинский ассистент. Пользователь уже проверил и подтвердил следующие показатели из своих анализов:
+
+{indicators_json}
+
+Возраст пациента: {age}
+Пол пациента: {gender}
+
+ЗАДАЧА — выдать полный структурированный анализ строго в следующем формате:
+
+БЛОК 1 — таблица показателей (по одному на строку):
+Нормализованное название - значение с единицей - статус ("норма", "выше нормы", "ниже нормы")
+
+Нормализованное название — стандартное медицинское название показателя на русском языке.
+Значение — число и единица измерения.
+Статус — относительно референсных значений для данного возраста и пола.
+
+БЛОК 2 — после таблицы, кратко:
+Общее состояние: [одно предложение]
+На что стоит обратить внимание: [перечислить отклонения или написать "Все показатели в норме"]
+Рекомендации:
+- [рекомендация 1]
+- [рекомендация 2]
+...
+
+Отвечай строго по формату, без вступлений и пояснений.
+"""
+
+    response = gemini.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=[prompt],
+    )
+
+    print("✅ Gemini ANALYZE done", flush=True)
     return response.text
 
 
 # ========================
-# API: /analyze
+# API: /extract — ШАГ 1: извлечь показатели из файла
+# ========================
+@app.route("/extract", methods=["POST"])
+def extract():
+    """
+    Принимает файл, возвращает JSON-массив сырых показателей.
+    Файл НЕ сохраняется в Storage и БД — это только предпросмотр.
+    """
+    try:
+        print("🔍 /extract HIT", flush=True)
+
+        user = get_current_user(request.headers.get("Authorization"))
+
+        if "file" not in request.files:
+            return jsonify({"error": "Файл не найден"}), 400
+
+        file = request.files["file"]
+
+        mime_type = get_mime_type(file.filename)
+        if mime_type is None:
+            return jsonify({"error": "Недопустимый тип файла. Разрешены: PDF, PNG, JPG"}), 400
+
+        file.seek(0)
+        file_bytes = file.read()
+        if not file_bytes:
+            return jsonify({"error": "Файл пустой"}), 400
+
+        raw = extract_indicators_from_file(file_bytes, file.filename)
+
+        # Пробуем распарсить JSON от Gemini
+        import json as _json
+        try:
+            # Убираем возможные markdown-блоки если Gemini всё же добавил
+            clean = raw.strip()
+            if clean.startswith("```"):
+                clean = clean.split("```")[1]
+                if clean.startswith("json"):
+                    clean = clean[4:]
+                clean = clean.strip()
+            indicators = _json.loads(clean)
+            if not isinstance(indicators, list):
+                indicators = []
+        except Exception:
+            indicators = []
+
+        return jsonify({"indicators": indicators, "raw": raw})
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
+    except Exception as e:
+        print("🔥 /extract ERROR:", flush=True)
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ========================
+# API: /analyze-indicators — ШАГ 2: анализ проверенных показателей + сохранение
+# ========================
+@app.route("/analyze-indicators", methods=["POST"])
+def analyze_indicators():
+    """
+    Принимает:
+      - file: оригинальный файл (для сохранения в Storage)
+      - indicators: JSON-строка с проверенными показателями
+      - age, gender, analysis_name, analysis_date
+    Возвращает полный анализ и сохраняет в БД.
+    """
+    try:
+        print("🧠 /analyze-indicators HIT", flush=True)
+
+        user = get_current_user(request.headers.get("Authorization"))
+        print(f"👤 user: {user['id']}", flush=True)
+
+        if "file" not in request.files:
+            return jsonify({"error": "Файл не найден"}), 400
+
+        file              = request.files["file"]
+        indicators_json   = request.form.get("indicators", "[]").strip()
+        age               = request.form.get("age", "").strip()
+        gender            = request.form.get("gender", "").strip()
+        analysis_name     = request.form.get("analysis_name", file.filename).strip()
+        analysis_date     = request.form.get("analysis_date", "").strip()
+
+        if not age or not gender:
+            return jsonify({"error": "Возраст или пол не указаны"}), 400
+
+        try:
+            age_int = int(age)
+            if not (0 <= age_int <= 120):
+                raise ValueError()
+        except ValueError:
+            return jsonify({"error": "Возраст должен быть числом от 0 до 120"}), 400
+
+        mime_type = get_mime_type(file.filename)
+        if mime_type is None:
+            return jsonify({"error": "Недопустимый тип файла. Разрешены: PDF, PNG, JPG"}), 400
+
+        file.seek(0)
+        file_bytes = file.read()
+        if not file_bytes:
+            return jsonify({"error": "Файл пустой"}), 400
+
+        # Проверка дубликата
+        file_hash = hashlib.sha256(file_bytes).hexdigest()
+        existing = db_select(
+            "analyses",
+            select="id,analysis_name,analysis_date",
+            filters={"user_id": user["id"], "file_hash": file_hash},
+        )
+        if existing:
+            dup      = existing[0]
+            dup_name = dup.get("analysis_name") or "—"
+            dup_date = dup.get("analysis_date") or ""
+            msg = f"Этот файл уже загружен как «{dup_name}»"
+            if dup_date:
+                msg += f" (дата анализа: {dup_date})"
+            return jsonify({"error": msg}), 409
+
+        print(f"📊 indicators: {indicators_json[:200]}", flush=True)
+
+        # Анализируем проверенные показатели
+        analysis = analyze_verified_indicators(indicators_json, age, gender)
+
+        # Загружаем файл в Storage
+        file_url = upload_file_to_storage(user["id"], file.filename, file_bytes, mime_type)
+        print(f"📦 File uploaded: {file_url}", flush=True)
+
+        # Сохраняем в БД
+        try:
+            row = {
+                "user_id":       user["id"],
+                "filename":      file.filename,
+                "analysis_name": analysis_name,
+                "age":           age,
+                "gender":        gender,
+                "result":        analysis,
+                "file_url":      file_url,
+                "file_hash":     file_hash,
+            }
+            if analysis_date:
+                row["analysis_date"] = analysis_date
+
+            db_insert("analyses", row)
+            print("💾 Saved to DB", flush=True)
+        except Exception as db_err:
+            print(f"💥 DB insert failed, cleaning up storage: {db_err}", flush=True)
+            delete_file_from_storage(file_url)
+            raise
+
+        return jsonify({"analysis": analysis})
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
+    except Exception as e:
+        print("🔥 /analyze-indicators ERROR:", flush=True)
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ========================
+# API: /analyze — устаревший эндпоинт, оставлен для обратной совместимости
 # ========================
 @app.route("/analyze", methods=["POST"])
 def analyze():
@@ -267,8 +475,21 @@ def analyze():
                 msg += f" (дата анализа: {dup_date})"
             return jsonify({"error": msg}), 409
 
-        # ИСПРАВЛЕНИЕ #1: сначала Gemini — если упадёт, файл не попадёт в Storage
-        analysis = analyze_with_gemini(file_bytes, file.filename, age, gender)
+        # Сначала извлекаем показатели, затем анализируем
+        import json as _json
+        raw = extract_indicators_from_file(file_bytes, file.filename)
+        try:
+            clean = raw.strip()
+            if clean.startswith("```"):
+                clean = clean.split("```")[1]
+                if clean.startswith("json"): clean = clean[4:]
+                clean = clean.strip()
+            indicators_list = _json.loads(clean)
+            if not isinstance(indicators_list, list): indicators_list = []
+        except Exception:
+            indicators_list = []
+        indicators_json = _json.dumps(indicators_list, ensure_ascii=False)
+        analysis = analyze_verified_indicators(indicators_json, age, gender)
 
         file_url = upload_file_to_storage(user["id"], file.filename, file_bytes, mime_type)
         print(f"📦 File uploaded: {file_url}", flush=True)

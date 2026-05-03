@@ -20,11 +20,13 @@
     --text-dim: #8C8480;
     --text-mid: #5A5650;
     --mono: 'IBM Plex Mono', monospace;
+    --green: #3DCC7A;
+    --red: #FF5555;
+    --yellow: #C89000;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-
   body {
     font-family: var(--mono);
     background: var(--bg);
@@ -32,7 +34,6 @@
     min-height: 100vh;
     overflow-x: hidden;
   }
-
   body::before {
     content: '';
     position: fixed; inset: 0;
@@ -50,7 +51,6 @@
     padding: 0 48px; height: 56px;
     background: #ffffff; border-bottom: 2px solid var(--text);
   }
-
   .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
   .logo-icon {
     width: 32px; height: 32px; background: var(--orange);
@@ -60,10 +60,7 @@
   .logo-icon svg { width: 16px; height: 16px; }
   .logo-text { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.1em; text-transform: uppercase; }
   .logo-text span { color: var(--orange); }
-
   .header-right { display: flex; align-items: center; gap: 12px; }
-
-  /* ─── HEADER UNIFIED BUTTONS ─── */
   .btn-nav, .btn-nav-ghost {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 9px 18px; background: var(--text); color: #ffffff;
@@ -75,86 +72,79 @@
   }
   .btn-nav:hover, .btn-nav-ghost:hover { background: var(--orange); }
   .btn-nav svg, .btn-nav-ghost svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
-  .btn-nav.btn-danger { background: #c0392b; }
-  .btn-nav.btn-danger:hover { background: #e74c3c; }
-  /* ─── CARD CTA BUTTONS ─── */
-  .btn-primary-sm {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 18px; background: var(--text); color: #ffffff;
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    text-decoration: none; border: none; outline: none; cursor: pointer;
-    transition: background 0.18s; white-space: nowrap;
-    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
-  }
-  .btn-primary-sm:hover { background: var(--orange); }
-  .btn-primary-sm svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
   /* ─── ANIMATIONS ─── */
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes statusPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
   @keyframes pixelSpin { 0%, 60%, 100% { opacity: 0.1; } 30% { opacity: 1; } }
-  @keyframes slideIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ─── PAGE LAYOUT ─── */
+  /* ─── PAGE ─── */
   .page-wrap {
     padding: 80px 48px 80px;
     max-width: 1100px;
     margin: 0 auto;
     position: relative; z-index: 1;
   }
-
-  /* ─── PAGE HEADER ─── */
   .page-header {
     display: flex; align-items: flex-start; justify-content: space-between;
     padding: 40px 0 40px;
     border-bottom: 1px solid var(--line);
-    margin-bottom: 48px;
-    gap: 20px;
+    margin-bottom: 48px; gap: 20px;
   }
-
-  .page-header-left {}
   .page-breadcrumb {
     font-size: 11px; color: var(--text-dim); letter-spacing: 0.2em; text-transform: uppercase;
-    margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
   }
   .page-breadcrumb a { color: var(--text-dim); text-decoration: none; transition: color 0.15s; }
   .page-breadcrumb a:hover { color: var(--orange); }
   .page-breadcrumb span { color: var(--orange); }
-
-  .page-title {
-    font-size: 28px; font-weight: 700; letter-spacing: -0.5px;
-    color: var(--text); line-height: 1.1;
-  }
+  .page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; color: var(--text); line-height: 1.1; }
   .page-title .cursor-blink {
     display: inline-block; width: 8px; height: 1em;
     background: var(--orange); vertical-align: text-bottom; margin-left: 4px;
     animation: blink 0.9s step-end infinite;
   }
-  .page-sub {
-    font-size: 12px; color: var(--text-dim); margin-top: 10px;
-    letter-spacing: 0.05em; line-height: 1.6;
-  }
+  .page-sub { font-size: 12px; color: var(--text-dim); margin-top: 10px; letter-spacing: 0.05em; line-height: 1.6; }
   .page-sub::before { content: '// '; color: var(--text-dim); }
+  .page-header-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding-top: 8px; }
 
-  .page-header-right {
-    display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding-top: 8px;
+  /* ─── STEPPER ─── */
+  .stepper {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 40px; padding: 0 2px;
   }
+  .step-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-dim);
+    transition: color 0.25s;
+  }
+  .step-item.active { color: var(--orange); }
+  .step-item.done   { color: var(--green); }
+  .step-num {
+    width: 26px; height: 26px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    background: var(--bg3); border: 1px solid var(--line);
+    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
+    transition: background 0.25s, color 0.25s, border-color 0.25s;
+  }
+  .step-item.active .step-num { background: var(--orange); color: #fff; border-color: var(--orange); }
+  .step-item.done   .step-num { background: var(--green);  color: #fff; border-color: var(--green); }
+  .step-line { flex: 1; height: 1px; background: var(--line); margin: 0 12px; min-width: 32px; }
 
-  /* ─── ANALYZER GRID ─── */
-  .analyzer-wrap {
+  /* ─── MAIN CARD ─── */
+  .card-wrap {
     background: var(--text);
     clip-path: polygon(22px 0%, 100% 0%, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0% 100%, 0% 22px);
     padding: 2px;
   }
-  .analyzer-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line);
+  .card-inner {
+    background: var(--bg2);
     clip-path: polygon(20px 0%, 100% 0%, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0% 100%, 0% 20px);
+    padding: 40px;
+    min-height: 520px;
   }
-  .analyzer-panel { background: var(--bg2); padding: 40px; }
-
   .panel-label {
     font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
     color: var(--text-dim); padding: 8px 0; margin-bottom: 28px;
@@ -170,7 +160,6 @@
     position: relative; margin-bottom: 24px; background: var(--bg);
   }
   .upload-zone:hover, .upload-zone.dragover { border-color: var(--orange); border-style: solid; background: var(--orange-pale); }
-
   .upload-icon {
     width: 48px; height: 48px; background: var(--bg3);
     display: flex; align-items: center; justify-content: center;
@@ -192,7 +181,6 @@
     border: 1px solid var(--orange-border); margin-bottom: 24px;
   }
   .file-preview.show { display: flex; }
-
   .file-preview-icon {
     width: 36px; height: 36px; background: var(--orange);
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
@@ -202,12 +190,10 @@
   .file-preview-info { flex: 1; min-width: 0; }
   .file-preview-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .file-preview-size { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-
   .file-remove {
-    width: 28px; height: 28px; position: relative;
-    background: transparent; cursor: pointer;
+    width: 28px; height: 28px; background: transparent; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    color: var(--text-dim); transition: color 0.15s; flex-shrink: 0; border: none;
+    color: var(--text-dim); transition: color 0.15s; flex-shrink: 0; border: none; position: relative;
   }
   .file-remove::before {
     content: ''; position: absolute; inset: 0;
@@ -215,149 +201,82 @@
     clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
     transition: background 0.15s;
   }
-  .file-remove::after {
-    content: ''; position: absolute; inset: 1px;
-    background: transparent;
-    clip-path: polygon(4px 0%, 100% 0%, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0% 100%, 0% 4px);
-    transition: background 0.15s;
-  }
   .file-remove:hover::before { background: var(--orange); }
-  .file-remove:hover::after { background: var(--orange-pale); }
   .file-remove:hover { color: var(--orange); }
   .file-remove svg { width: 12px; height: 12px; stroke: currentColor; fill: none; position: relative; z-index: 1; }
 
-  /* ─── FORM FIELDS ─── */
+  /* ─── FORM ─── */
   .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-
   label {
     font-size: 11px; color: var(--text-dim);
     letter-spacing: 0.2em; text-transform: uppercase;
     display: flex; align-items: center; gap: 5px;
   }
   label::before { content: '/'; color: var(--text-dim); font-weight: 700; }
-
   input[type="text"], input[type="date"] {
     padding: 12px 14px; height: 46px;
     border: 1px solid var(--line); border-left: 3px solid var(--bg3);
     background: var(--bg); font-family: var(--mono);
     font-size: 13px; color: var(--text); outline: none;
-    transition: border-color 0.15s, border-left-color 0.15s;
-    width: 100%;
+    transition: border-color 0.15s, border-left-color 0.15s; width: 100%;
   }
   input[type="text"]:focus, input[type="date"]:focus {
     border-color: var(--text); border-left-color: var(--orange); background: #fff;
   }
   input[type="text"]::placeholder { color: var(--text-dim); }
-  input[type="date"]::-webkit-calendar-picker-indicator {
-    opacity: 0.4; cursor: pointer;
-    filter: invert(0.3);
-  }
-  input[type="date"]::-webkit-datetime-edit { color: var(--text); }
-  input[type="date"]::-webkit-datetime-edit-fields-wrapper { color: var(--text); }
-
+  input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.4; cursor: pointer; filter: invert(0.3); }
   .field-hint { font-size: 11px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.05em; }
 
   /* ─── BUTTONS ─── */
-  .btn-chamfer {
+  .btn-primary {
     display: inline-flex; align-items: center; justify-content: center; gap: 10px;
     padding: 16px 32px; background: var(--text); color: #ffffff;
     font-family: var(--mono); font-size: 13px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none;
+    letter-spacing: 0.08em; text-transform: uppercase;
     cursor: pointer; border: none; outline: none;
     transition: background 0.18s; white-space: nowrap; line-height: 1; width: 100%;
     clip-path: polygon(12px 0%, 100% 0%, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0% 100%, 0% 12px);
   }
-  .btn-chamfer:hover:not(:disabled) { background: var(--orange); }
-  .btn-chamfer:active:not(:disabled) { background: var(--orange-dim); }
-  .btn-chamfer:disabled {
-    background: #C8C6C2; color: #888480; cursor: not-allowed;
-  }
-  .btn-chamfer svg { width: 16px; height: 16px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  .btn-primary:hover:not(:disabled) { background: var(--orange); }
+  .btn-primary:disabled { background: #C8C6C2; color: #888480; cursor: not-allowed; }
+  .btn-primary svg { width: 16px; height: 16px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
   .btn-save {
     display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-    padding: 14px 28px; background: transparent; color: #3DCC7A;
+    padding: 14px 28px; background: transparent; color: var(--green);
     font-family: var(--mono); font-size: 12px; font-weight: 700;
     letter-spacing: 0.1em; text-transform: uppercase;
     cursor: pointer; border: 1px solid rgba(61,204,122,0.35); outline: none;
     transition: all 0.18s; white-space: nowrap; line-height: 1; width: 100%;
     clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
-    margin-top: 10px;
   }
-  .btn-save:hover:not(:disabled) {
-    background: rgba(61,204,122,0.1);
-    border-color: rgba(61,204,122,0.7);
-  }
+  .btn-save:hover:not(:disabled) { background: rgba(61,204,122,0.1); border-color: rgba(61,204,122,0.7); }
   .btn-save:disabled { opacity: 0.3; cursor: not-allowed; }
   .btn-save svg { width: 15px; height: 15px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
-  .btn-group { display: flex; flex-direction: column; gap: 0; margin-top: 20px; }
-
-  /* ─── RESULT PANEL ─── */
-  .result-panel { display: flex; flex-direction: column; }
-
-  .result-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  .result-title { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.05em; }
-
-  .result-status-wrap {
-    display: inline-block; padding: 1px;
-    background: var(--text-dim);
-    clip-path: polygon(7px 0%, 100% 0%, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0% 100%, 0% 7px);
-  }
-  .result-status {
-    display: block;
-    font-size: 10px; letter-spacing: 0.15em; padding: 4px 10px; text-transform: uppercase;
-    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
-  }
-  .status-waiting { background: var(--bg3); color: var(--text-dim); }
-  .result-status-wrap.sw { background: var(--line); }
-  .result-status-wrap.sl { background: var(--orange); }
-  .result-status-wrap.sd { background: rgba(0,200,100,0.4); }
-  .result-status-wrap.se { background: rgba(255,60,60,0.4); }
-  .status-loading { background: var(--orange-pale); color: var(--orange); animation: statusPulse 1s ease infinite; }
-  .status-done { background: rgba(0,200,100,0.08); color: #3DCC7A; }
-  .status-error { background: rgba(255,60,60,0.08); color: #FF5555; }
-
-  .result-box {
-    flex: 1; min-height: 400px; background: var(--bg);
-    border: 1px solid var(--line); padding: 24px;
-    overflow-y: auto; position: relative; font-size: 13px;
-  }
-
-  /* Empty state */
-  .empty-state {
-    position: absolute; inset: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 12px; color: var(--text-dim); text-align: center; padding: 24px;
-  }
-  .empty-icon {
-    width: 56px; height: 56px; position: relative;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .empty-icon::before {
-    content: ''; position: absolute; inset: 0;
-    background: var(--line);
+  .btn-ghost {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 24px; background: transparent; color: var(--text-mid);
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; border: 1px solid var(--line); outline: none;
+    transition: all 0.18s; white-space: nowrap; line-height: 1;
     clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
   }
-  .empty-icon::after {
-    content: ''; position: absolute; inset: 1px;
-    background: var(--bg3);
-    clip-path: polygon(7px 0%, 100% 0%, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0% 100%, 0% 7px);
-  }
-  .empty-icon svg { position: relative; z-index: 1; width: 24px; height: 24px; stroke: var(--text-dim); fill: none; }
-  .empty-text { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
-  .empty-sub { font-size: 11px; color: var(--text-dim); line-height: 1.6; }
+  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+  .btn-ghost svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
-  /* Loader */
-  .loader {
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    position: absolute; inset: 0; gap: 20px; background: var(--bg);
+  .btn-row { display: flex; gap: 10px; margin-top: 24px; }
+  .btn-row .btn-primary { flex: 1; }
+
+  /* ─── LOADER ─── */
+  .loader-overlay {
+    display: none; position: absolute; inset: 0;
+    background: var(--bg2); z-index: 10;
+    flex-direction: column; align-items: center; justify-content: center; gap: 20px;
   }
-  .loader.show { display: flex; }
+  .loader-overlay.show { display: flex; }
   .loader-px { width: 40px; height: 40px; display: grid; grid-template-columns: repeat(4,1fr); grid-template-rows: repeat(4,1fr); gap: 3px; }
   .loader-px span { background: var(--orange); animation: pixelSpin 1s step-end infinite; }
   .loader-px span:nth-child(1)  { animation-delay: 0s; }
@@ -376,62 +295,144 @@
   .loader-px span:nth-child(14) { animation-delay: 0.8125s; }
   .loader-px span:nth-child(15) { animation-delay: 0.875s; }
   .loader-px span:nth-child(16) { animation-delay: 0.9375s; }
-  .loader-text { font-size: 12px; color: var(--text-dim); text-align: center; line-height: 1.7; letter-spacing: 0.05em; }
+  .loader-msg { font-size: 12px; color: var(--text-dim); text-align: center; line-height: 1.7; letter-spacing: 0.05em; }
 
-  /* ─── Progress steps ─── */
-  .loader-steps { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 220px; margin-top: 4px; }
-  .loader-step { display: flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: 0.06em; color: var(--text-dim); transition: color 0.3s; }
-  .loader-step.active { color: var(--orange); }
-  .loader-step.done   { color: #3DCC7A; }
-  .step-dot {
-    width: 18px; height: 18px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 9px; font-weight: 700;
-    background: var(--bg3); border: 1px solid var(--line);
-    clip-path: polygon(4px 0%,100% 0%,100% calc(100% - 4px),calc(100% - 4px) 100%,0% 100%,0% 4px);
-    transition: background 0.3s, color 0.3s;
+  /* ─── ERROR BANNER ─── */
+  .error-banner {
+    display: none; align-items: center; gap: 10px;
+    padding: 14px 16px; background: rgba(255,60,60,0.08);
+    border: 1px solid rgba(255,60,60,0.25);
+    color: var(--red); font-size: 12px; font-weight: 500; margin-bottom: 20px;
   }
-  .loader-step.active .step-dot { background: var(--orange); color: #fff; border-color: var(--orange); }
-  .loader-step.done   .step-dot { background: #3DCC7A; color: #fff; border-color: #3DCC7A; }
-  .step-label { text-transform: uppercase; }
+  .error-banner.show { display: flex; }
+  .error-banner svg { width: 16px; height: 16px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
-  /* Result content */
-  .result-content { display: none; font-size: 13px; line-height: 1.8; color: var(--text-mid); }
-  .result-content.show { display: block; animation: fadeIn 0.3s ease both; }
-  .result-content h3 {
-    font-size: 12px; font-weight: 700; color: var(--text);
+  /* ─── STEP 2: INDICATORS EDITOR ─── */
+  .indicators-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px; gap: 16px;
+  }
+  .indicators-info {
+    font-size: 12px; color: var(--text-mid); line-height: 1.6; flex: 1;
+  }
+  .indicators-info strong { color: var(--text); }
+
+  .ind-table-wrap {
+    border: 1px solid var(--line); background: var(--bg); margin-bottom: 24px;
+    max-height: 400px; overflow-y: auto;
+  }
+  .ind-table {
+    width: 100%; border-collapse: collapse;
+  }
+  .ind-table thead th {
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--text-dim); padding: 10px 14px; text-align: left;
+    border-bottom: 1px solid var(--line); background: var(--bg2);
+    font-weight: 700; white-space: nowrap;
+  }
+  .ind-table thead th:first-child::before { content: '/ '; color: var(--orange); }
+  .ind-table tbody tr { border-bottom: 1px solid var(--line); transition: background 0.12s; }
+  .ind-table tbody tr:last-child { border-bottom: none; }
+  .ind-table tbody tr:hover { background: var(--orange-pale); }
+  .ind-table tbody td { padding: 8px 14px; vertical-align: middle; }
+
+  .ind-name {
+    font-size: 12px; font-weight: 600; color: var(--text);
+    min-width: 160px;
+  }
+  .ind-input {
+    padding: 6px 10px; height: 34px;
+    border: 1px solid var(--line); border-left: 2px solid var(--bg3);
+    background: var(--bg); font-family: var(--mono);
+    font-size: 12px; color: var(--text); outline: none;
+    transition: border-color 0.12s, border-left-color 0.12s;
+    width: 100%; min-width: 80px;
+  }
+  .ind-input:focus { border-color: var(--orange); border-left-color: var(--orange); background: #fff; }
+  .ind-unit {
+    font-size: 11px; color: var(--text-dim); white-space: nowrap; padding-left: 4px;
+    min-width: 60px;
+  }
+  .ind-del {
+    width: 28px; height: 28px; background: transparent; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dim); transition: color 0.12s; flex-shrink: 0; padding: 0;
+  }
+  .ind-del:hover { color: var(--red); }
+  .ind-del svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
+
+  .add-indicator-row {
+    display: flex; gap: 8px; margin-bottom: 8px;
+  }
+  .add-indicator-row input {
+    flex: 1; padding: 8px 12px; height: 38px;
+    border: 1px dashed var(--line); border-left: 2px dashed var(--bg3);
+    background: var(--bg); font-family: var(--mono);
+    font-size: 12px; color: var(--text); outline: none;
+    transition: border-color 0.12s;
+  }
+  .add-indicator-row input:focus { border-color: var(--orange); border-style: solid; }
+  .add-indicator-row input::placeholder { color: var(--text-dim); }
+  .btn-add-row {
+    padding: 8px 14px; background: var(--bg3); border: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+    color: var(--text-mid); transition: all 0.15s; white-space: nowrap;
+    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
+  }
+  .btn-add-row:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
+
+  .empty-indicators {
+    text-align: center; padding: 40px 24px;
+    color: var(--text-dim); font-size: 12px; line-height: 1.8;
+  }
+  .empty-indicators strong { display: block; font-size: 13px; margin-bottom: 8px; color: var(--text-mid); }
+
+  /* ─── STEP 3: RESULT ─── */
+  .result-status-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px; gap: 12px;
+  }
+  .result-title { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.05em; }
+  .status-pill {
+    display: inline-block; padding: 1px;
+    background: rgba(61,204,122,0.4);
+    clip-path: polygon(7px 0%, 100% 0%, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0% 100%, 0% 7px);
+  }
+  .status-pill span {
+    display: block; font-size: 10px; letter-spacing: 0.15em; padding: 4px 10px;
+    text-transform: uppercase; background: rgba(61,204,122,0.08); color: var(--green);
+    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
+  }
+  .result-box {
+    background: var(--bg); border: 1px solid var(--line); padding: 24px;
+    margin-bottom: 24px; font-size: 13px; line-height: 1.8; color: var(--text-mid);
+    max-height: 460px; overflow-y: auto;
+  }
+  .result-box h3 {
+    font-size: 11px; font-weight: 700; color: var(--text);
     letter-spacing: 0.15em; text-transform: uppercase;
     margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line);
   }
-  .result-content h3:first-child { margin-top: 0; }
-  .result-content p { margin-bottom: 10px; }
-  .result-content .tag-normal {
+  .result-box h3:first-child { margin-top: 0; }
+  .result-box p { margin-bottom: 10px; }
+  .tag-normal {
     display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(0,200,100,0.1); color: #3DCC7A;
+    background: rgba(0,200,100,0.1); color: var(--green);
     font-size: 10px; font-weight: 700; padding: 2px 6px; text-transform: uppercase;
   }
-  .result-content .tag-high {
+  .tag-high {
     display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(255,60,60,0.1); color: #FF5555;
+    background: rgba(255,60,60,0.1); color: var(--red);
     font-size: 10px; font-weight: 700; padding: 2px 6px; text-transform: uppercase;
   }
-  .result-content .tag-low {
+  .tag-low {
     display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(255,200,0,0.1); color: #C89000;
+    background: rgba(255,200,0,0.1); color: var(--yellow);
     font-size: 10px; font-weight: 700; padding: 2px 6px; text-transform: uppercase;
   }
 
-  /* Error */
-  .error-display {
-    display: none; align-items: center; gap: 10px;
-    padding: 14px 16px; background: rgba(255,60,60,0.08); border: 1px solid rgba(255,60,60,0.25);
-    color: #FF5555; font-size: 12px; font-weight: 500;
-    position: absolute; inset: 16px; height: fit-content;
-  }
-  .error-display.show { display: flex; }
-  .error-display svg { width: 16px; height: 16px; stroke: currentColor; fill: none; flex-shrink: 0; }
-
-  /* ─── SAVE SUCCESS TOAST ─── */
+  /* ─── TOAST ─── */
   .toast {
     position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
     background: var(--text); color: #fff;
@@ -441,7 +442,7 @@
     clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast svg { width: 14px; height: 14px; stroke: #3DCC7A; fill: none; flex-shrink: 0; }
+  .toast svg { width: 14px; height: 14px; stroke: var(--green); fill: none; flex-shrink: 0; }
 
   /* ─── FOOTER ─── */
   footer {
@@ -456,15 +457,18 @@
   @media (max-width: 900px) {
     header { padding: 0 24px; }
     .page-wrap { padding: 72px 24px 60px; }
-    .analyzer-wrap { clip-path: none; }
-    .analyzer-grid { grid-template-columns: 1fr; clip-path: none; }
+    .card-wrap { clip-path: none; }
+    .card-inner { clip-path: none; }
     .page-header { flex-direction: column; gap: 16px; }
     footer { flex-direction: column; gap: 16px; text-align: center; padding: 28px 24px; }
+    .stepper { flex-wrap: wrap; gap: 8px; }
+    .step-line { display: none; }
   }
   @media (max-width: 600px) {
     .form-row { grid-template-columns: 1fr; }
-    .analyzer-panel { padding: 24px 20px; }
+    .card-inner { padding: 24px 20px; }
     .page-title { font-size: 22px; }
+    .btn-row { flex-direction: column; }
   }
   @media (max-width: 500px) {
     header { padding: 0 16px; height: 52px; }
@@ -474,7 +478,6 @@
 </head>
 <body>
 
-<!-- Header -->
 <header>
   <a class="logo" href="cabinet.html">
     <div class="logo-icon">
@@ -484,7 +487,7 @@
     </div>
     <div class="logo-text">Medeus<span>.</span></div>
   </a>
-    <div class="header-right">
+  <div class="header-right">
     <a href="cabinet.html" class="btn-nav-ghost">
       <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
@@ -494,7 +497,6 @@
   </div>
 </header>
 
-<!-- Main -->
 <div class="page-wrap">
 
   <!-- Page header -->
@@ -506,7 +508,7 @@
         <span>Новый анализ</span>
       </div>
       <div class="page-title">Загрузка анализа<span class="cursor-blink"></span></div>
-      <div class="page-sub">Загрузите скан или фото, укажите название и дату — ИИ сделает расшифровку</div>
+      <div class="page-sub" id="pageSubtitle">Загрузите документ и заполните поля</div>
     </div>
     <div class="page-header-right">
       <a href="cabinet.html" class="btn-nav-ghost">
@@ -518,13 +520,49 @@
     </div>
   </div>
 
-  <!-- Analyzer -->
-  <div class="analyzer-wrap">
-    <div class="analyzer-grid">
+  <!-- Stepper -->
+  <div class="stepper">
+    <div class="step-item active" id="si1">
+      <div class="step-num">1</div>
+      <span>Загрузка</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item" id="si2">
+      <div class="step-num">2</div>
+      <span>Проверка показателей</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item" id="si3">
+      <div class="step-num">3</div>
+      <span>Анализ и сохранение</span>
+    </div>
+  </div>
 
-      <!-- Left: Form -->
-      <div class="analyzer-panel">
-        <div class="panel-label">Данные анализа</div>
+  <!-- ════════════════════════ STEP 1 ════════════════════════ -->
+  <div id="step1Panel">
+    <div class="card-wrap">
+      <div class="card-inner" style="position:relative;">
+
+        <!-- Loader overlay -->
+        <div class="loader-overlay" id="step1Loader">
+          <div class="loader-px">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div class="loader-msg">Извлекаем показатели из документа...<br>Обычно 5–15 секунд</div>
+        </div>
+
+        <div class="panel-label">Документ и данные</div>
+
+        <!-- Error -->
+        <div class="error-banner" id="step1Error">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span id="step1ErrorText">Ошибка</span>
+        </div>
 
         <!-- Upload zone -->
         <div class="upload-zone" id="uploadZone">
@@ -532,8 +570,7 @@
           <div class="upload-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
+              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
           </div>
           <div class="upload-title">Загрузите результаты анализов</div>
@@ -553,7 +590,7 @@
             <div class="file-preview-name" id="fileName">—</div>
             <div class="file-preview-size" id="fileSize">—</div>
           </div>
-          <button class="file-remove" id="fileRemove" title="Удалить файл" type="button">
+          <button class="file-remove" id="fileRemove" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
@@ -567,111 +604,151 @@
           <div class="field-hint">Например: ОАК, биохимия, гормоны щитовидной железы</div>
         </div>
 
-        <div class="form-row" style="margin-top: 16px;">
+        <div class="form-row" style="margin-top:16px;">
           <div class="form-group" style="margin-bottom:0;">
             <label for="analysisDate">Дата сдачи</label>
             <input type="date" id="analysisDate">
           </div>
-          <div class="form-group" style="margin-bottom:0; justify-content: flex-end;">
+          <div class="form-group" style="margin-bottom:0; justify-content:flex-end;">
             <label style="visibility:hidden;">—</label>
-            <div style="font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; line-height: 1.6; padding-top: 4px;">
-              Дата нужна для<br>отслеживания динамики
+            <div style="font-size:11px; color:var(--text-dim); letter-spacing:0.05em; line-height:1.6; padding-top:4px;">
+              Нужна для<br>отслеживания динамики
             </div>
           </div>
         </div>
 
-        <!-- Buttons -->
-        <div class="btn-group">
-          <button class="btn-chamfer" id="analyzeBtn" type="button" disabled>
+        <div class="btn-row">
+          <button class="btn-primary" id="extractBtn" disabled>
             <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
-            <span>Анализировать</span>
+            <span>Извлечь показатели</span>
           </button>
-          <button class="btn-save" id="saveBtn" type="button" disabled>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ STEP 2 ════════════════════════ -->
+  <div id="step2Panel" style="display:none;">
+    <div class="card-wrap">
+      <div class="card-inner" style="position:relative;">
+
+        <!-- Loader overlay -->
+        <div class="loader-overlay" id="step2Loader">
+          <div class="loader-px">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div class="loader-msg">Анализируем показатели и формируем отчёт...<br>Обычно 10–20 секунд</div>
+        </div>
+
+        <div class="panel-label">Проверка показателей</div>
+
+        <!-- Error -->
+        <div class="error-banner" id="step2Error">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span id="step2ErrorText">Ошибка</span>
+        </div>
+
+        <div class="indicators-header">
+          <div class="indicators-info">
+            <strong>Проверьте и при необходимости отредактируйте показатели</strong><br>
+            ИИ извлёк их из документа. Исправьте ошибки, удалите лишнее или добавьте пропущенное — и нажмите «Продолжить».
+          </div>
+        </div>
+
+        <!-- Indicators table -->
+        <div class="ind-table-wrap">
+          <table class="ind-table">
+            <thead>
+              <tr>
+                <th>Показатель</th>
+                <th>Значение</th>
+                <th>Единица</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="indicatorsBody">
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add row -->
+        <div class="add-indicator-row">
+          <input type="text" id="newIndName" placeholder="Название показателя">
+          <input type="text" id="newIndValue" placeholder="Значение" style="max-width:100px;">
+          <input type="text" id="newIndUnit"  placeholder="Ед." style="max-width:80px;">
+          <button class="btn-add-row" id="addIndBtn">+ Добавить</button>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-ghost" id="backToStep1Btn">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 5l-7 7 7 7"/>
+            </svg>
+            Назад
+          </button>
+          <button class="btn-primary" id="continueBtn">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 12h6m-3-3 3 3-3 3"/><circle cx="12" cy="12" r="10"/>
+            </svg>
+            <span>Продолжить — получить анализ</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ STEP 3 ════════════════════════ -->
+  <div id="step3Panel" style="display:none;">
+    <div class="card-wrap">
+      <div class="card-inner">
+
+        <div class="panel-label">Результат анализа</div>
+
+        <div class="result-status-bar">
+          <div class="result-title">Расшифровка и рекомендации</div>
+          <div class="status-pill"><span>Готово</span></div>
+        </div>
+
+        <div class="result-box" id="resultBox"></div>
+
+        <div class="btn-row">
+          <button class="btn-ghost" id="backToStep2Btn">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 5l-7 7 7 7"/>
+            </svg>
+            Назад
+          </button>
+          <button class="btn-save" id="saveBtn">
             <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
               <polyline points="17 21 17 13 7 13 7 21"/>
               <polyline points="7 3 7 8 15 8"/>
             </svg>
-            <span>Добавить к моим анализам</span>
+            <span>Сохранить в мои анализы</span>
           </button>
         </div>
 
       </div>
-
-      <!-- Right: Result -->
-      <div class="analyzer-panel result-panel">
-        <div class="result-header">
-          <div class="result-title">Расшифровка</div>
-          <div class="result-status-wrap sw" id="statusWrap">
-            <div class="result-status status-waiting" id="resultStatus">Ожидание</div>
-          </div>
-        </div>
-
-        <div class="result-box" id="resultBox">
-          <!-- Empty state -->
-          <div class="empty-state" id="emptyState">
-            <div class="empty-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-            </div>
-            <div class="empty-text">Результат появится здесь</div>
-            <div class="empty-sub">Заполните форму слева<br>и нажмите «Анализировать»</div>
-          </div>
-
-          <!-- Loader -->
-          <div class="loader" id="loader">
-            <div class="loader-px">
-              <span></span><span></span><span></span><span></span>
-              <span></span><span></span><span></span><span></span>
-              <span></span><span></span><span></span><span></span>
-              <span></span><span></span><span></span><span></span>
-            </div>
-            <div class="loader-steps">
-              <div class="loader-step" id="step1">
-                <div class="step-dot">1</div>
-                <span class="step-label">Загружаем файл</span>
-              </div>
-              <div class="loader-step" id="step2">
-                <div class="step-dot">2</div>
-                <span class="step-label">Читаем показатели</span>
-              </div>
-              <div class="loader-step" id="step3">
-                <div class="step-dot">3</div>
-                <span class="step-label">Формируем отчёт</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Error -->
-          <div class="error-display" id="errorDisplay">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <span id="errorText">Произошла ошибка</span>
-          </div>
-
-          <!-- Result content -->
-          <div class="result-content" id="resultContent"></div>
-        </div>
-      </div>
-
     </div>
   </div>
+
 </div>
 
-<!-- Footer -->
 <footer>
   <div class="footer-copy">© 2026 Medeus</div>
   <div class="footer-disclaimer">Сервис предназначен только для информационных целей. Не является медицинским заключением.</div>
   <div class="footer-copy" style="visibility:hidden;">pad</div>
 </footer>
 
-<!-- Toast -->
 <div class="toast" id="toast">
   <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="20 6 9 17 4 12"/>
@@ -679,151 +756,17 @@
   <span>Анализ добавлен в кабинет</span>
 </div>
 
-<!-- Supabase CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase.js"></script>
-
 <script>
-// ─── Проверка авторизации ───
+// ─── AUTH ───
 let currentSession = null;
+let userProfile    = null;
+
 (async () => {
-  currentSession = await requireAuth(); // редиректит на auth.html если нет сессии
+  currentSession = await requireAuth();
   if (currentSession) await loadUserProfile(currentSession);
 })();
-
-const fileInput      = document.getElementById('fileInput');
-const uploadZone     = document.getElementById('uploadZone');
-const filePreview    = document.getElementById('filePreview');
-const fileNameEl     = document.getElementById('fileName');
-const fileSizeEl     = document.getElementById('fileSize');
-const fileRemove     = document.getElementById('fileRemove');
-const analysisName   = document.getElementById('analysisName');
-const analysisDate   = document.getElementById('analysisDate');
-const analyzeBtn     = document.getElementById('analyzeBtn');
-const saveBtn        = document.getElementById('saveBtn');
-
-const emptyState     = document.getElementById('emptyState');
-const loader         = document.getElementById('loader');
-const errorDisplay   = document.getElementById('errorDisplay');
-const errorText      = document.getElementById('errorText');
-const resultContent  = document.getElementById('resultContent');
-const resultStatus   = document.getElementById('resultStatus');
-const statusWrap     = document.getElementById('statusWrap');
-const toast          = document.getElementById('toast');
-
-let selectedFile = null;
-let analysisResult = null;
-
-// Set today's date by default
-const today = new Date().toISOString().split('T')[0];
-analysisDate.value = today;
-
-// ─── UPLOAD ───
-uploadZone.addEventListener('click', () => fileInput.click());
-
-uploadZone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  uploadZone.classList.add('dragover');
-});
-uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
-uploadZone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  uploadZone.classList.remove('dragover');
-  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-});
-
-fileInput.addEventListener('change', () => {
-  if (fileInput.files[0]) handleFile(fileInput.files[0]);
-});
-
-function handleFile(file) {
-  const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
-  if (file.size > MAX_SIZE) {
-    setState('error', `Файл слишком большой: ${formatBytes(file.size)}. Максимум — 10 МБ.`);
-    fileInput.value = '';
-    return;
-  }
-  selectedFile = file;
-  fileNameEl.textContent = file.name;
-  fileSizeEl.textContent = formatBytes(file.size);
-  uploadZone.style.display = 'none';
-  filePreview.classList.add('show');
-  checkForm();
-}
-
-function formatBytes(b) {
-  if (b < 1024) return b + ' B';
-  if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
-  return (b / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
-fileRemove.addEventListener('click', () => {
-  selectedFile = null;
-  fileInput.value = '';
-  filePreview.classList.remove('show');
-  uploadZone.style.display = '';
-  analysisResult = null;
-  saveBtn.disabled = true;
-  checkForm();
-});
-
-// ─── FORM VALIDATION ───
-function checkForm() {
-  const valid = selectedFile && analysisName.value.trim() && analysisDate.value;
-  analyzeBtn.disabled = !valid;
-}
-
-analysisName.addEventListener('input', checkForm);
-analysisDate.addEventListener('change', checkForm);
-
-// ─── STATES ───
-function setState(state, data) {
-  emptyState.style.display = 'none';
-  loader.classList.remove('show');
-  errorDisplay.classList.remove('show');
-  resultContent.classList.remove('show');
-  statusWrap.className = 'result-status-wrap';
-
-  if (state === 'empty') {
-    emptyState.style.display = '';
-    resultStatus.textContent = 'Ожидание';
-    resultStatus.className = 'result-status status-waiting';
-    statusWrap.classList.add('sw');
-  } else if (state === 'loading') {
-    loader.classList.add('show');
-    resultStatus.textContent = 'Анализирую...';
-    resultStatus.className = 'result-status status-loading';
-    statusWrap.classList.add('sl');
-  } else if (state === 'done') {
-    resultContent.classList.add('show');
-    resultContent.innerHTML = formatResult(data);
-    resultStatus.textContent = 'Готово';
-    resultStatus.className = 'result-status status-done';
-    statusWrap.classList.add('sd');
-  } else if (state === 'error') {
-    errorDisplay.classList.add('show');
-    errorText.textContent = data || 'Произошла ошибка';
-    resultStatus.textContent = 'Ошибка';
-    resultStatus.className = 'result-status status-error';
-    statusWrap.classList.add('se');
-  }
-}
-
-function formatResult(text) {
-  let html = text
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^#{1,3} (.+)$/gm, '<h3>$1</h3>')
-    .replace(/(?<!\p{L})норма(?!\p{L})/giu, '<span class="tag-normal">✓ норма</span>')
-    .replace(/выше нормы/gi, '<span class="tag-high">↑ выше нормы</span>')
-    .replace(/ниже нормы/gi, '<span class="tag-low">↓ ниже нормы</span>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>');
-  return '<p>' + html + '</p>';
-}
-
-// ─── Профиль пользователя (age + gender) ───
-let userProfile = null;
 
 async function loadUserProfile(session) {
   try {
@@ -834,113 +777,312 @@ async function loadUserProfile(session) {
       .eq('id', session.user.id)
       .single();
     if (!error && data) userProfile = data;
-  } catch (e) {
-    console.warn('Профиль не загружен:', e);
-  }
+  } catch (e) { console.warn('Профиль не загружен:', e); }
 }
 
 function calcAge(birthDate) {
   if (!birthDate) return '';
-  const today = new Date();
-  const bd    = new Date(birthDate);
+  const today = new Date(), bd = new Date(birthDate);
   let age = today.getFullYear() - bd.getFullYear();
   const m = today.getMonth() - bd.getMonth();
   if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) age--;
   return String(age);
 }
 
-// ─── ANALYZE ───
-analyzeBtn.addEventListener('click', async () => {
-  if (!selectedFile || !analysisName.value.trim() || !analysisDate.value) return;
+// ─── REFS ───
+const fileInput      = document.getElementById('fileInput');
+const uploadZone     = document.getElementById('uploadZone');
+const filePreview    = document.getElementById('filePreview');
+const fileNameEl     = document.getElementById('fileName');
+const fileSizeEl     = document.getElementById('fileSize');
+const fileRemove     = document.getElementById('fileRemove');
+const analysisName   = document.getElementById('analysisName');
+const analysisDate   = document.getElementById('analysisDate');
+const extractBtn     = document.getElementById('extractBtn');
+const continueBtn    = document.getElementById('continueBtn');
+const saveBtn        = document.getElementById('saveBtn');
+const indicatorsBody = document.getElementById('indicatorsBody');
+const resultBox      = document.getElementById('resultBox');
+const toast          = document.getElementById('toast');
 
+let selectedFile    = null;
+let indicators      = [];   // [{name, value, unit}]
+let analysisResult  = null; // итоговый текст анализа
+
+// Default date
+analysisDate.value = new Date().toISOString().split('T')[0];
+
+// ─── FILE UPLOAD ───
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover',  e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  return (b/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function handleFile(file) {
+  if (file.size > 10*1024*1024) { showError('step1', `Файл слишком большой: ${formatBytes(file.size)}. Максимум — 10 МБ.`); return; }
+  selectedFile = file;
+  fileNameEl.textContent = file.name;
+  fileSizeEl.textContent = formatBytes(file.size);
+  uploadZone.style.display = 'none';
+  filePreview.classList.add('show');
+  hideError('step1');
+  checkStep1();
+}
+
+fileRemove.addEventListener('click', () => {
+  selectedFile = null; fileInput.value = '';
+  filePreview.classList.remove('show');
+  uploadZone.style.display = '';
+  checkStep1();
+});
+
+function checkStep1() {
+  extractBtn.disabled = !(selectedFile && analysisName.value.trim() && analysisDate.value);
+}
+analysisName.addEventListener('input', checkStep1);
+analysisDate.addEventListener('change', checkStep1);
+
+// ─── STEPPER ───
+function setStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById(`si${i}`);
+    el.className = 'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
+  }
+  document.getElementById('step1Panel').style.display = n === 1 ? '' : 'none';
+  document.getElementById('step2Panel').style.display = n === 2 ? '' : 'none';
+  document.getElementById('step3Panel').style.display = n === 3 ? '' : 'none';
+
+  const subtitles = {
+    1: 'Загрузите документ и заполните поля',
+    2: 'Проверьте и отредактируйте показатели',
+    3: 'Результат анализа — сохраните в кабинет',
+  };
+  document.getElementById('pageSubtitle').textContent = subtitles[n];
+}
+
+// ─── ERROR HELPERS ───
+function showError(step, msg) {
+  const el = document.getElementById(`step${step}Error`);
+  document.getElementById(`step${step}ErrorText`).textContent = msg;
+  el.classList.add('show');
+}
+function hideError(step) {
+  document.getElementById(`step${step}Error`).classList.remove('show');
+}
+
+// ─── STEP 1 → STEP 2: Extract indicators ───
+extractBtn.addEventListener('click', async () => {
+  if (!selectedFile) return;
+  const session = await getCurrentSession();
+  if (!session) { window.location.href = 'auth.html'; return; }
+
+  hideError('step1');
+  document.getElementById('step1Loader').classList.add('show');
+  extractBtn.disabled = true;
+
+  try {
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    const resp = await fetch(`${API_BASE}/extract`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${session.access_token}` },
+      body: formData,
+    });
+
+    const data = await resp.json();
+    if (resp.status === 401) { window.location.href = 'auth.html'; return; }
+    if (!resp.ok) throw new Error(data.error || `Ошибка сервера: ${resp.status}`);
+
+    indicators = data.indicators || [];
+    renderIndicators();
+    setStep(2);
+  } catch (err) {
+    showError('step1', err.message || 'Не удалось подключиться к серверу');
+  } finally {
+    document.getElementById('step1Loader').classList.remove('show');
+    extractBtn.disabled = false;
+    checkStep1();
+  }
+});
+
+// ─── RENDER INDICATORS TABLE ───
+function renderIndicators() {
+  if (indicators.length === 0) {
+    indicatorsBody.innerHTML = `
+      <tr><td colspan="4">
+        <div class="empty-indicators">
+          <strong>Показатели не найдены</strong>
+          ИИ не обнаружил числовых показателей в документе.<br>
+          Добавьте их вручную с помощью формы ниже.
+        </div>
+      </td></tr>`;
+    return;
+  }
+  indicatorsBody.innerHTML = '';
+  indicators.forEach((ind, i) => {
+    const tr = document.createElement('tr');
+    tr.dataset.idx = i;
+    tr.innerHTML = `
+      <td class="ind-name">
+        <input class="ind-input" data-field="name" value="${escHtml(ind.name)}" placeholder="Название" style="min-width:140px;">
+      </td>
+      <td>
+        <input class="ind-input" data-field="value" value="${escHtml(ind.value)}" placeholder="0.00" style="max-width:100px;">
+      </td>
+      <td>
+        <input class="ind-input ind-unit" data-field="unit" value="${escHtml(ind.unit || '')}" placeholder="ед." style="max-width:80px;">
+      </td>
+      <td>
+        <button class="ind-del" data-idx="${i}" title="Удалить">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
+        </button>
+      </td>`;
+
+    // Sync edits back to indicators array
+    tr.querySelectorAll('.ind-input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        indicators[i][inp.dataset.field] = inp.value;
+      });
+    });
+
+    // Delete row
+    tr.querySelector('.ind-del').addEventListener('click', () => {
+      indicators.splice(i, 1);
+      renderIndicators();
+    });
+
+    indicatorsBody.appendChild(tr);
+  });
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── ADD INDICATOR ───
+document.getElementById('addIndBtn').addEventListener('click', () => {
+  const name  = document.getElementById('newIndName').value.trim();
+  const value = document.getElementById('newIndValue').value.trim();
+  const unit  = document.getElementById('newIndUnit').value.trim();
+  if (!name || !value) return;
+  indicators.push({ name, value, unit });
+  renderIndicators();
+  document.getElementById('newIndName').value  = '';
+  document.getElementById('newIndValue').value = '';
+  document.getElementById('newIndUnit').value  = '';
+});
+
+// Enter in add-row fields
+['newIndName','newIndValue','newIndUnit'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('addIndBtn').click();
+  });
+});
+
+// ─── BACK STEP 2 → 1 ───
+document.getElementById('backToStep1Btn').addEventListener('click', () => {
+  hideError('step2');
+  setStep(1);
+});
+
+// ─── STEP 2 → STEP 3: Analyze ───
+continueBtn.addEventListener('click', async () => {
+  if (indicators.length === 0) {
+    showError('step2', 'Добавьте хотя бы один показатель перед продолжением.');
+    return;
+  }
   const session = await getCurrentSession();
   if (!session) { window.location.href = 'auth.html'; return; }
 
   const age    = calcAge(userProfile?.birth_date) || '0';
   const gender = userProfile?.gender || 'не указан';
 
-  setState('loading');
-  analyzeBtn.disabled = true;
-  saveBtn.disabled = true;
-  analysisResult = null;
-
-  // ─── Анимация этапов ───
-  const steps = ['step1','step2','step3'];
-  let stepTimers = [];
-  function resetSteps() { steps.forEach(id => { const el = document.getElementById(id); if(el){el.classList.remove('active','done');} }); }
-  function activateStep(i) {
-    resetSteps();
-    // Все предыдущие — done
-    for(let j=0;j<i;j++){ const el=document.getElementById(steps[j]); if(el) el.classList.add('done'); }
-    const el = document.getElementById(steps[i]); if(el) el.classList.add('active');
-  }
-  resetSteps();
-  activateStep(0);
-  stepTimers.push(setTimeout(() => activateStep(1), 2500));
-  stepTimers.push(setTimeout(() => activateStep(2), 8000));
-
-  const formData = new FormData();
-  formData.append('file',          selectedFile);
-  formData.append('analysis_name', analysisName.value.trim());
-  formData.append('analysis_date', analysisDate.value || '');
-  formData.append('age',           age);
-  formData.append('gender',        gender);
+  hideError('step2');
+  document.getElementById('step2Loader').classList.add('show');
+  continueBtn.disabled = true;
 
   try {
-    const response = await fetch(`${API_BASE}/analyze`, {
+    const formData = new FormData();
+    formData.append('file',          selectedFile);
+    formData.append('indicators',    JSON.stringify(indicators));
+    formData.append('analysis_name', analysisName.value.trim());
+    formData.append('analysis_date', analysisDate.value || '');
+    formData.append('age',           age);
+    formData.append('gender',        gender);
+
+    const resp = await fetch(`${API_BASE}/analyze-indicators`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${session.access_token}` },
       body: formData,
     });
 
-    const data = await response.json();
-
-    if (response.status === 401) { window.location.href = 'auth.html'; return; }
-    if (!response.ok) throw new Error(data.error || `Ошибка сервера: ${response.status}`);
-    if (data.error)  throw new Error(data.error);
+    const data = await resp.json();
+    if (resp.status === 401) { window.location.href = 'auth.html'; return; }
+    if (!resp.ok) throw new Error(data.error || `Ошибка сервера: ${resp.status}`);
 
     analysisResult = data.analysis;
-    stepTimers.forEach(clearTimeout);
-    steps.forEach(id => { const el=document.getElementById(id); if(el){el.classList.remove('active'); el.classList.add('done');} });
-    setState('done', analysisResult);
-    saveBtn.disabled = false;
-
+    resultBox.innerHTML = formatResult(analysisResult);
+    setStep(3);
   } catch (err) {
-    stepTimers.forEach(clearTimeout);
-    resetSteps();
-    setState('error', err.message || 'Не удалось подключиться к серверу');
-    saveBtn.disabled = true;
+    showError('step2', err.message || 'Не удалось подключиться к серверу');
   } finally {
-    analyzeBtn.disabled = false;
-    checkForm();
+    document.getElementById('step2Loader').classList.remove('show');
+    continueBtn.disabled = false;
   }
 });
 
-// ─── SAVE — анализ уже сохранён в БД бэкендом, просто показываем тост ───
+// ─── BACK STEP 3 → 2 ───
+document.getElementById('backToStep2Btn').addEventListener('click', () => {
+  setStep(2);
+});
+
+// ─── FORMAT RESULT ───
+function formatResult(text) {
+  let html = text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^#{1,3} (.+)$/gm, '<h3>$1</h3>')
+    .replace(/(?<![а-яёА-ЯЁ])норма(?![а-яёА-ЯЁ])/gi, '<span class="tag-normal">✓ норма</span>')
+    .replace(/выше нормы/gi, '<span class="tag-high">↑ выше нормы</span>')
+    .replace(/ниже нормы/gi, '<span class="tag-low">↓ ниже нормы</span>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+  return '<p>' + html + '</p>';
+}
+
+// ─── SAVE ───
 saveBtn.addEventListener('click', () => {
   if (!analysisResult) return;
-
   saveBtn.disabled = true;
   saveBtn.innerHTML = `
     <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="20 6 9 17 4 12"/>
-    </svg>
-    <span>Сохранено</span>
-  `;
-  saveBtn.style.color = '#3DCC7A';
+    </svg><span>Сохранено</span>`;
+  saveBtn.style.color = 'var(--green)';
 
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 3000);
-
   setTimeout(() => {
-    try { localStorage.removeItem('medeus_dashboard_cache'); } catch (e) {}
+    try { localStorage.removeItem('medeus_dashboard_cache'); } catch(e) {}
     window.location.href = 'cabinet.html';
   }, 2000);
 });
 
 // ─── INIT ───
-setState('empty');
-checkForm();
+checkStep1();
 </script>
 </body>
 </html>
