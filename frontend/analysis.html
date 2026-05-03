@@ -154,60 +154,66 @@
   .card-body { padding: 24px; }
 
   /* ─── META GRID ─── */
-  .meta-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 0;
-  }
+  /* ─── INFO + FILE COMBINED ─── */
+  .info-file-grid { display: grid; grid-template-columns: 200px 1fr; min-height: 180px; }
 
-  .meta-item { display: flex; flex-direction: column; gap: 4px; }
-  .meta-key {
-    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--text-dim);
+  .file-thumb-wrap {
+    border-right: 1px solid var(--line); background: var(--bg2);
+    display: flex; align-items: stretch; overflow: hidden; min-height: 180px;
   }
-  .meta-val {
-    font-size: 13px; font-weight: 600; color: var(--text);
+  .file-thumb {
+    flex: 1; position: relative; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
   }
+  .file-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s; }
+  .file-thumb:hover img { transform: scale(1.05); }
+  .file-thumb-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0);
+    display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+  }
+  .file-thumb:hover .file-thumb-overlay { background: rgba(0,0,0,0.38); }
+  .file-thumb-overlay svg { width: 28px; height: 28px; stroke: #fff; fill: none; opacity: 0; transition: opacity 0.2s; }
+  .file-thumb:hover .file-thumb-overlay svg { opacity: 1; }
 
-  /* ─── FILE PREVIEW ─── */
-  .file-preview {
-    display: flex; align-items: center; justify-content: center;
-    background: var(--bg2);
-    border: 1px solid var(--line);
-    min-height: 200px;
-    overflow: hidden;
-    position: relative;
+  .file-thumb-pdf {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; padding: 20px; color: var(--text-dim); text-align: center;
   }
+  .file-thumb-pdf svg { width: 36px; height: 36px; stroke: var(--text-dim); fill: none; }
+  .file-thumb-pdf span { font-size: 10px; letter-spacing: 0.05em; word-break: break-all; }
 
-  .file-preview img {
-    max-width: 100%;
-    max-height: 500px;
-    object-fit: contain;
-    display: block;
-  }
-
-  .file-preview-pdf {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 12px; padding: 40px;
-    color: var(--text-dim);
-  }
-
-  .file-preview-pdf svg { width: 48px; height: 48px; stroke: var(--text-dim); fill: none; }
-  .file-preview-pdf span { font-size: 12px; letter-spacing: 0.05em; }
+  .meta-panel { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .meta-item { display: flex; flex-direction: column; gap: 3px; }
+  .meta-key { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); }
+  .meta-val { font-size: 13px; font-weight: 600; color: var(--text); }
+  .meta-val.name { font-size: 15px; font-weight: 700; }
 
   .file-open-btn {
     display: inline-flex; align-items: center; gap: 8px;
-    padding: 10px 20px;
+    padding: 9px 18px; margin-top: auto; align-self: flex-start;
     background: var(--text); color: var(--white);
     font-family: var(--mono); font-size: 11px; font-weight: 700;
     letter-spacing: 0.08em; text-transform: uppercase;
-    text-decoration: none; cursor: pointer; border: none;
-    transition: background 0.15s;
+    text-decoration: none; border: none; cursor: pointer; transition: background 0.15s;
     clip-path: polygon(7px 0%,100% 0%,100% calc(100% - 7px),calc(100% - 7px) 100%,0% 100%,0% 7px);
   }
   .file-open-btn:hover { background: var(--orange); }
-  .file-open-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+  .file-open-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
+
+  .lightbox {
+    display: none; position: fixed; inset: 0; z-index: 999;
+    background: rgba(0,0,0,0.88); align-items: center; justify-content: center; cursor: zoom-out;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 92vw; max-height: 90vh; object-fit: contain; display: block; cursor: default; }
+  .lightbox-close {
+    position: absolute; top: 20px; right: 24px; width: 36px; height: 36px;
+    background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background 0.15s;
+    clip-path: polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
+  }
+  .lightbox-close:hover { background: var(--orange); }
+  .lightbox-close svg { width: 18px; height: 18px; stroke: #fff; fill: none; }
 
   /* ─── AI RESULT ─── */
   .result-body {
@@ -415,38 +421,8 @@
     const aDate   = formatDate(a.analysis_date);
     const gender  = a.gender === 'male' ? 'Мужской' : a.gender === 'female' ? 'Женский' : (a.gender || '—');
 
-    // File preview block
-    let fileBlock = '';
-    if (a.file_url) {
-      if (isPdf(a.filename)) {
-        fileBlock = `
-          <div class="file-preview">
-            <div class="file-preview-pdf">
-              <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
-              </svg>
-              <span>${escHtml(a.filename)}</span>
-              <a href="${escHtml(a.file_url)}" target="_blank" class="file-open-btn">
-                <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-                Открыть PDF
-              </a>
-            </div>
-          </div>`;
-      } else {
-        fileBlock = `
-          <div class="file-preview">
-            <img src="${escHtml(a.file_url)}" alt="${escHtml(a.filename)}">
-          </div>`;
-      }
-    }
+
+    const isImg = a.file_url && !isPdf(a.filename);
 
     document.getElementById('mainContent').innerHTML = `
       <div class="page-header">
@@ -456,54 +432,67 @@
         </div>
       </div>
 
-      <!-- Мета -->
+      <!-- Информация + файл -->
       <div class="card-wrap">
         <div class="card">
           <div class="card-header">
             <div class="card-label">Информация</div>
           </div>
-          <div class="card-body">
-            <div class="meta-grid">
+          <div class="info-file-grid">
+            <div class="file-thumb-wrap">
+              ${isImg ? `
+                <div class="file-thumb" onclick="openLightbox('${escHtml(a.file_url)}')">
+                  <img src="${escHtml(a.file_url)}" alt="${escHtml(a.filename)}">
+                  <div class="file-thumb-overlay">
+                    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                      <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+                    </svg>
+                  </div>
+                </div>` : `
+                <div class="file-thumb-pdf">
+                  <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                  <span>${escHtml(a.filename || 'Файл')}</span>
+                </div>`}
+            </div>
+            <div class="meta-panel">
               <div class="meta-item">
-                <div class="meta-key">Загружен</div>
-                <div class="meta-val">${created}</div>
+                <div class="meta-key">Название</div>
+                <div class="meta-val name">${escHtml(name)}</div>
               </div>
               <div class="meta-item">
                 <div class="meta-key">Дата сдачи</div>
                 <div class="meta-val">${aDate}</div>
               </div>
               <div class="meta-item">
-                <div class="meta-key">Пол</div>
-                <div class="meta-val">${escHtml(gender)}</div>
-              </div>
-              <div class="meta-item">
-                <div class="meta-key">Возраст</div>
-                <div class="meta-val">${escHtml(a.age || '—')}</div>
+                <div class="meta-key">Загружен</div>
+                <div class="meta-val">${created}</div>
               </div>
               <div class="meta-item">
                 <div class="meta-key">Файл</div>
                 <div class="meta-val">${escHtml(a.filename || '—')}</div>
               </div>
+              ${a.file_url ? `
+              <a href="${escHtml(a.file_url)}" target="_blank" class="file-open-btn">
+                <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Открыть файл
+              </a>` : ''}
             </div>
           </div>
         </div>
       </div>
 
-      ${fileBlock ? `
-      <!-- Файл -->
-      <div class="card-wrap" style="animation-delay:0.05s">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-label">Файл анализа</div>
-          </div>
-          <div class="card-body" style="padding:0">
-            ${fileBlock}
-          </div>
-        </div>
-      </div>` : ''}
-
       <!-- Результат ИИ -->
-      <div class="card-wrap" style="animation-delay:0.1s">
+      <div class="card-wrap" style="animation-delay:0.05s">
         <div class="card">
           <div class="card-header">
             <div class="card-label">Результат анализа ИИ</div>
@@ -512,6 +501,15 @@
             <div class="result-body">${escHtml(a.result || 'Результат отсутствует')}</div>
           </div>
         </div>
+      </div>
+
+      <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+        <div class="lightbox-close" onclick="closeLightboxBtn()">
+          <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </div>
+        <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()">
       </div>
     `;
   }
