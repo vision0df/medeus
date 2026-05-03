@@ -1,8 +1,12 @@
 import os
+import hashlib
 import traceback
 import httpx
+import magic
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
@@ -14,9 +18,26 @@ CORS(app, origins=["https://medeus.vercel.app"])
 
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
 
+# ── Rate limiter (in-memory, per user IP) ──
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri="memory://",
+)
+
 @app.errorhandler(413)
 def too_large(e):
     return jsonify({"error": "Файл превышает максимальный размер 10 МБ"}), 413
+
+@app.errorhandler(429)
+def rate_limit_hit(e):
+    return jsonify({"error": "Слишком много запросов. Попробуйте через несколько минут."}), 429
+
+# ── Wake-up / health check ──
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"ok": True}), 200
 
 # ========================
 # Ключи
@@ -42,14 +63,39 @@ SUPA_HEADERS = {
 # ========================
 # Helpers
 # ========================
+ALLOWED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg"}
+ALLOWED_MIMES = {
+    "application/pdf",
+    "image/png",
+    "image/jpeg",
+}
+EXT_TO_MIME = {
+    ".pdf":  "application/pdf",
+    ".png":  "image/png",
+    ".jpg":  "image/jpeg",
+    ".jpeg": "image/jpeg",
+}
+
 def get_mime_type(filename: str) -> str:
     ext = os.path.splitext(filename)[1].lower()
-    return {
-        ".pdf":  "application/pdf",
-        ".png":  "image/png",
-        ".jpg":  "image/jpeg",
-        ".jpeg": "image/jpeg",
-    }.get(ext, "image/jpeg")
+    return EXT_TO_MIME.get(ext, "image/jpeg")
+
+def validate_file_type(filename: str, file_bytes: bytes) -> str:
+    """Проверяет расширение и реальный тип файла. Возвращает mime или бросает ValueError."""
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise ValueError(f"Неподдерживаемый формат файла. Разрешены: PDF, PNG, JPG.")
+    # Проверяем реальный content-type через magic bytes
+    try:
+        real_mime = magic.from_buffer(file_bytes[:2048], mime=True)
+        if real_mime not in ALLOWED_MIMES:
+            raise ValueError(f"Содержимое файла не соответствует расширению {ext}.")
+    except Exception as e:
+        if "не соответствует" in str(e):
+            raise
+        # Если python-magic не установлен — не блокируем, просто логируем
+        print(f"⚠️ magic check skipped: {e}", flush=True)
+    return EXT_TO_MIME.get(ext, "image/jpeg")
 
 
 def get_current_user(auth_header: str | None) -> dict:
@@ -154,20 +200,27 @@ def delete_file_from_storage(file_url: str):
 def analyze_with_gemini(file_bytes: bytes, filename: str, age: str, gender: str) -> str:
     print("🧠 Gemini START", flush=True)
 
-    prompt = f"""
-Ты — медицинский ассистент.
-Задача — выдать результат в строго заданной структуре.
+    prompt = f"""Ты — медицинский ассистент. Проанализируй документ с результатами анализов.
 
-ПРАВИЛА:
-1. Если анализы найдены — отвечай строго в формате:
-   Название - значение - статус ("норма", "выше нормы", "ниже нормы")
-2. После таблицы анализов кратко напиши:
-   — Общее состояние
-   — На что стоит обратить внимание
-   — Рекомендации
+Возраст пациента: {age}
+Пол пациента: {gender}
 
-Возраст: {age}
-Пол: {gender}
+Верни ТОЛЬКО валидный JSON следующей структуры (без markdown, без пояснений, только JSON):
+{{
+  "indicators": [
+    {{"name": "Гемоглобин", "value": "140 г/л", "status": "норма"}},
+    {{"name": "Лейкоциты", "value": "12.5 10^9/л", "status": "выше нормы"}}
+  ],
+  "summary": "Общее состояние пациента в 2-3 предложениях.",
+  "attention": "На что стоит обратить внимание — 1-3 пункта.",
+  "recommendations": [
+    "Первая рекомендация",
+    "Вторая рекомендация"
+  ]
+}}
+
+Поле status может быть только одним из: "норма", "выше нормы", "ниже нормы".
+Если документ не является медицинским анализом — верни {{"error": "Документ не содержит медицинских показателей"}}.
 """
 
     mime_type = get_mime_type(filename)
@@ -181,13 +234,49 @@ def analyze_with_gemini(file_bytes: bytes, filename: str, age: str, gender: str)
     )
 
     print("✅ Gemini done", flush=True)
-    return response.text
+
+    # Парсим JSON-ответ и конвертируем в текст для обратной совместимости
+    raw = response.text.strip()
+    # Убираем markdown-обёртку если модель всё же добавила
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+        raw = raw.strip()
+
+    import json
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError:
+        # Fallback: вернуть как есть если JSON не распарсился
+        print("⚠️ Gemini returned non-JSON, using raw text", flush=True)
+        return raw
+
+    if "error" in parsed:
+        raise ValueError(parsed["error"])
+
+    # Сериализуем обратно в структурированный текст (для совместимости с парсером dashboard)
+    lines = []
+    for ind in parsed.get("indicators", []):
+        lines.append(f"{ind['name']} - {ind['value']} - {ind['status']}")
+
+    if parsed.get("summary"):
+        lines.append(f"\n— Общее состояние\n{parsed['summary']}")
+    if parsed.get("attention"):
+        lines.append(f"\n— На что стоит обратить внимание\n{parsed['attention']}")
+    if parsed.get("recommendations"):
+        lines.append("\n— Рекомендации")
+        for rec in parsed["recommendations"]:
+            lines.append(f"• {rec}")
+
+    return "\n".join(lines)
 
 
 # ========================
 # API: /analyze
 # ========================
 @app.route("/analyze", methods=["POST"])
+@limiter.limit("10 per hour")
 def analyze():
     try:
         print("🔥 /analyze HIT", flush=True)
@@ -211,10 +300,11 @@ def analyze():
 
         file.seek(0)
         file_bytes = file.read()
-        mime_type  = get_mime_type(file.filename)
 
-        # ── Проверяем дубликат файла по SHA-256 хэшу ──
-        import hashlib
+        # ── Валидация типа файла (расширение + magic bytes) ──
+        mime_type = validate_file_type(file.filename, file_bytes)
+
+        # ── Проверяем дубликат по SHA-256 ──
         file_hash = hashlib.sha256(file_bytes).hexdigest()
 
         existing = db_select(
@@ -231,14 +321,14 @@ def analyze():
                 msg += f" (дата анализа: {dup_date})"
             return jsonify({"error": msg}), 409
 
-        # Загружаем файл в Storage
+        # ── Gemini анализ (до загрузки файла — экономим Storage если Gemini упадёт) ──
+        analysis = analyze_with_gemini(file_bytes, file.filename, age, gender)
+
+        # ── Загружаем файл в Storage ──
         file_url = upload_file_to_storage(user["id"], file.filename, file_bytes, mime_type)
         print(f"📦 File uploaded: {file_url}", flush=True)
 
-        # Gemini анализ
-        analysis = analyze_with_gemini(file_bytes, file.filename, age, gender)
-
-        # Сохраняем в БД
+        # ── Сохраняем в БД (если падает — удаляем файл из Storage) ──
         row = {
             "user_id":       user["id"],
             "filename":      file.filename,
@@ -252,7 +342,13 @@ def analyze():
         if analysis_date:
             row["analysis_date"] = analysis_date
 
-        db_insert("analyses", row)
+        try:
+            db_insert("analyses", row)
+        except Exception as db_err:
+            print(f"💥 DB insert failed, cleaning up Storage: {db_err}", flush=True)
+            delete_file_from_storage(file_url)
+            raise
+
         print("💾 Saved to DB", flush=True)
 
         return jsonify({"analysis": analysis})

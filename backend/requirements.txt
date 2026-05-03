@@ -1,6 +1,8 @@
 flask
 flask-cors
+flask-limiter
 google-genai
 httpx
 python-dotenv
+python-magic
 gunicorn
