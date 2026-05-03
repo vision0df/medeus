@@ -434,7 +434,7 @@
     .summary-grid { grid-template-columns: 1fr; }
     header { padding: 0 16px; height: 52px; }
     .logo-text { font-size: 13px; }
-    .user-badge span#userName { display: none; }
+
   }
 </style>
 </head>
@@ -454,7 +454,7 @@
     <div class="header-right">
     <div class="user-badge" id="userBadge" style="display:none">
       <div class="user-avatar" id="userAvatar">—</div>
-      <span id="userName"></span>
+
     </div>
     <a href="profile.html" class="btn-nav-ghost">
       <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -654,8 +654,6 @@ async function loadUser() {
   if (!session) return null;
   const email = session.user.email || '';
   document.getElementById('userBadge').style.display='flex'; document.getElementById('userAvatar').textContent = email.slice(0, 2).toUpperCase();
-  const nameEl = document.getElementById('userName');
-  if (nameEl) nameEl.textContent = email;
 
   // Дата последнего обновления в шапке страницы
   const meta = document.getElementById('pageMeta');
