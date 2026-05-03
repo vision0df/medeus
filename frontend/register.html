@@ -487,6 +487,31 @@
   }
 
   .status-bar-right { color: rgba(255,255,255,0.3); }
+  @media (max-width: 500px) {
+    header { padding: 0 16px; }
+    .logo-text { font-size: 13px; }
+    main { padding: 40px 16px; }
+    .auth-card-wrap { max-width: 100%; }
+    .card-header { padding: 20px 20px 16px; }
+    .card-body { padding: 20px; }
+  }
+
+  /* ─── Email sent screen ─── */
+  .email-sent-screen {
+    display: none; flex-direction: column; align-items: center;
+    text-align: center; padding: 40px 36px 36px; gap: 16px;
+  }
+  .email-sent-screen.show { display: flex; }
+  .email-sent-icon {
+    width: 56px; height: 56px; background: rgba(46,158,91,0.1);
+    display: flex; align-items: center; justify-content: center;
+    clip-path: polygon(8px 0%,100% 0%,100% calc(100% - 8px),calc(100% - 8px) 100%,0% 100%,0% 8px);
+  }
+  .email-sent-icon svg { width: 26px; height: 26px; stroke: #2E9E5B; fill: none; }
+  .email-sent-title { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.2px; }
+  .email-sent-email { font-size: 13px; font-weight: 700; color: var(--orange); word-break: break-all; }
+  .email-sent-desc { font-size: 12px; color: var(--text-mid); line-height: 1.7; }
+  .email-sent-hint { font-size: 11px; color: var(--text-dim); line-height: 1.6; padding: 10px 14px; background: var(--bg2); border: 1px solid var(--line); width: 100%; text-align: left; }
 </style>
 </head>
 <body>
@@ -512,7 +537,7 @@
         <div class="card-title">Регистрация<span class="cursor-blink"></span></div>
       </div>
 
-      <div class="card-body">
+      <div class="card-body" id="registerForm">
 
         <!-- Логин -->
         <div class="form-group">
@@ -627,6 +652,25 @@
         </a>
 
       </div>
+
+      <!-- Email sent screen (показывается после успешной регистрации с подтверждением) -->
+      <div class="email-sent-screen" id="emailSentScreen">
+        <div class="email-sent-icon">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </div>
+        <div class="email-sent-title">Подтвердите email</div>
+        <div class="email-sent-email" id="sentEmailAddr"></div>
+        <div class="email-sent-desc">Мы отправили письмо со ссылкой для входа. Нажмите на ссылку в письме — и вы сразу попадёте в кабинет.</div>
+        <div class="email-sent-hint">Не нашли письмо? Проверьте папку «Спам» или «Промоакции». Письмо приходит в течение 1–2 минут.</div>
+        <a href="auth.html" class="btn-primary" style="margin-top:4px;text-decoration:none;width:100%;justify-content:center;">
+          <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" stroke="currentColor" fill="none"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+          <span>Перейти ко входу</span>
+        </a>
+      </div>
+
     </div>
   </div>
 </main>
@@ -727,12 +771,11 @@
 
       // 3. Если email confirmation включён
       if (data.user && !data.session) {
-        btn.querySelector('span').textContent = 'Подтвердите email';
-        showError('📧 Письмо отправлено на ' + email + '. Подтвердите email и войдите.');
-        // Меняем цвет сообщения на нейтральный
-        document.getElementById('regError').style.cssText =
-          'padding:10px 14px;margin-bottom:16px;background:rgba(46,158,91,0.08);border:1px solid rgba(46,158,91,0.3);color:#2E9E5B;font-size:12px;line-height:1.5;';
-        btn.disabled = false;
+        document.getElementById('registerForm').style.display = 'none';
+        document.getElementById('sentEmailAddr').textContent = email;
+        document.getElementById('emailSentScreen').classList.add('show');
+        document.querySelector('.card-header .card-title').innerHTML =
+          'Письмо отправлено<span class="cursor-blink"></span>';
         return;
       }
 

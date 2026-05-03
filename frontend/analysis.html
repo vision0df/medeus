@@ -538,6 +538,7 @@
       });
 
       if (!resp.ok) throw new Error('Ошибка удаления');
+      try { localStorage.removeItem('medeus_dashboard_cache'); } catch (e) {}
       window.location.href = 'cabinet.html';
 
     } catch (e) {

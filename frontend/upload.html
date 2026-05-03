@@ -373,6 +373,23 @@
   .loader-px span:nth-child(16) { animation-delay: 0.9375s; }
   .loader-text { font-size: 12px; color: var(--text-dim); text-align: center; line-height: 1.7; letter-spacing: 0.05em; }
 
+  /* ─── Progress steps ─── */
+  .loader-steps { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 220px; margin-top: 4px; }
+  .loader-step { display: flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: 0.06em; color: var(--text-dim); transition: color 0.3s; }
+  .loader-step.active { color: var(--orange); }
+  .loader-step.done   { color: #3DCC7A; }
+  .step-dot {
+    width: 18px; height: 18px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700;
+    background: var(--bg3); border: 1px solid var(--line);
+    clip-path: polygon(4px 0%,100% 0%,100% calc(100% - 4px),calc(100% - 4px) 100%,0% 100%,0% 4px);
+    transition: background 0.3s, color 0.3s;
+  }
+  .loader-step.active .step-dot { background: var(--orange); color: #fff; border-color: var(--orange); }
+  .loader-step.done   .step-dot { background: #3DCC7A; color: #fff; border-color: #3DCC7A; }
+  .step-label { text-transform: uppercase; }
+
   /* Result content */
   .result-content { display: none; font-size: 13px; line-height: 1.8; color: var(--text-mid); }
   .result-content.show { display: block; animation: fadeIn 0.3s ease both; }
@@ -443,6 +460,14 @@
     .form-row { grid-template-columns: 1fr; }
     .analyzer-panel { padding: 24px 20px; }
     .page-title { font-size: 22px; }
+  }
+  @media (max-width: 500px) {
+    header { padding: 0 16px; height: 52px; }
+    .logo-text { font-size: 13px; }
+    .nav-user { display: none; }
+    .btn-sm span { display: none; }
+    .btn-sm { padding: 7px 10px; }
+    .btn-sm svg { width: 14px; height: 14px; }
   }
 </style>
 </head>
@@ -608,7 +633,20 @@
               <span></span><span></span><span></span><span></span>
               <span></span><span></span><span></span><span></span>
             </div>
-            <div class="loader-text">ИИ анализирует показатели<br><span style="font-size:11px;color:var(--text-dim);">Обычно занимает 15–30 секунд</span></div>
+            <div class="loader-steps">
+              <div class="loader-step" id="step1">
+                <div class="step-dot">1</div>
+                <span class="step-label">Загружаем файл</span>
+              </div>
+              <div class="loader-step" id="step2">
+                <div class="step-dot">2</div>
+                <span class="step-label">Читаем показатели</span>
+              </div>
+              <div class="loader-step" id="step3">
+                <div class="step-dot">3</div>
+                <span class="step-label">Формируем отчёт</span>
+              </div>
+            </div>
           </div>
 
           <!-- Error -->
@@ -830,6 +868,21 @@ analyzeBtn.addEventListener('click', async () => {
   saveBtn.disabled = true;
   analysisResult = null;
 
+  // ─── Анимация этапов ───
+  const steps = ['step1','step2','step3'];
+  let stepTimers = [];
+  function resetSteps() { steps.forEach(id => { const el = document.getElementById(id); if(el){el.classList.remove('active','done');} }); }
+  function activateStep(i) {
+    resetSteps();
+    // Все предыдущие — done
+    for(let j=0;j<i;j++){ const el=document.getElementById(steps[j]); if(el) el.classList.add('done'); }
+    const el = document.getElementById(steps[i]); if(el) el.classList.add('active');
+  }
+  resetSteps();
+  activateStep(0);
+  stepTimers.push(setTimeout(() => activateStep(1), 2500));
+  stepTimers.push(setTimeout(() => activateStep(2), 8000));
+
   const formData = new FormData();
   formData.append('file',          selectedFile);
   formData.append('analysis_name', analysisName.value.trim());
@@ -851,10 +904,14 @@ analyzeBtn.addEventListener('click', async () => {
     if (data.error)  throw new Error(data.error);
 
     analysisResult = data.analysis;
+    stepTimers.forEach(clearTimeout);
+    steps.forEach(id => { const el=document.getElementById(id); if(el){el.classList.remove('active'); el.classList.add('done');} });
     setState('done', analysisResult);
     saveBtn.disabled = false;
 
   } catch (err) {
+    stepTimers.forEach(clearTimeout);
+    resetSteps();
     setState('error', err.message || 'Не удалось подключиться к серверу');
     saveBtn.disabled = true;
   } finally {
@@ -880,6 +937,7 @@ saveBtn.addEventListener('click', () => {
   setTimeout(() => toast.classList.remove('show'), 3000);
 
   setTimeout(() => {
+    try { localStorage.removeItem('medeus_dashboard_cache'); } catch (e) {}
     window.location.href = 'cabinet.html';
   }, 2000);
 });

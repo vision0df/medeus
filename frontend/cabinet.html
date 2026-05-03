@@ -180,6 +180,19 @@
 
   .page-meta { font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; text-align: right; line-height: 1.7; }
 
+  /* ─── DASHBOARD ERROR BANNER ─── */
+  .dashboard-error {
+    display: none; align-items: flex-start; gap: 14px;
+    padding: 16px 20px; margin-bottom: 24px;
+    background: rgba(255,60,60,0.07); border: 1px solid rgba(255,60,60,0.22);
+  }
+  .dashboard-error.show { display: flex; }
+  .dashboard-error-icon { flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px; stroke: #FF5555; fill: none; }
+  .dashboard-error-title { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #FF5555; margin-bottom: 4px; }
+  .dashboard-error-desc { font-size: 12px; color: var(--text-mid); line-height: 1.6; }
+  .dashboard-error-retry { margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); cursor: pointer; background: none; border: none; font-family: var(--mono); padding: 0; }
+  .dashboard-error-retry:hover { text-decoration: underline; }
+
   /* ─── DASHBOARD GRID ─── */
   .dashboard {
     display: grid;
@@ -424,6 +437,12 @@
   }
   @media (max-width: 500px) {
     .summary-grid { grid-template-columns: 1fr; }
+    header { padding: 0 16px; height: 52px; }
+    .logo-text { font-size: 13px; }
+    .user-badge span#userName { display: none; }
+    .btn-sm span { display: none; }
+    .btn-sm { padding: 7px 10px; }
+    .btn-sm svg { width: 14px; height: 14px; }
   }
 </style>
 </head>
@@ -469,6 +488,20 @@
       <div class="page-title">Мои данные<span class="cursor-blink"></span></div>
     </div>
     <div class="page-meta" id="pageMeta">—</div>
+  </div>
+
+  <div class="dashboard-error" id="dashboardError">
+    <svg class="dashboard-error-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <div>
+      <div class="dashboard-error-title">Не удалось загрузить данные</div>
+      <div class="dashboard-error-desc">Проблема с подключением к серверу. Ваши анализы в безопасности.</div>
+      <button class="dashboard-error-retry" onclick="location.reload()">
+        <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        Обновить страницу
+      </button>
+    </div>
   </div>
 
   <div class="dashboard">
@@ -852,13 +885,57 @@ function hideAllLoaders() {
   });
 }
 
+// ─── Кэш дашборда ────────────────────────────────────────────────────────────
+const CACHE_KEY = 'medeus_dashboard_cache';
+const CACHE_TTL = 5 * 60 * 1000; // 5 минут
+
+function saveCache(userId, data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      userId,
+      data,
+      ts: Date.now(),
+    }));
+  } catch (e) { /* localStorage может быть недоступен */ }
+}
+
+function loadCache(userId) {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (cached.userId !== userId) return null;          // чужой кэш
+    if (Date.now() - cached.ts > CACHE_TTL) return null; // устарел
+    return cached.data;
+  } catch (e) { return null; }
+}
+
+function invalidateCache() {
+  try { localStorage.removeItem(CACHE_KEY); } catch (e) {}
+}
+
+// ─── Инициализация ───────────────────────────────────────────────────────────
 (async () => {
   const session = await loadUser();
   if (!session) { hideAllLoaders(); return; }
 
+  const userId = session.user.id;
+
+  // 1. Мгновенный рендер из кэша (если есть)
+  const cached = loadCache(userId);
+  if (cached) {
+    renderHistory(cached.history             || []);
+    renderIndicators(cached.indicators       || []);
+    renderRecommendations(cached.recommendations || []);
+    renderHealthScore(cached.indicators      || []);
+  }
+
+  // 2. Фоновое обновление с сервера
   try {
     const data = await apiFetch('/dashboard', session);
-    if (!data) { hideAllLoaders(); return; }
+    if (!data) { if (!cached) hideAllLoaders(); return; }
+
+    saveCache(userId, data);
 
     renderHistory(data.history             || []);
     renderIndicators(data.indicators       || []);
@@ -866,7 +943,11 @@ function hideAllLoaders() {
     renderHealthScore(data.indicators      || []);
   } catch (e) {
     console.error('Dashboard error:', e);
-    hideAllLoaders();
+    if (!cached) {
+      hideAllLoaders();
+      const banner = document.getElementById('dashboardError');
+      if (banner) banner.classList.add('show');
+    }
   }
 })();
 </script>
