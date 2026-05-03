@@ -1,4 +1,6 @@
 import os
+import uuid       # ИСПРАВЛЕНИЕ #9: импорт на уровне модуля
+import hashlib    # ИСПРАВЛЕНИЕ #9: импорт на уровне модуля
 import traceback
 import httpx
 from flask import Flask, request, jsonify
@@ -10,7 +12,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=["https://medeus.vercel.app"])
+
+# ИСПРАВЛЕНИЕ #10: разрешаем localhost для локальной разработки
+ALLOWED_ORIGINS = [
+    "https://medeus.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "http://localhost:8080",
+]
+CORS(app, origins=ALLOWED_ORIGINS)
 
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
 
@@ -32,24 +43,33 @@ print("SUPABASE KEY:", "OK" if SUPABASE_KEY  else "MISSING", flush=True)
 
 gemini = genai.Client(api_key=GEMINI_API_KEY)
 
-SUPA_HEADERS = {
-    "apikey":        SUPABASE_KEY,
-    "Authorization": f"Bearer {SUPABASE_KEY}",
-    "Content-Type":  "application/json",
-    "Prefer":        "return=representation",
+# ИСПРАВЛЕНИЕ #2: SUPA_HEADERS через функцию — не строится при старте модуля
+# когда SUPABASE_KEY ещё может быть None.
+def get_supa_headers() -> dict:
+    return {
+        "apikey":        SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type":  "application/json",
+        "Prefer":        "return=representation",
+    }
+
+# ========================
+# ИСПРАВЛЕНИЕ #3: разрешённые типы файлов — словарь вместо fallback "image/jpeg"
+# ========================
+ALLOWED_MIME_TYPES = {
+    ".pdf":  "application/pdf",
+    ".png":  "image/png",
+    ".jpg":  "image/jpeg",
+    ".jpeg": "image/jpeg",
 }
 
 # ========================
 # Helpers
 # ========================
-def get_mime_type(filename: str) -> str:
+def get_mime_type(filename: str) -> str | None:
+    """Возвращает mime-тип файла или None если расширение не разрешено."""
     ext = os.path.splitext(filename)[1].lower()
-    return {
-        ".pdf":  "application/pdf",
-        ".png":  "image/png",
-        ".jpg":  "image/jpeg",
-        ".jpeg": "image/jpeg",
-    }.get(ext, "image/jpeg")
+    return ALLOWED_MIME_TYPES.get(ext)  # None для неизвестных расширений
 
 
 def get_current_user(auth_header: str | None) -> dict:
@@ -69,7 +89,7 @@ def get_current_user(auth_header: str | None) -> dict:
 def db_insert(table: str, data: dict):
     resp = httpx.post(
         f"{SUPABASE_URL}/rest/v1/{table}",
-        headers=SUPA_HEADERS,
+        headers=get_supa_headers(),  # ИСПРАВЛЕНИЕ #2
         json=data,
         timeout=10,
     )
@@ -83,7 +103,7 @@ def db_select(table: str, select: str, filters: dict) -> list:
               "order": "created_at.desc"}
     resp = httpx.get(
         f"{SUPABASE_URL}/rest/v1/{table}",
-        headers=SUPA_HEADERS,
+        headers=get_supa_headers(),  # ИСПРАВЛЕНИЕ #2
         params=params,
         timeout=10,
     )
@@ -96,7 +116,7 @@ def db_delete(table: str, filters: dict):
     params = {k: f"eq.{v}" for k, v in filters.items()}
     resp = httpx.delete(
         f"{SUPABASE_URL}/rest/v1/{table}",
-        headers=SUPA_HEADERS,
+        headers=get_supa_headers(),  # ИСПРАВЛЕНИЕ #2
         params=params,
         timeout=10,
     )
@@ -106,7 +126,7 @@ def db_delete(table: str, filters: dict):
 
 def upload_file_to_storage(user_id: str, filename: str, file_bytes: bytes, mime_type: str) -> str:
     """Загружает файл в Supabase Storage и возвращает публичный URL."""
-    import uuid
+    # ИСПРАВЛЕНИЕ #9: uuid импортирован на уровне модуля
     ext = os.path.splitext(filename)[1].lower()
     storage_path = f"{user_id}/{uuid.uuid4()}{ext}"
 
@@ -207,14 +227,30 @@ def analyze():
         if not age or not gender:
             return jsonify({"error": "Возраст или пол не указаны"}), 400
 
+        # ИСПРАВЛЕНИЕ #4: валидация возраста — целое число от 0 до 120
+        try:
+            age_int = int(age)
+            if not (0 <= age_int <= 120):
+                raise ValueError()
+        except ValueError:
+            return jsonify({"error": "Возраст должен быть числом от 0 до 120"}), 400
+
+        # ИСПРАВЛЕНИЕ #3: валидация типа файла на бэкенде
+        mime_type = get_mime_type(file.filename)
+        if mime_type is None:
+            return jsonify({"error": "Недопустимый тип файла. Разрешены: PDF, PNG, JPG"}), 400
+
         print(f"📥 file={file.filename}  age={age}  gender={gender}  name={analysis_name}  date={analysis_date}", flush=True)
 
         file.seek(0)
         file_bytes = file.read()
-        mime_type  = get_mime_type(file.filename)
 
-        # ── Проверяем дубликат файла по SHA-256 хэшу ──
-        import hashlib
+        # ИСПРАВЛЕНИЕ #3: проверяем что файл не пустой
+        if not file_bytes:
+            return jsonify({"error": "Файл пустой"}), 400
+
+        # Проверяем дубликат файла по SHA-256 хэшу
+        # ИСПРАВЛЕНИЕ #9: hashlib импортирован на уровне модуля
         file_hash = hashlib.sha256(file_bytes).hexdigest()
 
         existing = db_select(
@@ -223,7 +259,7 @@ def analyze():
             filters={"user_id": user["id"], "file_hash": file_hash},
         )
         if existing:
-            dup = existing[0]
+            dup      = existing[0]
             dup_name = dup.get("analysis_name") or "—"
             dup_date = dup.get("analysis_date") or ""
             msg = f"Этот файл уже загружен как «{dup_name}»"
@@ -231,29 +267,33 @@ def analyze():
                 msg += f" (дата анализа: {dup_date})"
             return jsonify({"error": msg}), 409
 
-        # Загружаем файл в Storage
+        # ИСПРАВЛЕНИЕ #1: сначала Gemini — если упадёт, файл не попадёт в Storage
+        analysis = analyze_with_gemini(file_bytes, file.filename, age, gender)
+
         file_url = upload_file_to_storage(user["id"], file.filename, file_bytes, mime_type)
         print(f"📦 File uploaded: {file_url}", flush=True)
 
-        # Gemini анализ
-        analysis = analyze_with_gemini(file_bytes, file.filename, age, gender)
+        # ИСПРАВЛЕНИЕ #5: если DB упала после загрузки файла — удаляем файл из Storage
+        try:
+            row = {
+                "user_id":       user["id"],
+                "filename":      file.filename,
+                "analysis_name": analysis_name,
+                "age":           age,
+                "gender":        gender,
+                "result":        analysis,
+                "file_url":      file_url,
+                "file_hash":     file_hash,
+            }
+            if analysis_date:
+                row["analysis_date"] = analysis_date
 
-        # Сохраняем в БД
-        row = {
-            "user_id":       user["id"],
-            "filename":      file.filename,
-            "analysis_name": analysis_name,
-            "age":           age,
-            "gender":        gender,
-            "result":        analysis,
-            "file_url":      file_url,
-            "file_hash":     file_hash,
-        }
-        if analysis_date:
-            row["analysis_date"] = analysis_date
-
-        db_insert("analyses", row)
-        print("💾 Saved to DB", flush=True)
+            db_insert("analyses", row)
+            print("💾 Saved to DB", flush=True)
+        except Exception as db_err:
+            print(f"💥 DB insert failed, cleaning up storage: {db_err}", flush=True)
+            delete_file_from_storage(file_url)
+            raise
 
         return jsonify({"analysis": analysis})
 
@@ -352,6 +392,114 @@ def delete_analysis(analysis_id):
 
 
 # ========================
+# ИСПРАВЛЕНИЕ #6, #7, #8: общие функции парсинга — единый источник правды
+# вместо трёх копий одного кода в /dashboard, /indicators, /recommendations
+# ========================
+def parse_indicators(rows: list) -> list:
+    """Парсит показатели из всех result и возвращает список с последними значениями."""
+    merged: dict = {}
+
+    for row in rows:
+        result_text = row.get("result", "") or ""
+        row_date    = row.get("analysis_date") or ""
+        source      = row.get("analysis_name", "")
+
+        for line in result_text.splitlines():
+            line = line.strip()
+            if not line or line.startswith("—") or line.startswith("-"):
+                continue
+
+            parts = [p.strip() for p in line.split(" - ")]
+            if len(parts) < 3:
+                parts = [p.strip() for p in line.split(" — ")]
+            if len(parts) < 3:
+                continue
+
+            name   = parts[0]
+            value  = parts[1]
+            status = parts[2].lower()
+
+            if len(name) < 2 or len(name) > 80:
+                continue
+            if not any(c.isdigit() for c in value):
+                continue
+
+            if "выше" in status:
+                norm_status = "above"
+            elif "ниже" in status:
+                norm_status = "below"
+            else:
+                norm_status = "normal"  # включает "норм" и всё остальное
+
+            name_key = name.lower().strip()
+            existing = merged.get(name_key)
+
+            # ИСПРАВЛЕНИЕ #6: корректное сравнение дат —
+            # запись с датой всегда приоритетнее записи без даты;
+            # между двумя датами побеждает более поздняя.
+            if existing is None:
+                should_update = True
+            elif row_date and not existing["date"]:
+                should_update = True   # новая имеет дату, старая нет
+            elif row_date and existing["date"]:
+                should_update = row_date > existing["date"]
+            else:
+                should_update = False  # новая без даты — не обновляем
+
+            if should_update:
+                merged[name_key] = {
+                    "name":   name,
+                    "value":  value,
+                    "status": norm_status,
+                    "date":   row_date,
+                    "source": source,
+                }
+
+    return sorted(merged.values(), key=lambda x: x["name"])
+
+
+def parse_recommendations(rows: list) -> list:
+    """Парсит рекомендации из всех result и возвращает дедублированный список."""
+    REC_START_HEADERS = {"рекоменда"}
+    # ИСПРАВЛЕНИЕ #7: убираем из STOP "обратить внимание" и "общее состояние" —
+    # они идут ДО рекомендаций в структуре Gemini и не должны прерывать блок.
+    REC_STOP_HEADERS = {"вывод", "заключение"}
+
+    seen_keys: set = set()
+    recs: list     = []
+
+    for row in sorted(rows, key=lambda r: r.get("analysis_date") or "", reverse=True):
+        result_text = row.get("result", "") or ""
+        source      = row.get("analysis_name", "")
+        in_rec      = False
+
+        for line in result_text.splitlines():
+            stripped = line.strip()
+            if not stripped:
+                continue
+            low = stripped.lower()
+
+            if any(h in low for h in REC_START_HEADERS):
+                in_rec = True
+                continue
+            if in_rec and any(h in low for h in REC_STOP_HEADERS):
+                in_rec = False
+                continue
+            if in_rec and " - " in stripped and any(c.isdigit() for c in stripped):
+                in_rec = False
+            if in_rec and len(stripped) > 15:
+                clean = stripped.lstrip("•·–—-→* ").strip()
+                if len(clean) < 15:
+                    continue
+                key = clean[:60].lower()
+                if key not in seen_keys:
+                    seen_keys.add(key)
+                    recs.append({"text": clean, "source": source})
+
+    return recs[:20]
+
+
+# ========================
 # API: /dashboard — всё за один запрос
 # ========================
 @app.route("/dashboard", methods=["GET"])
@@ -369,94 +517,11 @@ def dashboard():
             filters={"user_id": user["id"]},
         )
 
-        # ── History ──────────────────────────────────────────────────────────
-        history = rows  # уже готово
-
-        # ── Indicators ───────────────────────────────────────────────────────
-        merged: dict = {}
-        for row in rows:
-            result_text = row.get("result", "") or ""
-            row_date    = row.get("analysis_date") or ""
-            source      = row.get("analysis_name", "")
-
-            for line in result_text.splitlines():
-                line = line.strip()
-                if not line or line.startswith("—") or line.startswith("-"):
-                    continue
-                parts = [p.strip() for p in line.split(" - ")]
-                if len(parts) < 3:
-                    parts = [p.strip() for p in line.split(" — ")]
-                if len(parts) < 3:
-                    continue
-
-                name, value, status = parts[0], parts[1], parts[2].lower()
-
-                if len(name) < 2 or len(name) > 80:
-                    continue
-                if not any(c.isdigit() for c in value):
-                    continue
-
-                if "выше" in status:
-                    norm_status = "above"
-                elif "ниже" in status:
-                    norm_status = "below"
-                else:
-                    norm_status = "normal"
-
-                name_key = name.lower().strip()
-                existing = merged.get(name_key)
-                if existing is None or row_date > existing["date"]:
-                    merged[name_key] = {
-                        "name":   name,
-                        "value":  value,
-                        "status": norm_status,
-                        "date":   row_date,
-                        "source": source,
-                    }
-
-        indicators = sorted(merged.values(), key=lambda x: x["name"])
-
-        # ── Recommendations ──────────────────────────────────────────────────
-        REC_START_HEADERS = {"рекоменда"}
-        REC_STOP_HEADERS  = {
-            "обратить внимание", "общее состояние",
-            "на что стоит", "вывод", "заключение",
-        }
-        seen_keys: set = set()
-        recs: list     = []
-
-        for row in sorted(rows, key=lambda r: r.get("analysis_date") or "", reverse=True):
-            result_text = row.get("result", "") or ""
-            source      = row.get("analysis_name", "")
-            in_rec      = False
-
-            for line in result_text.splitlines():
-                stripped = line.strip()
-                if not stripped:
-                    continue
-                low = stripped.lower()
-
-                if any(h in low for h in REC_START_HEADERS):
-                    in_rec = True
-                    continue
-                if in_rec and any(h in low for h in REC_STOP_HEADERS):
-                    in_rec = False
-                    continue
-                if in_rec and " - " in stripped and any(c.isdigit() for c in stripped):
-                    in_rec = False
-                if in_rec and len(stripped) > 15:
-                    clean = stripped.lstrip("•·–—-→* ").strip()
-                    if len(clean) < 15:
-                        continue
-                    key = clean[:60].lower()
-                    if key not in seen_keys:
-                        seen_keys.add(key)
-                        recs.append({"text": clean, "source": source})
-
+        # ИСПРАВЛЕНИЕ #8: используем общие функции вместо дублированного кода
         return jsonify({
-            "history":         history,
-            "indicators":      indicators,
-            "recommendations": recs[:20],
+            "history":         rows,
+            "indicators":      parse_indicators(rows),
+            "recommendations": parse_recommendations(rows),
         })
 
     except ValueError as e:
@@ -486,60 +551,8 @@ def indicators():
             filters={"user_id": user["id"]},
         )
 
-        # Словарь: имя_показателя -> {value, unit, status, date, source}
-        merged: dict = {}
-
-        for row in rows:
-            result_text = row.get("result", "") or ""
-            row_date    = row.get("analysis_date") or ""
-            source      = row.get("analysis_name", "")
-
-            for line in result_text.splitlines():
-                line = line.strip()
-                if not line or line.startswith("—") or line.startswith("-"):
-                    continue
-                # Ищем паттерн: Название - значение - статус
-                parts = [p.strip() for p in line.split(" - ")]
-                if len(parts) < 3:
-                    parts = [p.strip() for p in line.split(" — ")]
-                if len(parts) < 3:
-                    continue
-
-                name   = parts[0]
-                value  = parts[1]
-                status = parts[2].lower()
-
-                # Фильтруем явно нечисловые / служебные строки
-                if len(name) < 2 or len(name) > 80:
-                    continue
-                if not any(c.isdigit() for c in value):
-                    continue
-
-                # Нормализуем статус
-                if "выше" in status:
-                    norm_status = "above"
-                elif "ниже" in status:
-                    norm_status = "below"
-                elif "норм" in status:
-                    norm_status = "normal"
-                else:
-                    norm_status = "normal"
-
-                name_key = name.lower().strip()
-
-                # Обновляем если запись новее
-                existing = merged.get(name_key)
-                if existing is None or row_date > existing["date"]:
-                    merged[name_key] = {
-                        "name":   name,
-                        "value":  value,
-                        "status": norm_status,
-                        "date":   row_date,
-                        "source": source,
-                    }
-
-        result_list = sorted(merged.values(), key=lambda x: x["name"])
-        return jsonify({"indicators": result_list})
+        # ИСПРАВЛЕНИЕ #8: используем общую функцию parse_indicators
+        return jsonify({"indicators": parse_indicators(rows)})
 
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
@@ -568,56 +581,8 @@ def recommendations():
             filters={"user_id": user["id"]},
         )
 
-        seen_keys: set = set()
-        recs: list     = []
-
-        # Заголовки секций рекомендаций от Gemini
-        REC_START_HEADERS = {"рекоменда"}
-        REC_STOP_HEADERS  = {
-            "обратить внимание", "общее состояние",
-            "на что стоит", "вывод", "заключение",
-        }
-
-        for row in sorted(rows, key=lambda r: r.get("analysis_date") or "", reverse=True):
-            result_text = row.get("result", "") or ""
-            source      = row.get("analysis_name", "")
-            in_rec      = False
-
-            for line in result_text.splitlines():
-                stripped = line.strip()
-                if not stripped:
-                    continue
-
-                low = stripped.lower()
-
-                # Переключаемся в режим рекомендаций
-                if any(h in low for h in REC_START_HEADERS):
-                    in_rec = True
-                    continue
-
-                # Выходим если началась другая секция
-                if in_rec and any(h in low for h in REC_STOP_HEADERS):
-                    in_rec = False
-                    continue
-
-                # Выходим из блока если снова таблица (содержит " - " с цифрами)
-                if in_rec and " - " in stripped and any(c.isdigit() for c in stripped):
-                    in_rec = False
-
-                if in_rec and len(stripped) > 15:
-                    # Убираем маркеры списка
-                    clean = stripped.lstrip("•·–—-→* ").strip()
-                    if len(clean) < 15:
-                        continue
-                    key = clean[:60].lower()
-                    if key not in seen_keys:
-                        seen_keys.add(key)
-                        recs.append({
-                            "text":   clean,
-                            "source": source,
-                        })
-
-        return jsonify({"recommendations": recs[:20]})  # не более 20
+        # ИСПРАВЛЕНИЕ #8: используем общую функцию parse_recommendations
+        return jsonify({"recommendations": parse_recommendations(rows)})
 
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
