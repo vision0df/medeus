@@ -314,31 +314,20 @@ def extract():
 @app.route("/analyze-indicators", methods=["POST"])
 def analyze_indicators():
     """
-    Принимает:
-      - file: оригинальный файл (для сохранения в Storage)
-      - indicators: JSON-строка с проверенными показателями
-      - age, gender, analysis_name, analysis_date
-    Возвращает полный анализ и сохраняет в БД.
+    ШАГ 2: Только анализирует показатели через Gemini.
+    НЕ сохраняет в Storage и НЕ пишет в БД.
+    Принимает: indicators (JSON), age, gender
     """
     try:
         print("🧠 /analyze-indicators HIT", flush=True)
-
         user = get_current_user(request.headers.get("Authorization"))
-        print(f"👤 user: {user['id']}", flush=True)
 
-        if "file" not in request.files:
-            return jsonify({"error": "Файл не найден"}), 400
-
-        file              = request.files["file"]
-        indicators_json   = request.form.get("indicators", "[]").strip()
-        age               = request.form.get("age", "").strip()
-        gender            = request.form.get("gender", "").strip()
-        analysis_name     = request.form.get("analysis_name", file.filename).strip()
-        analysis_date     = request.form.get("analysis_date", "").strip()
+        indicators_json = request.form.get("indicators", "[]").strip()
+        age             = request.form.get("age", "").strip()
+        gender          = request.form.get("gender", "").strip()
 
         if not age or not gender:
             return jsonify({"error": "Возраст или пол не указаны"}), 400
-
         try:
             age_int = int(age)
             if not (0 <= age_int <= 120):
@@ -346,16 +335,56 @@ def analyze_indicators():
         except ValueError:
             return jsonify({"error": "Возраст должен быть числом от 0 до 120"}), 400
 
+        print(f"📊 indicators: {indicators_json[:200]}", flush=True)
+        analysis = analyze_verified_indicators(indicators_json, age, gender)
+        return jsonify({"analysis": analysis})
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
+    except Exception as e:
+        print("🔥 /analyze-indicators ERROR:", flush=True)
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ========================
+# API: /save-analysis — ШАГ 3: сохранить файл и результат (только по кнопке «Сохранить»)
+# ========================
+@app.route("/save-analysis", methods=["POST"])
+def save_analysis():
+    """
+    ШАГ 3: Загружает файл в Storage и сохраняет запись в БД.
+    Вызывается только когда пользователь нажимает «Сохранить».
+    Принимает: file, analysis, analysis_name, analysis_date, age, gender
+    """
+    try:
+        print("💾 /save-analysis HIT", flush=True)
+        user = get_current_user(request.headers.get("Authorization"))
+        print(f"👤 user: {user['id']}", flush=True)
+
+        if "file" not in request.files:
+            return jsonify({"error": "Файл не найден"}), 400
+
+        file          = request.files["file"]
+        analysis      = request.form.get("analysis", "").strip()
+        analysis_name = request.form.get("analysis_name", file.filename).strip()
+        analysis_date = request.form.get("analysis_date", "").strip()
+        age           = request.form.get("age", "").strip()
+        gender        = request.form.get("gender", "").strip()
+
+        if not analysis:
+            return jsonify({"error": "Текст анализа отсутствует"}), 400
+
         mime_type = get_mime_type(file.filename)
         if mime_type is None:
-            return jsonify({"error": "Недопустимый тип файла. Разрешены: PDF, PNG, JPG"}), 400
+            return jsonify({"error": "Недопустимый тип файла"}), 400
 
         file.seek(0)
         file_bytes = file.read()
         if not file_bytes:
             return jsonify({"error": "Файл пустой"}), 400
 
-        # Проверка дубликата
+        # Проверка дубликата — здесь, а не в /extract, чтобы не блокировать просмотр
         file_hash = hashlib.sha256(file_bytes).hexdigest()
         existing = db_select(
             "analyses",
@@ -371,16 +400,9 @@ def analyze_indicators():
                 msg += f" (дата анализа: {dup_date})"
             return jsonify({"error": msg}), 409
 
-        print(f"📊 indicators: {indicators_json[:200]}", flush=True)
-
-        # Анализируем проверенные показатели
-        analysis = analyze_verified_indicators(indicators_json, age, gender)
-
-        # Загружаем файл в Storage
         file_url = upload_file_to_storage(user["id"], file.filename, file_bytes, mime_type)
         print(f"📦 File uploaded: {file_url}", flush=True)
 
-        # Сохраняем в БД
         try:
             row = {
                 "user_id":       user["id"],
@@ -394,20 +416,19 @@ def analyze_indicators():
             }
             if analysis_date:
                 row["analysis_date"] = analysis_date
-
             db_insert("analyses", row)
-            print("💾 Saved to DB", flush=True)
+            print("✅ Saved to DB", flush=True)
         except Exception as db_err:
             print(f"💥 DB insert failed, cleaning up storage: {db_err}", flush=True)
             delete_file_from_storage(file_url)
             raise
 
-        return jsonify({"analysis": analysis})
+        return jsonify({"ok": True})
 
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
     except Exception as e:
-        print("🔥 /analyze-indicators ERROR:", flush=True)
+        print("🔥 /save-analysis ERROR:", flush=True)
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 

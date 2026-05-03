@@ -900,9 +900,20 @@ function hideError(panel) {
   else             s2Error.classList.remove('show');
 }
 
-// ─── STEP 1 → STEP 2: Extract indicators ───
+// ─── STEP 1 → STEP 2: валидация → проверка дубликата → Extract ───
 extractBtn.addEventListener('click', async () => {
   if (!selectedFile) return;
+
+  // Валидация полей ДО обращения к ИИ
+  if (!analysisName.value.trim()) {
+    showError(1, 'Укажите название анализа.');
+    return;
+  }
+  if (!analysisDate.value) {
+    showError(1, 'Укажите дату сдачи анализа.');
+    return;
+  }
+
   const session = await getCurrentSession();
   if (!session) { window.location.href = 'auth.html'; return; }
 
@@ -1018,17 +1029,8 @@ document.getElementById('backToStep1Btn').addEventListener('click', () => {
   setStep(1);
 });
 
-// ─── STEP 2 → STEP 3: Analyze ───
+// ─── STEP 2 → STEP 3: Analyze indicators only (no file, no save) ───
 continueBtn.addEventListener('click', async () => {
-  // Валидация полей (название и дата — обязательны)
-  if (!analysisName.value.trim()) {
-    showError(2, 'Укажите название анализа (поле на шаге 1).');
-    return;
-  }
-  if (!analysisDate.value) {
-    showError(2, 'Укажите дату сдачи анализа (поле на шаге 1).');
-    return;
-  }
   if (indicators.length === 0) {
     showError(2, 'Добавьте хотя бы один показатель перед продолжением.');
     return;
@@ -1044,13 +1046,11 @@ continueBtn.addEventListener('click', async () => {
   continueBtn.disabled = true;
 
   try {
+    // Отправляем ТОЛЬКО показатели — без файла, без сохранения
     const formData = new FormData();
-    formData.append('file',          selectedFile);
-    formData.append('indicators',    JSON.stringify(indicators));
-    formData.append('analysis_name', analysisName.value.trim());
-    formData.append('analysis_date', analysisDate.value || '');
-    formData.append('age',           age);
-    formData.append('gender',        gender);
+    formData.append('indicators', JSON.stringify(indicators));
+    formData.append('age',        age);
+    formData.append('gender',     gender);
 
     const resp = await fetch(`${API_BASE}/analyze-indicators`, {
       method: 'POST',
@@ -1092,22 +1092,71 @@ function formatResult(text) {
   return '<p>' + html + '</p>';
 }
 
-// ─── SAVE ───
-saveBtn.addEventListener('click', () => {
-  if (!analysisResult) return;
+// ─── SAVE: отправить файл + результат на сервер ───
+saveBtn.addEventListener('click', async () => {
+  if (!analysisResult || !selectedFile) return;
+
+  const session = await getCurrentSession();
+  if (!session) { window.location.href = 'auth.html'; return; }
+
+  const age    = calcAge(userProfile?.birth_date) || '0';
+  const gender = userProfile?.gender || 'не указан';
+
   saveBtn.disabled = true;
   saveBtn.innerHTML = `
-    <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="20 6 9 17 4 12"/>
-    </svg><span>Сохранено</span>`;
-  saveBtn.style.color = 'var(--green)';
+    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg><span>Сохраняем...</span>`;
 
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3000);
-  setTimeout(() => {
-    try { localStorage.removeItem('medeus_dashboard_cache'); } catch(e) {}
-    window.location.href = 'cabinet.html';
-  }, 2000);
+  try {
+    const formData = new FormData();
+    formData.append('file',          selectedFile);
+    formData.append('analysis',      analysisResult);
+    formData.append('analysis_name', analysisName.value.trim());
+    formData.append('analysis_date', analysisDate.value || '');
+    formData.append('age',           age);
+    formData.append('gender',        gender);
+
+    const resp = await fetch(`${API_BASE}/save-analysis`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${session.access_token}` },
+      body: formData,
+    });
+
+    const data = await resp.json();
+    if (resp.status === 401) { window.location.href = 'auth.html'; return; }
+    if (!resp.ok) throw new Error(data.error || `Ошибка сервера: ${resp.status}`);
+
+    // Успех
+    saveBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg><span>Сохранено</span>`;
+    saveBtn.style.color = 'var(--green)';
+
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+    setTimeout(() => {
+      try { localStorage.removeItem('medeus_dashboard_cache'); } catch(e) {}
+      window.location.href = 'cabinet.html';
+    }, 2000);
+
+  } catch (err) {
+    // Показываем ошибку прямо на кнопке и разблокируем
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+        <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+      </svg><span>Сохранить в мои анализы</span>`;
+
+    // Показываем ошибку над кнопкой — переиспользуем step3 banner
+    const errBanner = document.createElement('div');
+    errBanner.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,60,60,0.08);border:1px solid rgba(255,60,60,0.25);color:#FF5555;font-size:12px;margin-bottom:12px;';
+    errBanner.textContent = err.message || 'Не удалось сохранить';
+    saveBtn.parentNode.insertBefore(errBanner, saveBtn);
+    setTimeout(() => errBanner.remove(), 5000);
+  }
 });
 
 // ─── INIT ───
