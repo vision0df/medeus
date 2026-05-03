@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medeus // Все рекомендации</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF5A00;
+    --bg: #F2F1EE; --bg2: #ECEAE6; --bg3: #E4E2DE;
+    --white: #ffffff;
+    --text: #1A1714; --text-mid: #5A5650; --text-dim: #8C8480;
+    --line: rgba(0,0,0,0.1);
+    --green: #2E9E5B; --green-pale: rgba(46,158,91,0.08);
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--mono); background: var(--bg); color: var(--text);
+    min-height: 100vh; display: flex; flex-direction: column;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
+    background-size: 32px 32px; pointer-events: none; z-index: 0;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes pixelSpin { 0%,60%,100%{opacity:0.1} 30%{opacity:1} }
+
+  /* LOADER */
+  .card-loader { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:60px 24px; }
+  .card-loader.hidden { display:none; }
+  .loader-px { width:32px; height:32px; display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(4,1fr); gap:2px; }
+  .loader-px span { background:var(--orange); animation:pixelSpin 1s step-end infinite; }
+  .loader-px span:nth-child(1){animation-delay:0s}.loader-px span:nth-child(2){animation-delay:.0625s}.loader-px span:nth-child(3){animation-delay:.125s}.loader-px span:nth-child(4){animation-delay:.1875s}.loader-px span:nth-child(5){animation-delay:.25s}.loader-px span:nth-child(6){animation-delay:.3125s}.loader-px span:nth-child(7){animation-delay:.375s}.loader-px span:nth-child(8){animation-delay:.4375s}.loader-px span:nth-child(9){animation-delay:.5s}.loader-px span:nth-child(10){animation-delay:.5625s}.loader-px span:nth-child(11){animation-delay:.625s}.loader-px span:nth-child(12){animation-delay:.6875s}.loader-px span:nth-child(13){animation-delay:.75s}.loader-px span:nth-child(14){animation-delay:.8125s}.loader-px span:nth-child(15){animation-delay:.875s}.loader-px span:nth-child(16){animation-delay:.9375s}
+  .loader-text { font-size:11px; color:var(--text-dim); letter-spacing:.05em; }
+
+  /* HEADER */
+  header {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 48px; height:56px; background:var(--white); border-bottom:2px solid var(--text);
+  }
+  .logo { display:flex; align-items:center; gap:12px; text-decoration:none; }
+  .logo-icon {
+    width:30px; height:30px; background:var(--orange);
+    display:flex; align-items:center; justify-content:center;
+    clip-path:polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
+  }
+  .logo-icon svg { width:14px; height:14px; }
+  .logo-text { font-size:14px; font-weight:700; color:var(--text); letter-spacing:.1em; text-transform:uppercase; }
+  .logo-text span { color:var(--orange); }
+  .header-right { display:flex; align-items:center; gap:12px; }
+  .user-badge { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-mid); letter-spacing:.08em; }
+  .user-avatar {
+    width:28px; height:28px; background:var(--text); color:var(--white);
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;
+    clip-path:polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
+  }
+  .btn-sm {
+    display:inline-flex; align-items:center; gap:6px; padding:7px 14px;
+    background:var(--bg2); color:var(--text-mid); border:1px solid var(--line);
+    font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    text-decoration:none; cursor:pointer; outline:none; transition:background .15s,color .15s; white-space:nowrap;
+  }
+  .btn-sm:hover { background:var(--bg3); color:var(--text); }
+  .btn-sm svg { width:12px; height:12px; stroke:currentColor; fill:none; flex-shrink:0; }
+
+  /* LAYOUT */
+  .page { flex:1; padding:80px 48px 60px; max-width:900px; margin:0 auto; width:100%; position:relative; z-index:1; }
+
+  .page-header {
+    display:flex; align-items:flex-end; justify-content:space-between;
+    margin-bottom:32px; padding-bottom:20px; border-bottom:2px solid var(--text);
+    animation:fadeIn .3s ease both;
+  }
+  .page-title-label {
+    font-size:10px; letter-spacing:.25em; text-transform:uppercase;
+    color:var(--orange); margin-bottom:6px; display:flex; align-items:center; gap:6px;
+  }
+  .page-title-label::before { content:'/'; font-weight:700; }
+  .page-title { font-size:28px; font-weight:700; letter-spacing:-.5px; }
+  .cursor-blink {
+    display:inline-block; width:10px; height:1.1em;
+    background:var(--orange); vertical-align:text-bottom;
+    animation:blink .9s step-end infinite;
+  }
+
+  /* SEARCH */
+  .search-wrap { position:relative; margin-bottom:20px; animation:fadeIn .35s ease both; }
+  .search-input {
+    width:100%; padding:10px 14px 10px 36px;
+    font-family:var(--mono); font-size:12px; color:var(--text);
+    background:var(--white); border:1px solid var(--line);
+    outline:none; letter-spacing:.03em; transition:border-color .15s;
+  }
+  .search-input:focus { border-color:var(--orange); }
+  .search-input::placeholder { color:var(--text-dim); }
+  .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); width:14px; height:14px; stroke:var(--text-dim); fill:none; pointer-events:none; }
+
+  /* CARD */
+  .card-wrap {
+    background:var(--text);
+    clip-path:polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px);
+    padding:2px; animation:fadeIn .4s ease both;
+  }
+  .card { background:var(--white); clip-path:polygon(16px 0%,100% 0%,100% calc(100% - 16px),calc(100% - 16px) 100%,0% 100%,0% 16px); }
+
+  /* RECS LIST */
+  .recs-list { display:flex; flex-direction:column; }
+
+  .rec-item {
+    display:flex; align-items:flex-start; gap:16px;
+    padding:18px 24px; border-bottom:1px solid var(--line);
+    animation:fadeIn .3s ease both;
+    transition:background .12s;
+  }
+  .rec-item:last-child { border-bottom:none; }
+  .rec-item:hover { background:var(--bg); }
+
+  .rec-icon {
+    font-size:22px; line-height:1; flex-shrink:0;
+    width:40px; height:40px; background:var(--bg2);
+    display:flex; align-items:center; justify-content:center;
+    clip-path:polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
+  }
+
+  .rec-content { flex:1; min-width:0; }
+  .rec-desc { font-size:13px; line-height:1.6; color:var(--text); margin-bottom:8px; }
+  .rec-tag {
+    display:inline-block; font-size:9px; font-weight:700;
+    letter-spacing:.12em; text-transform:uppercase;
+    padding:3px 8px; background:var(--bg2); color:var(--text-dim);
+  }
+
+  .recs-empty { padding:48px 24px; text-align:center; font-size:12px; color:var(--text-dim); letter-spacing:.05em; }
+
+  .count-label { font-size:10px; color:var(--text-dim); padding:10px 24px; border-top:1px solid var(--line); letter-spacing:.05em; }
+  .count-label.hidden { display:none; }
+
+  /* STATUS BAR */
+  .status-bar {
+    position:relative; z-index:10;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 48px; height:36px; background:var(--text);
+    color:rgba(255,255,255,.45); font-size:9px; letter-spacing:.15em; text-transform:uppercase;
+  }
+  .status-bar-dot { display:inline-block; width:5px; height:5px; background:var(--orange); margin-right:6px; animation:blink 1.4s step-end infinite; }
+  .status-bar-right { color:rgba(255,255,255,.3); }
+
+  @media (max-width:700px) {
+    header { padding:0 20px; }
+    .page { padding:72px 16px 48px; }
+    .rec-item { padding:14px 16px; gap:12px; }
+    .status-bar { padding:0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="index.html">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
+        <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
+      </svg>
+    </div>
+    <div class="logo-text">Medeus<span>.</span></div>
+  </a>
+  <div class="header-right">
+    <div class="user-badge">
+      <div class="user-avatar" id="userAvatar">—</div>
+      <span id="userName"></span>
+    </div>
+    <a href="cabinet.html" class="btn-sm">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+      Кабинет
+    </a>
+    <a href="#" id="logoutBtn" class="btn-sm">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+      </svg>
+      Выйти
+    </a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title-label">Личный кабинет → Рекомендации</div>
+      <div class="page-title">Все рекомендации<span class="cursor-blink"></span></div>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+    </svg>
+    <input class="search-input" type="text" id="searchInput" placeholder="Поиск по тексту рекомендации...">
+  </div>
+
+  <div class="card-wrap">
+    <div class="card">
+      <div class="recs-list" id="recsList">
+        <div class="card-loader" id="loader">
+          <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="loader-text">Загрузка рекомендаций...</div>
+        </div>
+      </div>
+      <div class="count-label hidden" id="countLabel"></div>
+    </div>
+  </div>
+</main>
+
+<div class="status-bar">
+  <div><span class="status-bar-dot"></span>Все рекомендации · <span id="statusDate">—</span></div>
+  <div class="status-bar-right">Medeus © 2026</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase.js"></script>
+<script>
+const REC_ICONS = ['🩺','🥗','🏃','💊','🧪','🫀','🧘','💧','🌿','🔬','🍎','🛌','🧬','❤️','🩻'];
+
+function escHtml(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+async function apiFetch(path, session) {
+  const r = await fetch(`${API_BASE}${path}`, { headers:{'Authorization':`Bearer ${session.access_token}`} });
+  if (r.status === 401) { window.location.href='auth.html'; return null; }
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+document.getElementById('statusDate').textContent =
+  new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+let allRecs = [];
+
+function renderList(recs) {
+  const list    = document.getElementById('recsList');
+  const countEl = document.getElementById('countLabel');
+  const loader  = document.getElementById('loader');
+  if (loader) loader.classList.add('hidden');
+
+  if (!recs.length) {
+    list.innerHTML = '<div class="recs-empty">Ничего не найдено</div>';
+    if (countEl) countEl.classList.add('hidden');
+    return;
+  }
+
+  list.innerHTML = recs.map((rec, i) => `
+    <div class="rec-item" style="animation-delay:${Math.min(i*0.025,0.5)}s">
+      <div class="rec-icon">${REC_ICONS[i % REC_ICONS.length]}</div>
+      <div class="rec-content">
+        <div class="rec-desc">${escHtml(rec.text)}</div>
+        <span class="rec-tag">${escHtml(rec.source)}</span>
+      </div>
+    </div>`).join('');
+
+  if (countEl) {
+    countEl.textContent = `Всего: ${recs.length}`;
+    countEl.classList.remove('hidden');
+  }
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  const q = e.target.value.trim().toLowerCase();
+  renderList(q ? allRecs.filter(r => r.text.toLowerCase().includes(q)) : allRecs);
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async e => {
+  e.preventDefault(); await signOut();
+});
+
+(async () => {
+  const session = await requireAuth();
+  if (!session) return;
+  const email = session.user.email || '';
+  document.getElementById('userAvatar').textContent = email.slice(0,2).toUpperCase();
+  document.getElementById('userName').textContent   = email;
+
+  try {
+    const data = await apiFetch('/recommendations', session);
+    if (!data) return;
+    allRecs = data.recommendations || [];
+    renderList(allRecs);
+  } catch(e) {
+    document.getElementById('loader').innerHTML = '<div class="loader-text">Ошибка загрузки</div>';
+  }
+})();
+</script>
+</body>
+</html>

@@ -273,6 +273,25 @@
     padding-top: 16px; border-top: 1px solid var(--line);
   }
 
+  /* ─── CARD FOOTER (show-all button) ─── */
+  .card-footer {
+    display: flex; align-items: center; justify-content: center;
+    padding: 14px 24px; border-top: 1px solid var(--line);
+    background: var(--bg2);
+  }
+  .card-footer.hidden { display: none; }
+  .btn-show-all {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-mid); background: none; border: none;
+    cursor: pointer; text-decoration: none; outline: none;
+    padding: 4px 0; transition: color 0.15s;
+  }
+  .btn-show-all:hover { color: var(--orange); }
+  .btn-show-all svg { width: 13px; height: 13px; stroke: currentColor; fill: none; transition: transform 0.15s; }
+  .btn-show-all:hover svg { transform: translateX(3px); }
+
   /* ─── BLOCK 2: ЗАГРУЖЕННЫЕ АНАЛИЗЫ ─── */
   .analyses-list { display: flex; flex-direction: column; gap: 8px; }
 
@@ -507,6 +526,14 @@
             </div>
           </div>
         </div>
+        <div class="card-footer hidden" id="footerFiles">
+          <a href="all-analyses.html" class="btn-show-all">
+            Показать все
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
       </div>
     </div>
 
@@ -524,6 +551,14 @@
               <div class="loader-text">Загрузка рекомендаций...</div>
             </div>
           </div>
+        </div>
+        <div class="card-footer hidden" id="footerRecs">
+          <a href="all-recommendations.html" class="btn-show-all">
+            Показать все
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
         </div>
       </div>
     </div>
@@ -617,8 +652,9 @@ async function loadUser() {
 
 // ─── Блок 02: Загруженные анализы ────────────────────────────────────────────
 function renderHistory(rows) {
-  const list  = document.getElementById('analysesList');
+  const list   = document.getElementById('analysesList');
   const loader = document.getElementById('loaderFiles');
+  const footer = document.getElementById('footerFiles');
   if (loader) loader.classList.add('hidden');
   if (!list) return;
 
@@ -627,7 +663,8 @@ function renderHistory(rows) {
     return;
   }
 
-  list.innerHTML = rows.map(row => {
+  const visible = rows.slice(0, 4);
+  list.innerHTML = visible.map(row => {
     const name  = escHtml(row.analysis_name || row.filename || '—');
     const aDate = row.analysis_date ? fmtDate(row.analysis_date) : fmtDate(row.created_at);
     return `
@@ -650,6 +687,8 @@ function renderHistory(rows) {
         </div>
       </div>`;
   }).join('');
+
+  if (footer && rows.length > 4) footer.classList.remove('hidden');
 }
 
 // ─── Блок 01: Сводка показателей ─────────────────────────────────────────────
@@ -718,7 +757,8 @@ function renderRecommendations(recs) {
 
   if (badge) { badge.textContent = 'есть рекомендации'; badge.className = 'card-badge badge-warn'; }
 
-  list.innerHTML = recs.slice(0, 8).map((rec, i) => `
+  const footer = document.getElementById('footerRecs');
+  list.innerHTML = recs.slice(0, 4).map((rec, i) => `
     <div class="rec-item">
       <div class="rec-icon">${REC_ICONS[i % REC_ICONS.length]}</div>
       <div class="rec-content">
@@ -726,6 +766,8 @@ function renderRecommendations(recs) {
         <span class="rec-tag badge-neutral">${escHtml(rec.source)}</span>
       </div>
     </div>`).join('');
+
+  if (footer && recs.length > 4) footer.classList.remove('hidden');
 }
 
 // ─── Блок 04: Общее состояние ────────────────────────────────────────────────
