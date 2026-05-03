@@ -619,7 +619,7 @@
         </div>
 
         <div class="btn-row">
-          <button class="btn-primary" id="extractBtn" disabled>
+          <button class="btn-primary" id="extractBtn">
             <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
@@ -805,14 +805,19 @@ const saveBtn        = document.getElementById('saveBtn');
 const indicatorsBody = document.getElementById('indicatorsBody');
 const resultBox      = document.getElementById('resultBox');
 const toast          = document.getElementById('toast');
+const s1Error        = document.getElementById('step1Error');
+const s1ErrorText    = document.getElementById('step1ErrorText');
+const s2Error        = document.getElementById('step2Error');
+const s2ErrorText    = document.getElementById('step2ErrorText');
+const s1Loader       = document.getElementById('step1Loader');
+const s2Loader       = document.getElementById('step2Loader');
+const panel1         = document.getElementById('step1Panel');
+const panel2         = document.getElementById('step2Panel');
+const panel3         = document.getElementById('step3Panel');
 
-let selectedFile    = null;
-let indicators      = [];
-let analysisResult  = null;
-
-// ─── INIT: дата по умолчанию + первичная проверка формы ───
-analysisDate.value = new Date().toISOString().split('T')[0];
-checkStep1();
+let selectedFile   = null;
+let indicators     = [];
+let analysisResult = null;
 
 // ─── FILE UPLOAD ───
 uploadZone.addEventListener('click', () => fileInput.click());
@@ -833,7 +838,7 @@ function formatBytes(b) {
 function handleFile(file) {
   const MAX_SIZE = 10 * 1024 * 1024;
   if (file.size > MAX_SIZE) {
-    showError('step1', `Файл слишком большой: ${formatBytes(file.size)}. Максимум — 10 МБ.`);
+    showError(1, `Файл слишком большой: ${formatBytes(file.size)}. Максимум — 10 МБ.`);
     fileInput.value = '';
     return;
   }
@@ -842,7 +847,7 @@ function handleFile(file) {
   fileSizeEl.textContent = formatBytes(file.size);
   uploadZone.style.display = 'none';
   filePreview.classList.add('show');
-  hideError('step1');
+  hideError(1);
   // Если название не заполнено — подставляем имя файла без расширения
   if (!analysisName.value.trim()) {
     analysisName.value = file.name.replace(/\.[^.]+$/, '');
@@ -855,7 +860,7 @@ fileRemove.addEventListener('click', () => {
   fileInput.value = '';
   filePreview.classList.remove('show');
   uploadZone.style.display = '';
-  hideError('step1');
+  hideError(1);
   checkStep1();
 });
 
@@ -873,9 +878,9 @@ function setStep(n) {
     const el = document.getElementById(`si${i}`);
     el.className = 'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
   }
-  document.getElementById('step1Panel').style.display = n === 1 ? '' : 'none';
-  document.getElementById('step2Panel').style.display = n === 2 ? '' : 'none';
-  document.getElementById('step3Panel').style.display = n === 3 ? '' : 'none';
+  panel1.style.display = n === 1 ? '' : 'none';
+  panel2.style.display = n === 2 ? '' : 'none';
+  panel3.style.display = n === 3 ? '' : 'none';
 
   const subtitles = {
     1: 'Загрузите документ и заполните поля',
@@ -886,13 +891,13 @@ function setStep(n) {
 }
 
 // ─── ERROR HELPERS ───
-function showError(step, msg) {
-  const el = document.getElementById(`step${step}Error`);
-  document.getElementById(`step${step}ErrorText`).textContent = msg;
-  el.classList.add('show');
+function showError(panel, msg) {
+  if (panel === 1) { s1ErrorText.textContent = msg; s1Error.classList.add('show'); }
+  else             { s2ErrorText.textContent = msg; s2Error.classList.add('show'); }
 }
-function hideError(step) {
-  document.getElementById(`step${step}Error`).classList.remove('show');
+function hideError(panel) {
+  if (panel === 1) s1Error.classList.remove('show');
+  else             s2Error.classList.remove('show');
 }
 
 // ─── STEP 1 → STEP 2: Extract indicators ───
@@ -901,8 +906,8 @@ extractBtn.addEventListener('click', async () => {
   const session = await getCurrentSession();
   if (!session) { window.location.href = 'auth.html'; return; }
 
-  hideError('step1');
-  document.getElementById('step1Loader').classList.add('show');
+  hideError(1);
+  s1Loader.classList.add('show');
   extractBtn.disabled = true;
 
   try {
@@ -923,9 +928,9 @@ extractBtn.addEventListener('click', async () => {
     renderIndicators();
     setStep(2);
   } catch (err) {
-    showError('step1', err.message || 'Не удалось подключиться к серверу');
+    showError(1, err.message || 'Не удалось подключиться к серверу');
   } finally {
-    document.getElementById('step1Loader').classList.remove('show');
+    s1Loader.classList.remove('show');
     extractBtn.disabled = false;
     checkStep1();
   }
@@ -1009,7 +1014,7 @@ document.getElementById('addIndBtn').addEventListener('click', () => {
 
 // ─── BACK STEP 2 → 1 ───
 document.getElementById('backToStep1Btn').addEventListener('click', () => {
-  hideError('step2');
+  hideError(2);
   setStep(1);
 });
 
@@ -1017,15 +1022,15 @@ document.getElementById('backToStep1Btn').addEventListener('click', () => {
 continueBtn.addEventListener('click', async () => {
   // Валидация полей (название и дата — обязательны)
   if (!analysisName.value.trim()) {
-    showError('step2', 'Укажите название анализа (поле на шаге 1).');
+    showError(2, 'Укажите название анализа (поле на шаге 1).');
     return;
   }
   if (!analysisDate.value) {
-    showError('step2', 'Укажите дату сдачи анализа (поле на шаге 1).');
+    showError(2, 'Укажите дату сдачи анализа (поле на шаге 1).');
     return;
   }
   if (indicators.length === 0) {
-    showError('step2', 'Добавьте хотя бы один показатель перед продолжением.');
+    showError(2, 'Добавьте хотя бы один показатель перед продолжением.');
     return;
   }
   const session = await getCurrentSession();
@@ -1034,8 +1039,8 @@ continueBtn.addEventListener('click', async () => {
   const age    = calcAge(userProfile?.birth_date) || '0';
   const gender = userProfile?.gender || 'не указан';
 
-  hideError('step2');
-  document.getElementById('step2Loader').classList.add('show');
+  hideError(2);
+  s2Loader.classList.add('show');
   continueBtn.disabled = true;
 
   try {
@@ -1061,9 +1066,9 @@ continueBtn.addEventListener('click', async () => {
     resultBox.innerHTML = formatResult(analysisResult);
     setStep(3);
   } catch (err) {
-    showError('step2', err.message || 'Не удалось подключиться к серверу');
+    showError(2, err.message || 'Не удалось подключиться к серверу');
   } finally {
-    document.getElementById('step2Loader').classList.remove('show');
+    s2Loader.classList.remove('show');
     continueBtn.disabled = false;
   }
 });
@@ -1106,6 +1111,8 @@ saveBtn.addEventListener('click', () => {
 });
 
 // ─── INIT ───
+analysisDate.value = new Date().toISOString().split('T')[0];
+checkStep1();
 setStep(1);
 </script>
 </body>
