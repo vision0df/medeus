@@ -513,12 +513,12 @@
         <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()">
       </div>
     `;
-  }
 
-  // ─── Удаление ───
-  document.getElementById('deleteBtn').addEventListener('click', () => {
-    document.getElementById('deleteConfirm').classList.add('show');
-  });
+    // ─── Удаление ───
+    document.getElementById('deleteBtn').addEventListener('click', () => {
+      document.getElementById('deleteConfirm').classList.add('show');
+    });
+  }
 
   document.getElementById('cancelDelete').addEventListener('click', () => {
     document.getElementById('deleteConfirm').classList.remove('show');
