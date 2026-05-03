@@ -275,6 +275,7 @@
     display: none; position: absolute; inset: 0;
     background: var(--bg2); z-index: 10;
     flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+    pointer-events: all;
   }
   .loader-overlay.show { display: flex; }
   .loader-px { width: 40px; height: 40px; display: grid; grid-template-columns: repeat(4,1fr); grid-template-rows: repeat(4,1fr); gap: 3px; }
@@ -806,11 +807,12 @@ const resultBox      = document.getElementById('resultBox');
 const toast          = document.getElementById('toast');
 
 let selectedFile    = null;
-let indicators      = [];   // [{name, value, unit}]
-let analysisResult  = null; // итоговый текст анализа
+let indicators      = [];
+let analysisResult  = null;
 
-// Default date
+// ─── INIT: дата по умолчанию + первичная проверка формы ───
 analysisDate.value = new Date().toISOString().split('T')[0];
+checkStep1();
 
 // ─── FILE UPLOAD ───
 uploadZone.addEventListener('click', () => fileInput.click());
@@ -829,25 +831,38 @@ function formatBytes(b) {
 }
 
 function handleFile(file) {
-  if (file.size > 10*1024*1024) { showError('step1', `Файл слишком большой: ${formatBytes(file.size)}. Максимум — 10 МБ.`); return; }
+  const MAX_SIZE = 10 * 1024 * 1024;
+  if (file.size > MAX_SIZE) {
+    showError('step1', `Файл слишком большой: ${formatBytes(file.size)}. Максимум — 10 МБ.`);
+    fileInput.value = '';
+    return;
+  }
   selectedFile = file;
   fileNameEl.textContent = file.name;
   fileSizeEl.textContent = formatBytes(file.size);
   uploadZone.style.display = 'none';
   filePreview.classList.add('show');
   hideError('step1');
-  checkStep1();
+  // Если название не заполнено — подставляем имя файла без расширения
+  if (!analysisName.value.trim()) {
+    analysisName.value = file.name.replace(/\.[^.]+$/, '');
+  }
+  checkStep1(); // разблокирует кнопку
 }
 
 fileRemove.addEventListener('click', () => {
-  selectedFile = null; fileInput.value = '';
+  selectedFile = null;
+  fileInput.value = '';
   filePreview.classList.remove('show');
   uploadZone.style.display = '';
+  hideError('step1');
   checkStep1();
 });
 
 function checkStep1() {
-  extractBtn.disabled = !(selectedFile && analysisName.value.trim() && analysisDate.value);
+  // Для извлечения показателей нужен только файл.
+  // Название заполним до нажатия «Продолжить» на шаге 2.
+  extractBtn.disabled = !selectedFile;
 }
 analysisName.addEventListener('input', checkStep1);
 analysisDate.addEventListener('change', checkStep1);
@@ -1000,6 +1015,15 @@ document.getElementById('backToStep1Btn').addEventListener('click', () => {
 
 // ─── STEP 2 → STEP 3: Analyze ───
 continueBtn.addEventListener('click', async () => {
+  // Валидация полей (название и дата — обязательны)
+  if (!analysisName.value.trim()) {
+    showError('step2', 'Укажите название анализа (поле на шаге 1).');
+    return;
+  }
+  if (!analysisDate.value) {
+    showError('step2', 'Укажите дату сдачи анализа (поле на шаге 1).');
+    return;
+  }
   if (indicators.length === 0) {
     showError('step2', 'Добавьте хотя бы один показатель перед продолжением.');
     return;
@@ -1082,7 +1106,7 @@ saveBtn.addEventListener('click', () => {
 });
 
 // ─── INIT ───
-checkStep1();
+setStep(1);
 </script>
 </body>
 </html>
