@@ -71,28 +71,36 @@
 
   .header-right { display: flex; align-items: center; gap: 12px; }
 
-  .btn-sm {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 14px; background: var(--bg2);
-    color: var(--text-mid); border: 1px solid var(--line);
-    font-family: var(--mono); font-size: 11px; font-weight: 400;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    text-decoration: none; cursor: pointer; outline: none;
-    transition: background 0.15s, color 0.15s; white-space: nowrap;
-  }
-  .btn-sm:hover { background: var(--bg3); color: var(--text); }
-  .btn-sm svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
-
-  .btn-danger {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 14px; background: var(--red-pale);
-    color: var(--red); border: 1px solid rgba(217,53,53,0.25);
+  /* ─── HEADER UNIFIED BUTTONS ─── */
+  .btn-nav, .btn-nav-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 18px; background: var(--text); color: #ffffff;
     font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    cursor: pointer; outline: none;
-    transition: background 0.15s; white-space: nowrap;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    text-decoration: none; border: none; outline: none; cursor: pointer;
+    transition: background 0.18s; white-space: nowrap;
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
   }
-  .btn-danger:hover { background: var(--red); color: #fff; }
+  .btn-nav:hover, .btn-nav-ghost:hover { background: var(--orange); }
+  .btn-nav svg, .btn-nav-ghost svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  .btn-nav.btn-danger { background: #c0392b; }
+  .btn-nav.btn-danger:hover { background: #e74c3c; }
+  /* ─── CARD CTA BUTTONS ─── */
+  .btn-primary-sm {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 18px; background: var(--text); color: #ffffff;
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    text-decoration: none; border: none; outline: none; cursor: pointer;
+    transition: background 0.18s; white-space: nowrap;
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+  }
+  .btn-primary-sm:hover { background: var(--orange); }
+  .btn-primary-sm svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  .btn-nav.btn-danger { background: #cc2a2a; }
+  .btn-nav.btn-danger:hover { background: #e03030; }
+
+
   .btn-danger svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
   /* ─── LAYOUT ─── */
@@ -311,7 +319,7 @@
 <body>
 
 <header>
-  <a class="logo" href="index.html">
+  <a class="logo" href="cabinet.html">
     <div class="logo-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
         <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
@@ -320,22 +328,7 @@
     <div class="logo-text">Medeus<span>.</span></div>
   </a>
 
-  <div class="header-right">
-    <a href="cabinet.html" class="btn-sm">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 12H5M5 12l7-7M5 12l7 7"/>
-      </svg>
-      Назад
-    </a>
-    <button class="btn-danger" id="deleteBtn">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="3 6 5 6 21 6"/>
-        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-        <path d="M10 11v6M14 11v6"/>
-        <path d="M9 6V4h6v2"/>
-      </svg>
-      Удалить
-    </button>
+    <div class="header-right">
   </div>
 </header>
 
@@ -437,6 +430,14 @@
         <div class="card">
           <div class="card-header">
             <div class="card-label">Информация</div>
+            <button class="btn-nav btn-danger" id="deleteBtn">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+      </svg>
+      <span>Удалить</span>
+    </button>
           </div>
           <div class="info-file-grid">
             <div class="file-thumb-wrap">

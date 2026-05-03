@@ -104,42 +104,32 @@
 
   .header-right { display: flex; align-items: center; gap: 12px; }
 
-  .user-badge {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 11px; color: var(--text-mid);
-    letter-spacing: 0.08em;
-  }
-  .user-avatar {
-    width: 28px; height: 28px;
-    background: var(--text); color: var(--white);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700;
-    clip-path: polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
-  }
-
-  .btn-sm {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 14px; background: var(--bg2);
-    color: var(--text-mid); border: 1px solid var(--line);
-    font-family: var(--mono); font-size: 11px; font-weight: 400;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    text-decoration: none; cursor: pointer; outline: none;
-    transition: background 0.15s, color 0.15s; white-space: nowrap;
-  }
-  .btn-sm:hover { background: var(--bg3); color: var(--text); }
-  .btn-sm svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
-
-  .btn-primary-sm {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 16px; background: var(--text); color: var(--white);
+  /* ─── HEADER UNIFIED BUTTONS ─── */
+  .btn-nav, .btn-nav-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 18px; background: var(--text); color: #ffffff;
     font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    text-decoration: none; cursor: pointer; border: none; outline: none;
-    transition: background 0.15s; white-space: nowrap;
-    clip-path: polygon(7px 0%,100% 0%,100% calc(100% - 7px),calc(100% - 7px) 100%,0% 100%,0% 7px);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    text-decoration: none; border: none; outline: none; cursor: pointer;
+    transition: background 0.18s; white-space: nowrap;
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+  }
+  .btn-nav:hover, .btn-nav-ghost:hover { background: var(--orange); }
+  .btn-nav svg, .btn-nav-ghost svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  .btn-nav.btn-danger { background: #c0392b; }
+  .btn-nav.btn-danger:hover { background: #e74c3c; }
+  /* ─── CARD CTA BUTTONS ─── */
+  .btn-primary-sm {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 18px; background: var(--text); color: #ffffff;
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    text-decoration: none; border: none; outline: none; cursor: pointer;
+    transition: background 0.18s; white-space: nowrap;
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
   }
   .btn-primary-sm:hover { background: var(--orange); }
-  .btn-primary-sm svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  .btn-primary-sm svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
   /* ─── LAYOUT ─── */
   .page {
@@ -249,6 +239,11 @@
   .card-body { padding: 24px; flex: 1; }
 
   /* ─── BLOCK 1: СВОДКА АНАЛИЗОВ ─── */
+  #loaderSummary {
+    grid-column: 1 / -1;
+    min-height: 120px;
+  }
+
   .summary-grid {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
     margin-bottom: 20px;
@@ -440,9 +435,6 @@
     header { padding: 0 16px; height: 52px; }
     .logo-text { font-size: 13px; }
     .user-badge span#userName { display: none; }
-    .btn-sm span { display: none; }
-    .btn-sm { padding: 7px 10px; }
-    .btn-sm svg { width: 14px; height: 14px; }
   }
 </style>
 </head>
@@ -450,7 +442,7 @@
 
 <!-- Header -->
 <header>
-  <a class="logo" href="index.html">
+  <a class="logo" href="cabinet.html">
     <div class="logo-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
         <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
@@ -459,22 +451,16 @@
     <div class="logo-text">Medeus<span>.</span></div>
   </a>
 
-  <div class="header-right">
-    <div class="user-badge">
+    <div class="header-right">
+    <div class="user-badge" id="userBadge" style="display:none">
       <div class="user-avatar" id="userAvatar">—</div>
       <span id="userName"></span>
     </div>
-    <a href="profile.html" class="btn-sm">
+    <a href="profile.html" class="btn-nav-ghost">
       <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
       </svg>
-      Профиль
-    </a>
-    <a href="#" id="logoutBtn" class="btn-sm">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-      </svg>
-      Выйти
+      <span>Профиль</span>
     </a>
   </div>
 </header>
@@ -667,7 +653,7 @@ async function loadUser() {
   const session = await requireAuth();
   if (!session) return null;
   const email = session.user.email || '';
-  document.getElementById('userAvatar').textContent = email.slice(0, 2).toUpperCase();
+  document.getElementById('userBadge').style.display='flex'; document.getElementById('userAvatar').textContent = email.slice(0, 2).toUpperCase();
   const nameEl = document.getElementById('userName');
   if (nameEl) nameEl.textContent = email;
 
