@@ -253,6 +253,57 @@ def analyze_verified_indicators(indicators_json: str, age: str, gender: str) -> 
 
 
 # ========================
+# API: /check-duplicate — быстрая проверка файла до вызова ИИ
+# ========================
+@app.route("/check-duplicate", methods=["POST"])
+def check_duplicate():
+    """
+    Принимает файл, считает SHA-256 и проверяет есть ли такой уже в БД.
+    Не вызывает Gemini, не пишет в Storage/БД — только хэш + запрос.
+    """
+    try:
+        user = get_current_user(request.headers.get("Authorization"))
+
+        if "file" not in request.files:
+            return jsonify({"error": "Файл не найден"}), 400
+
+        file = request.files["file"]
+
+        mime_type = get_mime_type(file.filename)
+        if mime_type is None:
+            return jsonify({"error": "Недопустимый тип файла. Разрешены: PDF, PNG, JPG"}), 400
+
+        file.seek(0)
+        file_bytes = file.read()
+        if not file_bytes:
+            return jsonify({"error": "Файл пустой"}), 400
+
+        file_hash = hashlib.sha256(file_bytes).hexdigest()
+        existing = db_select(
+            "analyses",
+            select="id,analysis_name,analysis_date",
+            filters={"user_id": user["id"], "file_hash": file_hash},
+        )
+
+        if existing:
+            dup      = existing[0]
+            dup_name = dup.get("analysis_name") or "—"
+            dup_date = dup.get("analysis_date") or ""
+            msg = f"Этот файл уже загружен как «{dup_name}»"
+            if dup_date:
+                msg += f" (дата анализа: {dup_date})"
+            return jsonify({"duplicate": True, "message": msg, "file_hash": file_hash})
+
+        return jsonify({"duplicate": False, "file_hash": file_hash})
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ========================
 # API: /extract — ШАГ 1: извлечь показатели из файла
 # ========================
 @app.route("/extract", methods=["POST"])

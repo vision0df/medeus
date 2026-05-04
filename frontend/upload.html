@@ -922,6 +922,25 @@ extractBtn.addEventListener('click', async () => {
   extractBtn.disabled = true;
 
   try {
+    // ── 1. Сначала проверяем дубликат — без ИИ, только хэш ──
+    const dupForm = new FormData();
+    dupForm.append('file', selectedFile);
+
+    const dupResp = await fetch(`${API_BASE}/check-duplicate`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${session.access_token}` },
+      body: dupForm,
+    });
+    const dupData = await dupResp.json();
+    if (dupResp.status === 401) { window.location.href = 'auth.html'; return; }
+    if (!dupResp.ok) throw new Error(dupData.error || `Ошибка сервера: ${dupResp.status}`);
+
+    if (dupData.duplicate) {
+      showError(1, dupData.message);
+      return;
+    }
+
+    // ── 2. Дубликата нет — отправляем в ИИ ──
     const formData = new FormData();
     formData.append('file', selectedFile);
 
