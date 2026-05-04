@@ -4,37 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // Профиль</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="global.css">
 <style>
-/* ─── PIXEL LOADER ─── */
   .page-loader {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 16px; padding: 80px 24px;
   }
   .page-loader.hidden { display: none; }
-  .loader-px {
-    width: 32px; height: 32px;
-    display: grid; grid-template-columns: repeat(4,1fr); grid-template-rows: repeat(4,1fr); gap: 2px;
-  }
-  .loader-px span { background: var(--orange); animation: pixelSpin 1s step-end infinite; }
-  .loader-px span:nth-child(1)  { animation-delay: 0s; }
-  .loader-px span:nth-child(2)  { animation-delay: 0.0625s; }
-  .loader-px span:nth-child(3)  { animation-delay: 0.125s; }
-  .loader-px span:nth-child(4)  { animation-delay: 0.1875s; }
-  .loader-px span:nth-child(5)  { animation-delay: 0.25s; }
-  .loader-px span:nth-child(6)  { animation-delay: 0.3125s; }
-  .loader-px span:nth-child(7)  { animation-delay: 0.375s; }
-  .loader-px span:nth-child(8)  { animation-delay: 0.4375s; }
-  .loader-px span:nth-child(9)  { animation-delay: 0.5s; }
-  .loader-px span:nth-child(10) { animation-delay: 0.5625s; }
-  .loader-px span:nth-child(11) { animation-delay: 0.625s; }
-  .loader-px span:nth-child(12) { animation-delay: 0.6875s; }
-  .loader-px span:nth-child(13) { animation-delay: 0.75s; }
-  .loader-px span:nth-child(14) { animation-delay: 0.8125s; }
-  .loader-px span:nth-child(15) { animation-delay: 0.875s; }
-  .loader-px span:nth-child(16) { animation-delay: 0.9375s; }
+
   /* ─── CARD CTA BUTTONS ─── */
   .btn-primary-sm {
     display: inline-flex; align-items: center; gap: 8px;
@@ -58,20 +36,6 @@
     position: relative; z-index: 1;
   }
 
-  .page-
-
-  .page-title-label {
-    font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
-    color: var(--orange); margin-bottom: 6px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .page-title-label::before { content: '/'; font-weight: 700; }
-
-  .page-title {
-    font-size: 28px; font-weight: 700; letter-spacing: -0.5px; color: var(--text);
-    display: flex; align-items: center; gap: 10px;
-  }
-
   /* ─── CARDS ─── */
   .card-wrap {
     background: var(--text);
@@ -88,7 +52,6 @@
   }
 
   .card-
-
   .card-label {
     font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
     color: var(--text-dim); display: flex; align-items: center; gap: 6px;
@@ -96,7 +59,6 @@
   .card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
 
   .card-
-
   /* ─── AVATAR BLOCK ─── */
   .avatar-block {
     display: flex; align-items: center; gap: 20px;
@@ -201,27 +163,12 @@
   .btn-row { display: flex; align-items: center; justify-content: flex-end; margin-top: 24px; }
 
   /* ─── STATUS BAR ─── */
-  .status-bar {
-    position: relative; z-index: 10;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 48px; height: 36px;
-    background: var(--text);
-    color: rgba(255,255,255,0.45);
-    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
-  }
-  .status-bar-dot {
-    display: inline-block; width: 5px; height: 5px;
-    background: var(--orange); margin-right: 6px;
-    animation: blink 1.4s step-end infinite;
-  }
-  .status-bar-right { color: rgba(255,255,255,0.3); }
 
   /* ─── RESPONSIVE ─── */
   @media (max-width: 700px) {
     .page { padding: 72px 20px 48px; }
     .fields-grid { grid-template-columns: 1fr; }
     .field.full { grid-column: auto; }
-    .status-bar { padding: 0 20px; }
   }
 </style>
 </head>

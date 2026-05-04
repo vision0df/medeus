@@ -4,31 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // Все анализы</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="global.css">
 <style>
-/* LOADER */
-  .card-loader.hidden { display:none; }
-  .loader-px { width:32px; height:32px; display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(4,1fr); gap:2px; }
-  .loader-px span { background:var(--orange); animation:pixelSpin 1s step-end infinite; }
-  .loader-px span:nth-child(1){animation-delay:0s}.loader-px span:nth-child(2){animation-delay:.0625s}.loader-px span:nth-child(3){animation-delay:.125s}.loader-px span:nth-child(4){animation-delay:.1875s}.loader-px span:nth-child(5){animation-delay:.25s}.loader-px span:nth-child(6){animation-delay:.3125s}.loader-px span:nth-child(7){animation-delay:.375s}.loader-px span:nth-child(8){animation-delay:.4375s}.loader-px span:nth-child(9){animation-delay:.5s}.loader-px span:nth-child(10){animation-delay:.5625s}.loader-px span:nth-child(11){animation-delay:.625s}.loader-px span:nth-child(12){animation-delay:.6875s}.loader-px span:nth-child(13){animation-delay:.75s}.loader-px span:nth-child(14){animation-delay:.8125s}.loader-px span:nth-child(15){animation-delay:.875s}.loader-px span:nth-child(16){animation-delay:.9375s}
-
-  /* HEADER */
 
   .btn-sm svg { width:12px; height:12px; stroke:currentColor; fill:none; flex-shrink:0; }
   .btn-primary-sm svg { width:12px; height:12px; stroke:currentColor; fill:none; flex-shrink:0; }
 
   /* LAYOUT */
   .page { flex:1; padding:80px 48px 60px; max-width:900px; margin:0 auto; width:100%; position:relative; z-index:1; }
-
-  .page-
-  .page-title-label {
-    font-size:10px; letter-spacing:.25em; text-transform:uppercase;
-    color:var(--orange); margin-bottom:6px; display:flex; align-items:center; gap:6px;
-  }
-  .page-title-label::before { content:'/'; font-weight:700; }
-  .page-title { font-size:28px; font-weight:700; letter-spacing:-.5px; }
 
   /* SEARCH */
   .search-wrap { position:relative; margin-bottom:20px; animation:fadeIn .35s ease both; }
@@ -83,20 +67,11 @@
   .count-label.hidden { display:none; }
 
   /* STATUS BAR */
-  .status-bar {
-    position:relative; z-index:10;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 48px; height:36px; background:var(--text);
-    color:rgba(255,255,255,.45); font-size:9px; letter-spacing:.15em; text-transform:uppercase;
-  }
-  .status-bar-dot { display:inline-block; width:5px; height:5px; background:var(--orange); margin-right:6px; animation:blink 1.4s step-end infinite; }
-  .status-bar-right { color:rgba(255,255,255,.3); }
 
   @media (max-width:700px) {
     .page { padding:72px 16px 48px; }
     .analysis-row { grid-template-columns:auto 1fr auto; gap:12px; padding:14px 16px; }
     .analysis-status { display:none; }
-    .status-bar { padding:0 20px; }
   }
 </style>
 </head>

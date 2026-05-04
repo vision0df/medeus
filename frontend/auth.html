@@ -4,11 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // Авторизация</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="global.css">
 <style>
-/* ─── MAIN LAYOUT ─── */
+
+  /* Grid background */
+
+  .header-tag {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border: 1px solid var(--line);
+    padding: 4px 10px;
+    background: var(--bg2);
+  }
+
+  /* ─── MAIN LAYOUT ─── */
   main {
     flex: 1;
     display: flex;
@@ -61,7 +73,6 @@
 
   /* card header */
   .card-
-
   .card-label {
     font-size: 9px;
     font-weight: 400;
@@ -92,7 +103,6 @@
 
   /* card body */
   .card-
-
   /* ─── FORM ─── */
   .form-group {
     display: flex;
@@ -284,30 +294,7 @@
   }
 
   /* ─── FOOTER STATUS BAR ─── */
-  .status-bar {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 48px;
-    height: 36px;
-    background: var(--text);
-    color: rgba(255,255,255,0.45);
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
 
-  .status-bar-dot {
-    display: inline-block;
-    width: 5px; height: 5px;
-    background: var(--orange);
-    margin-right: 6px;
-    animation: blink 1.4s step-end infinite;
-  }
-
-  .status-bar-right { color: rgba(255,255,255,0.3); }
 </style>
 </head>
 <body>

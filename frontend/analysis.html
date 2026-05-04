@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // Анализ</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="global.css">
 <style>
-/* ─── CARD CTA BUTTONS ─── */
+
+  /* ─── CARD CTA BUTTONS ─── */
   .btn-primary-sm {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 9px 18px; background: var(--text); color: #ffffff;
@@ -21,7 +21,6 @@
   .btn-primary-sm:hover { background: var(--orange); }
   .btn-primary-sm svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
-
   .btn-danger svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
   /* ─── LAYOUT ─── */
@@ -32,19 +31,6 @@
     margin: 0 auto;
     width: 100%;
     position: relative; z-index: 1;
-  }
-
-  .page-
-
-  .page-title-label {
-    font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
-    color: var(--orange); margin-bottom: 6px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .page-title-label::before { content: '/'; font-weight: 700; }
-
-  .page-title {
-    font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: var(--text);
   }
 
   /* ─── CARD ─── */
@@ -62,7 +48,6 @@
   }
 
   .card-
-
   .card-label {
     font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
     color: var(--text-dim); display: flex; align-items: center; gap: 6px;
@@ -70,7 +55,6 @@
   .card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
 
   .card-
-
   /* ─── META GRID ─── */
   /* ─── INFO + FILE COMBINED ─── */
   .info-file-grid { display: grid; grid-template-columns: 200px 1fr; min-height: 180px; }
@@ -135,7 +119,6 @@
 
   /* ─── AI RESULT ─── */
   .result-
-
   /* ─── DELETE CONFIRM ─── */
   .delete-confirm {
     display: none;
@@ -197,25 +180,10 @@
   .state-error { color: var(--red); }
 
   /* ─── STATUS BAR ─── */
-  .status-bar {
-    position: relative; z-index: 10;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 48px; height: 36px;
-    background: var(--text);
-    color: rgba(255,255,255,0.45);
-    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
-  }
-  .status-bar-dot {
-    display: inline-block; width: 5px; height: 5px;
-    background: var(--orange); margin-right: 6px;
-    animation: blink 1.4s step-end infinite;
-  }
-  .status-bar-right { color: rgba(255,255,255,0.3); }
 
   @media (max-width: 700px) {
     .page { padding: 72px 16px 48px; }
     .meta-grid { grid-template-columns: 1fr 1fr; }
-    .status-bar { padding: 0 20px; }
   }
 </style>
 </head>

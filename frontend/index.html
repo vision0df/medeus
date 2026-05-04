@@ -8,7 +8,31 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="global.css">
 <style>
-.hero {
+
+  .nav-badge {
+    font-size: 11px; color: var(--orange);
+    background: var(--orange-pale); border: 1px solid var(--orange-border);
+    padding: 4px 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .nav-dot {
+    width: 6px; height: 6px; background: var(--orange);
+    display: inline-block; margin-right: 4px;
+    animation: blink 1.2s step-end infinite;
+  }
+
+  .btn-auth {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 18px; background: var(--text); color: #ffffff;
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    text-decoration: none; border: none; outline: none; cursor: pointer;
+    transition: background 0.18s; white-space: nowrap;
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+  }
+  .btn-auth:hover { background: var(--orange); }
+  .btn-auth svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
+
+  .hero {
     min-height: 100vh; display: flex; flex-direction: column;
     align-items: center; justify-content: center; text-align: center;
     padding: 120px 48px 80px; position: relative; z-index: 1;
@@ -40,6 +64,22 @@
     animation: fadeIn 0.4s 0.2s ease both; letter-spacing: 0.03em;
   }
   .hero-sub::before { content: '// '; color: var(--text-dim); }
+
+  .btn-chamfer {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 16px 32px; background: var(--text); color: #ffffff;
+    font-family: var(--mono); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none;
+    cursor: pointer; border: none; outline: none;
+    transition: background 0.18s; white-space: nowrap; line-height: 1;
+    clip-path: polygon(12px 0%, 100% 0%, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0% 100%, 0% 12px);
+  }
+  .btn-chamfer:hover { background: var(--orange); }
+  .btn-chamfer:active { background: var(--orange-dim); }
+  .btn-chamfer:disabled {
+    background: #C8C6C2; color: #888480; cursor: not-allowed;
+  }
+  .btn-chamfer svg { width: 17px; height: 17px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
   .section-label { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px; }
   .section-title { font-size: 30px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 48px; color: var(--text); }
@@ -166,8 +206,7 @@
   }
 
   .result-panel { display: flex; flex-direction: column; }
-  .result-
-  .result-title { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.05em; }
+  .result-  .result-title { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.05em; }
 
   .result-status-wrap {
     display: inline-block;
@@ -224,24 +263,6 @@
     position: absolute; inset: 0; gap: 20px; background: var(--bg);
   }
   .loader.show { display: flex; }
-  .loader-px { width: 40px; height: 40px; display: grid; grid-template-columns: repeat(4,1fr); grid-template-rows: repeat(4,1fr); gap: 3px; }
-  .loader-px span { background: var(--orange); animation: pixelSpin 1s step-end infinite; }
-  .loader-px span:nth-child(1)  { animation-delay: 0s; }
-  .loader-px span:nth-child(2)  { animation-delay: 0.0625s; }
-  .loader-px span:nth-child(3)  { animation-delay: 0.125s; }
-  .loader-px span:nth-child(4)  { animation-delay: 0.1875s; }
-  .loader-px span:nth-child(5)  { animation-delay: 0.25s; }
-  .loader-px span:nth-child(6)  { animation-delay: 0.3125s; }
-  .loader-px span:nth-child(7)  { animation-delay: 0.375s; }
-  .loader-px span:nth-child(8)  { animation-delay: 0.4375s; }
-  .loader-px span:nth-child(9)  { animation-delay: 0.5s; }
-  .loader-px span:nth-child(10) { animation-delay: 0.5625s; }
-  .loader-px span:nth-child(11) { animation-delay: 0.625s; }
-  .loader-px span:nth-child(12) { animation-delay: 0.6875s; }
-  .loader-px span:nth-child(13) { animation-delay: 0.75s; }
-  .loader-px span:nth-child(14) { animation-delay: 0.8125s; }
-  .loader-px span:nth-child(15) { animation-delay: 0.875s; }
-  .loader-px span:nth-child(16) { animation-delay: 0.9375s; }
 
   .result-content { display: none; font-size: 13px; line-height: 1.8; color: var(--text-mid); }
   .result-content.show { display: block; animation: fadeIn 0.3s ease both; }
