@@ -229,67 +229,90 @@
   .field-hint { font-size: 11px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.05em; }
 
   /* ─── CATEGORY SELECTOR ─── */
+  /* ─── CATEGORY LIST ─── */
   .category-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
-    margin-top: 6px;
+    display: flex; flex-direction: column;
+    gap: 5px; margin-top: 6px;
   }
-  /* outer border shell — same 2-layer trick as .card-wrap */
-  .cat-card-wrap {
-    background: var(--text);
-    clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
-    padding: 1.5px;
-    transition: background 0.15s;
+  .cat-row {
+    display: flex; align-items: stretch;
+    gap: 3px; position: relative;
   }
-  .cat-card-wrap:has(.cat-card:hover),
-  .cat-card-wrap:has(.cat-card.selected) { background: var(--orange); }
   .cat-card {
-    display: flex; flex-direction: column; align-items: flex-start;
-    padding: 11px 10px 10px;
+    flex: 1; display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px 8px 10px;
     background: var(--bg);
-    clip-path: polygon(9px 0%, 100% 0%, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0% 100%, 0% 9px);
+    border: 1px solid var(--line);
+    border-right: none;
+    clip-path: polygon(7px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 7px);
     font-family: var(--mono); text-align: left;
-    cursor: pointer; outline: none; border: none; width: 100%;
-    transition: background 0.15s;
-    position: relative;
+    cursor: pointer; outline: none;
+    transition: background 0.15s, border-color 0.15s;
   }
-  .cat-card:hover { background: var(--orange-pale); }
-  .cat-card.selected { background: var(--orange-pale); }
-  .cat-card.selected::after {
-    content: '';
-    position: absolute; top: 5px; right: 5px;
-    width: 5px; height: 5px;
-    background: var(--orange);
-    clip-path: polygon(2px 0%, 100% 0%, 100% calc(100% - 2px), calc(100% - 2px) 100%, 0% 100%, 0% 2px);
-  }
+  .cat-card:hover { background: var(--bg3); border-color: var(--text-mid); }
+  .cat-card.selected { background: var(--text); border-color: var(--text); }
   .cat-icon {
-    width: 26px; height: 26px;
+    width: 22px; height: 22px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    background: var(--bg3); margin-bottom: 8px; flex-shrink: 0;
+    background: var(--bg3);
     clip-path: polygon(4px 0%, 100% 0%, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0% 100%, 0% 4px);
     transition: background 0.15s;
   }
-  .cat-card:hover .cat-icon,
-  .cat-card.selected .cat-icon { background: var(--orange); }
+  .cat-card:hover .cat-icon { background: var(--line); }
+  .cat-card.selected .cat-icon { background: rgba(255,255,255,0.12); }
   .cat-icon svg {
-    width: 13px; height: 13px; stroke: var(--text-mid); fill: none;
-    transition: stroke 0.15s; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    width: 11px; height: 11px; stroke: var(--text-mid); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    transition: stroke 0.15s;
   }
-  .cat-card:hover .cat-icon svg,
-  .cat-card.selected .cat-icon svg { stroke: #fff; }
+  .cat-card.selected .cat-icon svg { stroke: rgba(255,255,255,0.7); }
   .cat-name {
     font-size: 11px; font-weight: 700; color: var(--text);
-    letter-spacing: 0.08em; text-transform: uppercase;
-    margin-bottom: 4px; line-height: 1.2;
+    letter-spacing: 0.09em; text-transform: uppercase; line-height: 1;
+    transition: color 0.15s;
   }
-  .cat-sub {
-    font-size: 9.5px; color: var(--text-dim);
-    letter-spacing: 0.03em; line-height: 1.5;
+  .cat-card.selected .cat-name { color: #fff; }
+  .cat-info-btn-wrap {
+    width: 32px; flex-shrink: 0; position: relative;
+    background: var(--line);
+    clip-path: polygon(0% 0%, calc(100% - 7px) 0%, 100% 7px, 100% 100%, 7px 100%, 0% calc(100% - 7px));
+    padding: 1px;
+    transition: background 0.15s;
   }
-  @media (max-width: 800px) {
-    .category-grid { grid-template-columns: repeat(2, 1fr); }
-    .category-grid .cat-card-wrap:last-child { grid-column: 1 / -1; }
+  .cat-info-btn-wrap:hover { background: var(--text-dim); }
+  .cat-info-btn {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg3);
+    clip-path: polygon(0% 0%, calc(100% - 6px) 0%, 100% 6px, 100% 100%, 6px 100%, 0% calc(100% - 6px));
+    cursor: pointer; outline: none; border: none;
+    transition: background 0.15s;
+    padding: 0 0 1px 0;
+  }
+  .cat-info-btn-wrap:hover .cat-info-btn { background: var(--bg2); }
+  .cat-info-btn svg {
+    width: 11px; height: 11px; stroke: var(--text-dim); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .cat-tooltip-wrap {
+    display: none; position: absolute; right: 0; top: calc(100% + 6px);
+    z-index: 99; pointer-events: none;
+    background: var(--text-mid);
+    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
+    padding: 1px;
+  }
+  .cat-tooltip {
+    background: var(--bg3); color: var(--text);
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em;
+    padding: 8px 12px; line-height: 1.8; white-space: nowrap;
+    min-width: 180px;
+    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
+  }
+  .cat-row.tip-open .cat-tooltip-wrap { display: block; }
+  .cat-row.tip-open .cat-tooltip { display: block; }
+  @media (max-width: 600px) {
+    .cat-tooltip { right: auto; left: 0; }
+    .cat-tooltip::before { right: auto; left: 10px; }
   }
 
   /* ─── BUTTONS ─── */
@@ -666,78 +689,82 @@
         <div class="form-group">
           <label>Тип анализа</label>
           <div class="category-grid" id="categoryGrid">
-            <!-- Кровь: капля крови -->
-            <div class="cat-card-wrap">
-              <button type="button" class="cat-card" data-value="Кровь" data-sub="ОАК, биохимия, коагулограмма, онкомаркеры">
+
+            <div class="cat-row">
+              <button type="button" class="cat-card" data-value="Кровь">
                 <div class="cat-icon">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
                 </div>
                 <div class="cat-name">Кровь</div>
-                <div class="cat-sub">ОАК, биохимия, коагулограмма, онкомаркеры</div>
               </button>
+              <div class="cat-info-btn-wrap">
+                <button type="button" class="cat-info-btn">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </button>
+              </div>
+              <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Кровь</span><br>ОАК · биохимия · коагулограмма · онкомаркеры</div></div>
             </div>
-            <!-- Гормоны: волнистая синусоида (эндокринная система) -->
-            <div class="cat-card-wrap">
-              <button type="button" class="cat-card" data-value="Гормоны" data-sub="ТТГ, половые, надпочечники, инсулин">
+
+            <div class="cat-row">
+              <button type="button" class="cat-card" data-value="Гормоны">
                 <div class="cat-icon">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M2 12c1.5-4 3-6 4.5-6S9 9 10.5 12s3 6 4.5 6 3-2 4.5-6" fill="none"/>
-                    <circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/>
-                    <circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24"><path d="M2 12c1.5-4 3-6 4.5-6S9 9 10.5 12s3 6 4.5 6 3-2 4.5-6" fill="none"/><circle cx="6.5" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="17.5" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg>
                 </div>
                 <div class="cat-name">Гормоны</div>
-                <div class="cat-sub">ТТГ, половые, надпочечники, инсулин</div>
               </button>
+              <div class="cat-info-btn-wrap">
+                <button type="button" class="cat-info-btn">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </button>
+              </div>
+              <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Гормоны</span><br>ТТГ · половые · надпочечники · инсулин</div></div>
             </div>
-            <!-- Инфекции: вирус/микроб -->
-            <div class="cat-card-wrap">
-              <button type="button" class="cat-card" data-value="Инфекции" data-sub="ПЦР, антитела, гепатиты, ЗППП">
+
+            <div class="cat-row">
+              <button type="button" class="cat-card" data-value="Инфекции">
                 <div class="cat-icon">
-                  <svg viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="4"/>
-                    <line x1="12" y1="2" x2="12" y2="6"/>
-                    <line x1="12" y1="18" x2="12" y2="22"/>
-                    <line x1="2" y1="12" x2="6" y2="12"/>
-                    <line x1="18" y1="12" x2="22" y2="12"/>
-                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/>
-                    <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
-                    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/>
-                    <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
-                    <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
                 </div>
                 <div class="cat-name">Инфекции</div>
-                <div class="cat-sub">ПЦР, антитела, гепатиты, ЗППП</div>
               </button>
+              <div class="cat-info-btn-wrap">
+                <button type="button" class="cat-info-btn">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </button>
+              </div>
+              <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Инфекции</span><br>ПЦР · антитела · гепатиты · ЗППП</div></div>
             </div>
-            <!-- Биоматериалы: пробирка/колба -->
-            <div class="cat-card-wrap">
-              <button type="button" class="cat-card" data-value="Биоматериалы" data-sub="Моча, кал, спермограмма, мазки">
+
+            <div class="cat-row">
+              <button type="button" class="cat-card" data-value="Биоматериалы">
                 <div class="cat-icon">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M9 3h6v11l3.5 4.5A1 1 0 0 1 17.7 20H6.3a1 1 0 0 1-.8-1.5L9 14V3z"/>
-                    <line x1="9" y1="9" x2="15" y2="9"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24"><path d="M9 3h6v11l3.5 4.5A1 1 0 0 1 17.7 20H6.3a1 1 0 0 1-.8-1.5L9 14V3z"/><line x1="9" y1="9" x2="15" y2="9"/></svg>
                 </div>
                 <div class="cat-name">Биоматериалы</div>
-                <div class="cat-sub">Моча, кал, спермограмма, мазки</div>
               </button>
+              <div class="cat-info-btn-wrap">
+                <button type="button" class="cat-info-btn">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </button>
+              </div>
+              <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Биоматериалы</span><br>Моча · кал · спермограмма · мазки</div></div>
             </div>
-            <!-- Диагностика: пульс/кардиограмма -->
-            <div class="cat-card-wrap">
-              <button type="button" class="cat-card" data-value="Диагностика" data-sub="ЭКГ, УЗИ, рентген, КТ, МРТ">
+
+            <div class="cat-row">
+              <button type="button" class="cat-card" data-value="Диагностика">
                 <div class="cat-icon">
-                  <svg viewBox="0 0 24 24">
-                    <polyline points="2 12 6 12 8 5 11 19 14 9 16 14 18 12 22 12"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24"><polyline points="2 12 6 12 8 5 11 19 14 9 16 14 18 12 22 12"/></svg>
                 </div>
                 <div class="cat-name">Диагностика</div>
-                <div class="cat-sub">ЭКГ, УЗИ, рентген, КТ, МРТ</div>
               </button>
+              <div class="cat-info-btn-wrap">
+                <button type="button" class="cat-info-btn">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </button>
+              </div>
+              <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Диагностика</span><br>ЭКГ · УЗИ · рентген · КТ · МРТ</div></div>
             </div>
+
           </div>
           <input type="hidden" id="analysisName">
         </div>
@@ -985,7 +1012,6 @@ function handleFile(file) {
   uploadZone.style.display = 'none';
   filePreview.classList.add('show');
   hideError(1);
-  }
   checkStep1(); // разблокирует кнопку
 }
 
@@ -1013,6 +1039,21 @@ document.querySelectorAll('.cat-card').forEach(card => {
     analysisName.value = card.dataset.value;
     checkStep1();
   });
+});
+
+// ─── INFO TOOLTIP TOGGLE ───
+document.querySelectorAll('.cat-info-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const row = btn.closest('.cat-row');
+    const isOpen = row.classList.contains('tip-open');
+    document.querySelectorAll('.cat-row').forEach(r => r.classList.remove('tip-open'));
+    if (!isOpen) row.classList.add('tip-open');
+  });
+});
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.cat-row').forEach(r => r.classList.remove('tip-open'));
 });
 
 // ─── STEPPER ───
