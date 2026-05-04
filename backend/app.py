@@ -493,6 +493,72 @@ def save_analysis():
 
 
 # ========================
+# API: /extract-public — без авторизации (для главной страницы)
+# ========================
+@app.route("/extract-public", methods=["POST"])
+def extract_public():
+    """Извлекает показатели из файла без авторизации."""
+    try:
+        if "file" not in request.files:
+            return jsonify({"error": "Файл не найден"}), 400
+        file = request.files["file"]
+        mime_type = get_mime_type(file.filename)
+        if mime_type is None:
+            return jsonify({"error": "Недопустимый тип файла. Разрешены: PDF, PNG, JPG"}), 400
+        file.seek(0)
+        file_bytes = file.read()
+        if not file_bytes:
+            return jsonify({"error": "Файл пустой"}), 400
+
+        import json as _json
+        raw = extract_indicators_from_file(file_bytes, file.filename)
+        try:
+            clean = raw.strip()
+            if clean.startswith("```"):
+                clean = clean.split("```")[1]
+                if clean.startswith("json"):
+                    clean = clean[4:]
+                clean = clean.strip()
+            indicators = _json.loads(clean)
+            if not isinstance(indicators, list):
+                indicators = []
+        except Exception:
+            indicators = []
+
+        return jsonify({"indicators": indicators})
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ========================
+# API: /analyze-indicators-public — без авторизации (для главной страницы)
+# ========================
+@app.route("/analyze-indicators-public", methods=["POST"])
+def analyze_indicators_public():
+    """Анализирует показатели без авторизации (без сохранения)."""
+    try:
+        indicators_json = request.form.get("indicators", "[]").strip()
+        age             = request.form.get("age", "").strip()
+        gender          = request.form.get("gender", "").strip()
+
+        if not age or not gender:
+            return jsonify({"error": "Возраст или пол не указаны"}), 400
+        try:
+            age_int = int(age)
+            if not (0 <= age_int <= 120):
+                raise ValueError()
+        except ValueError:
+            return jsonify({"error": "Возраст должен быть числом от 0 до 120"}), 400
+
+        analysis = analyze_verified_indicators(indicators_json, age, gender)
+        return jsonify({"analysis": analysis})
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ========================
 # API: /analyze — устаревший эндпоинт, оставлен для обратной совместимости
 # ========================
 @app.route("/analyze", methods=["POST"])
