@@ -5,8 +5,85 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // Регистрация</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="global.css">
 <style>
+  :root {
+    --orange: #FF5A00;
+    --orange-dim: #CC4800;
+    --orange-pale: rgba(255,90,0,0.07);
+    --orange-border: rgba(255,90,0,0.3);
+    --bg: #F2F1EE;
+    --bg2: #ECEAE6;
+    --bg3: #E4E2DE;
+    --white: #ffffff;
+    --text: #1A1714;
+    --text-mid: #5A5650;
+    --text-dim: #8C8480;
+    --line: rgba(0,0,0,0.1);
+    --line-strong: #1A1714;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--mono);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    height: 56px;
+    background: var(--white);
+    border-bottom: 2px solid var(--text);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 30px; height: 30px;
+    background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .logo-icon svg { width: 14px; height: 14px; }
+
+  .logo-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .logo-text span { color: var(--orange); }
 
   .header-tag {
     font-size: 9px;
@@ -66,7 +143,12 @@
     );
   }
 
-  .card-
+  .card-header {
+    padding: 28px 36px 24px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg2);
+  }
+
   .card-label {
     font-size: 9px;
     font-weight: 400;
@@ -90,6 +172,19 @@
     font-weight: 700;
     color: var(--text);
     letter-spacing: -0.3px;
+  }
+
+  .cursor-blink {
+    display: inline-block;
+    width: 10px; height: 1.1em;
+    background: var(--orange);
+    vertical-align: text-bottom;
+    animation: blink 0.9s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
   }
 
   /* ─── SECTION DIVIDER ─── */
@@ -117,7 +212,10 @@
     white-space: nowrap;
   }
 
-  .card-
+  .card-body {
+    padding: 28px 36px 36px;
+  }
+
   .form-group {
     display: flex;
     flex-direction: column;
@@ -365,10 +463,38 @@
     margin-bottom: 16px;
   }
 
+  .status-bar {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    height: 36px;
+    background: var(--text);
+    color: rgba(255,255,255,0.45);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .status-bar-dot {
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: var(--orange);
+    margin-right: 6px;
+    animation: blink 1.4s step-end infinite;
+  }
+
+  .status-bar-right { color: rgba(255,255,255,0.3); }
   @media (max-width: 500px) {
+    header { padding: 0 16px; }
+    .logo-text { font-size: 13px; }
     main { padding: 40px 16px; }
     .auth-card-wrap { max-width: 100%; }
-    .card-    .card-  }
+    .card-header { padding: 20px 20px 16px; }
+    .card-body { padding: 20px; }
+  }
 
   /* ─── Email sent screen ─── */
   .email-sent-screen {

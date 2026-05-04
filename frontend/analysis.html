@@ -5,9 +5,86 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // Анализ</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="global.css">
 <style>
+  :root {
+    --orange: #FF5A00;
+    --orange-dim: #CC4800;
+    --orange-pale: rgba(255,90,0,0.08);
+    --bg: #F2F1EE;
+    --bg2: #ECEAE6;
+    --bg3: #E4E2DE;
+    --white: #ffffff;
+    --text: #1A1714;
+    --text-mid: #5A5650;
+    --text-dim: #8C8480;
+    --line: rgba(0,0,0,0.1);
+    --green: #2E9E5B;
+    --green-pale: rgba(46,158,91,0.08);
+    --red: #D93535;
+    --red-pale: rgba(217,53,53,0.08);
+    --yellow: #C89000;
+    --mono: 'IBM Plex Mono', monospace;
+  }
 
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--mono);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none; z-index: 0;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ─── HEADER ─── */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 56px;
+    background: var(--white); border-bottom: 2px solid var(--text);
+  }
+
+  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .logo-icon {
+    width: 30px; height: 30px; background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    clip-path: polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
+  }
+  .logo-icon svg { width: 14px; height: 14px; }
+  .logo-text { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.1em; text-transform: uppercase; }
+  .logo-text span { color: var(--orange); }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  /* ─── HEADER UNIFIED BUTTONS ─── */
+  .btn-nav, .btn-nav-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 18px; background: var(--text); color: #ffffff;
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    text-decoration: none; border: none; outline: none; cursor: pointer;
+    transition: background 0.18s; white-space: nowrap;
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+  }
+  .btn-nav:hover, .btn-nav-ghost:hover { background: var(--orange); }
+  .btn-nav svg, .btn-nav-ghost svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  .btn-nav.btn-danger { background: #c0392b; }
+  .btn-nav.btn-danger:hover { background: #e74c3c; }
   /* ─── CARD CTA BUTTONS ─── */
   .btn-primary-sm {
     display: inline-flex; align-items: center; gap: 8px;
@@ -20,6 +97,9 @@
   }
   .btn-primary-sm:hover { background: var(--orange); }
   .btn-primary-sm svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  .btn-nav.btn-danger { background: #cc2a2a; }
+  .btn-nav.btn-danger:hover { background: #e03030; }
+
 
   .btn-danger svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
@@ -31,6 +111,25 @@
     margin: 0 auto;
     width: 100%;
     position: relative; z-index: 1;
+  }
+
+  .page-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--text);
+    animation: fadeIn 0.3s ease both;
+  }
+
+  .page-title-label {
+    font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--orange); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .page-title-label::before { content: '/'; font-weight: 700; }
+
+  .page-title {
+    font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: var(--text);
   }
 
   /* ─── CARD ─── */
@@ -47,14 +146,21 @@
     clip-path: polygon(16px 0%,100% 0%,100% calc(100% - 16px),calc(100% - 16px) 100%,0% 100%,0% 16px);
   }
 
-  .card-
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg2);
+  }
+
   .card-label {
     font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
     color: var(--text-dim); display: flex; align-items: center; gap: 6px;
   }
   .card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
 
-  .card-
+  .card-body { padding: 24px; }
+
   /* ─── META GRID ─── */
   /* ─── INFO + FILE COMBINED ─── */
   .info-file-grid { display: grid; grid-template-columns: 200px 1fr; min-height: 180px; }
@@ -118,7 +224,14 @@
   .lightbox-close svg { width: 18px; height: 18px; stroke: #fff; fill: none; }
 
   /* ─── AI RESULT ─── */
-  .result-
+  .result-body {
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
   /* ─── DELETE CONFIRM ─── */
   .delete-confirm {
     display: none;
@@ -180,10 +293,26 @@
   .state-error { color: var(--red); }
 
   /* ─── STATUS BAR ─── */
+  .status-bar {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 36px;
+    background: var(--text);
+    color: rgba(255,255,255,0.45);
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .status-bar-dot {
+    display: inline-block; width: 5px; height: 5px;
+    background: var(--orange); margin-right: 6px;
+    animation: blink 1.4s step-end infinite;
+  }
+  .status-bar-right { color: rgba(255,255,255,0.3); }
 
   @media (max-width: 700px) {
+    header { padding: 0 20px; }
     .page { padding: 72px 16px 48px; }
     .meta-grid { grid-template-columns: 1fr 1fr; }
+    .status-bar { padding: 0 20px; }
   }
 </style>
 </head>
