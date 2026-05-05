@@ -5,500 +5,206 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // AI Analyzer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="global.css">
 <style>
-  :root {
-    --orange: #FF5A00;
-    --orange-dim: #CC4800;
-    --orange-pale: rgba(255,90,0,0.08);
-    --orange-border: rgba(255,90,0,0.3);
-    --bg: #F2F1EE;
-    --bg2: #ECEAE6;
-    --bg3: #E4E2DE;
-    --line: rgba(0,0,0,0.12);
-    --text: #1A1714;
-    --text-dim: #8C8480;
-    --text-mid: #5A5650;
-    --mono: 'IBM Plex Mono', monospace;
-  }
+  /* ─── INDEX-SPECIFIC ─── */
+  body { overflow-x: hidden; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-
-  body {
-    font-family: var(--mono);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
-    background-size: 32px 32px;
-    pointer-events: none; z-index: 0;
-  }
-
-  header {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 48px; height: 56px;
-    background: #ffffff; border-bottom: 2px solid var(--text);
-  }
-
-  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-  .logo-icon {
-    width: 32px; height: 32px; background: var(--orange);
-    display: flex; align-items: center; justify-content: center;
-    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
-  }
-  .logo-icon svg { width: 16px; height: 16px; }
-  .logo-text { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.1em; text-transform: uppercase; }
-  .logo-text span { color: var(--orange); }
-
-  .header-right { display: flex; align-items: center; gap: 12px; }
-
-  .nav-badge {
-    font-size: 11px; color: var(--orange);
-    background: var(--orange-pale); border: 1px solid var(--orange-border);
-    padding: 4px 10px; letter-spacing: 0.15em; text-transform: uppercase;
-  }
-  .nav-dot {
-    width: 6px; height: 6px; background: var(--orange);
-    display: inline-block; margin-right: 4px;
-    animation: blink 1.2s step-end infinite;
-  }
-
-  .btn-auth {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 18px; background: var(--text); color: #ffffff;
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    text-decoration: none; border: none; outline: none; cursor: pointer;
-    transition: background 0.18s; white-space: nowrap;
-    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
-  }
-  .btn-auth:hover { background: var(--orange); }
-  .btn-auth svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
-
-  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes statusPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-  @keyframes pixelSpin { 0%, 60%, 100% { opacity: 0.1; } 30% { opacity: 1; } }
-
+  /* ─── HERO ─── */
   .hero {
-    min-height: 100vh; display: flex; flex-direction: column;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
     align-items: center; justify-content: center; text-align: center;
-    padding: 120px 48px 80px; position: relative; z-index: 1;
-    max-width: 860px; margin: 0 auto;
+    padding: 140px 52px 100px;
+    position: relative; z-index: 1;
+    max-width: 900px; margin: 0 auto;
   }
 
   .hero-tag {
     display: inline-flex; align-items: center; gap: 10px;
-    font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--orange); border: 1px solid var(--orange-border);
-    padding: 7px 16px; margin-bottom: 36px; animation: fadeIn 0.4s ease both;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--orange);
+    border: 1px solid var(--orange-border);
+    padding: 7px 18px; margin-bottom: 38px;
+    animation: fadeUp 0.5s ease both;
   }
-  .hero-tag::before { content: '>'; color: var(--orange); animation: blink 1s step-end infinite; }
+  .hero-tag::before { content: '>'; animation: blink 1s step-end infinite; }
 
-  h1 {
-    font-size: clamp(36px, 5vw, 64px); font-weight: 700;
-    line-height: 1.1; letter-spacing: -1px; color: var(--text);
-    margin-bottom: 28px; animation: fadeIn 0.4s 0.1s ease both;
+  .hero h1 {
+    font-family: var(--sans);
+    font-size: clamp(38px, 5.5vw, 72px);
+    font-weight: 700; line-height: 1.05; letter-spacing: -1.5px; color: var(--text);
+    margin-bottom: 30px;
+    animation: fadeUp 0.5s 0.08s ease both;
   }
-  h1 .accent { color: var(--orange); position: relative; display: inline-block; }
-  h1 .accent::after {
-    content: ''; position: absolute; bottom: 2px; left: 0; right: 0;
-    height: 2px; background: var(--orange);
+  .hero h1 .accent {
+    color: var(--orange); position: relative; display: inline-block;
+  }
+  .hero h1 .accent::after {
+    content: ''; position: absolute;
+    bottom: 3px; left: 0; right: 0; height: 3px;
+    background: var(--orange);
   }
 
   .hero-sub {
-    font-size: 15px; line-height: 1.8; color: var(--text-mid);
-    max-width: 520px; margin-bottom: 48px;
-    animation: fadeIn 0.4s 0.2s ease both; letter-spacing: 0.03em;
+    font-family: var(--mono); font-size: 14px; line-height: 1.9; color: var(--text-mid);
+    max-width: 540px; margin-bottom: 52px;
+    animation: fadeUp 0.5s 0.16s ease both; letter-spacing: 0.02em;
   }
   .hero-sub::before { content: '// '; color: var(--text-dim); }
 
-  .cursor-blink {
-    display: inline-block; width: 10px; height: 1.1em;
-    background: var(--orange); vertical-align: text-bottom; margin-left: 4px;
-    animation: blink 0.9s step-end infinite;
+  .hero-cta {
+    animation: fadeUp 0.5s 0.24s ease both;
   }
 
-  .btn-chamfer {
-    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-    padding: 16px 32px; background: var(--text); color: #ffffff;
-    font-family: var(--mono); font-size: 13px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none;
-    cursor: pointer; border: none; outline: none;
-    transition: background 0.18s; white-space: nowrap; line-height: 1;
-    clip-path: polygon(12px 0%, 100% 0%, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0% 100%, 0% 12px);
+  /* ─── ANALYZER SECTION ─── */
+  .main-section {
+    padding: 90px 52px 110px;
+    max-width: 1140px; margin: 0 auto;
+    position: relative; z-index: 1;
   }
-  .btn-chamfer:hover { background: var(--orange); }
-  .btn-chamfer:active { background: var(--orange-dim); }
-  .btn-chamfer:disabled {
-    background: #C8C6C2; color: #888480; cursor: not-allowed;
-  }
-  .btn-chamfer svg { width: 17px; height: 17px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
-  .section-label { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px; }
-  .section-title { font-size: 30px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 48px; color: var(--text); }
-
-  .main-section { padding: 80px 48px 100px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
-
-  /* ─── ANALYZER BORDER ─── */
-  /* outer: dark bg + clip = the visible chamfered border */
-  .analyzer-wrap {
+  /* ─── MULTI-PANEL (two cols on desktop) ─── */
+  .analyzer-grid-wrap {
     background: var(--text);
-    clip-path: polygon(22px 0%, 100% 0%, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0% 100%, 0% 22px);
+    clip-path: polygon(24px 0%,100% 0%,100% calc(100% - 24px),calc(100% - 24px) 100%,0% 100%,0% 24px);
     padding: 2px;
   }
-  /* inner grid: slightly smaller clip so dark bg peeks through as border */
-  .analyzer-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line);
-    clip-path: polygon(20px 0%, 100% 0%, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0% 100%, 0% 20px);
+  .analyzer-panels {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+    background: var(--line-mid);
+    clip-path: polygon(22px 0%,100% 0%,100% calc(100% - 22px),calc(100% - 22px) 100%,0% 100%,0% 22px);
   }
+  .a-panel { background: var(--bg2); padding: 44px; }
+  .a-panel-full { grid-column: 1/-1; }
 
-  .analyzer-panel { background: var(--bg2); padding: 40px; }
-
-  .panel-label {
-    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--text-dim); padding: 8px 0; margin-bottom: 28px;
-    border-bottom: 1px solid var(--line);
-    display: flex; align-items: center; gap: 8px;
+  /* ─── CATEGORY SELECTOR (upload page version, reused here) ─── */
+  .category-grid { display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
+  .cat-row { display: flex; align-items: stretch; gap: 3px; position: relative; }
+  .cat-card {
+    flex: 1; display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px 8px 10px;
+    background: var(--bg); border: 1px solid var(--line-mid); border-right: none;
+    clip-path: polygon(7px 0%,100% 0%,100% 100%,0% 100%,0% 7px);
+    font-family: var(--mono); text-align: left; cursor: pointer; outline: none;
+    transition: background 0.15s, border-color 0.15s;
   }
-  .panel-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 13px; }
-
-  .upload-zone {
-    border: 1px dashed var(--text-dim); padding: 44px 24px;
-    text-align: center; cursor: pointer; transition: all 0.15s;
-    position: relative; margin-bottom: 24px; background: var(--bg);
-  }
-  .upload-zone:hover, .upload-zone.dragover { border-color: var(--orange); border-style: solid; background: var(--orange-pale); }
-
-  .upload-icon {
-    width: 48px; height: 48px; background: var(--bg3);
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 18px; transition: all 0.15s;
-    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
-  }
-  .upload-zone:hover .upload-icon { background: var(--orange); }
-  .upload-icon svg { width: 22px; height: 22px; stroke: var(--text-mid); fill: none; transition: stroke 0.15s; }
-  .upload-zone:hover .upload-icon svg { stroke: #ffffff; }
-  .upload-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: 0.05em; }
-  .upload-sub { font-size: 12px; color: var(--text-dim); }
-  .upload-formats { font-size: 11px; color: var(--text-dim); margin-top: 10px; letter-spacing: 0.15em; }
-  .upload-formats span { color: var(--orange); opacity: 0.7; margin: 0 4px; }
-  #fileInput { display: none; }
-
-  .file-preview {
-    display: none; align-items: center; gap: 12px;
-    padding: 12px 16px; background: var(--orange-pale);
-    border: 1px solid var(--orange-border); margin-bottom: 24px;
-  }
-  .file-preview.show { display: flex; }
-
-  .file-preview-icon {
-    width: 36px; height: 36px; background: var(--orange);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
-  }
-  .file-preview-icon svg { width: 16px; height: 16px; stroke: #ffffff; fill: none; }
-  .file-preview-info { flex: 1; min-width: 0; }
-  .file-preview-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .file-preview-size { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-
-  .file-remove {
-    width: 28px; height: 28px; position: relative;
-    background: transparent; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text-dim); transition: color 0.15s; flex-shrink: 0;
-  }
-  .file-remove::before {
-    content: ''; position: absolute; inset: 0;
-    background: var(--line);
-    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
+  .cat-card:hover { background: var(--bg3); border-color: var(--text-mid); }
+  .cat-card.selected { background: var(--text); border-color: var(--text); }
+  .cat-icon {
+    width: 22px; height: 22px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    background: var(--bg3);
+    clip-path: polygon(4px 0%,100% 0%,100% calc(100% - 4px),calc(100% - 4px) 100%,0% 100%,0% 4px);
     transition: background 0.15s;
   }
-  .file-remove::after {
-    content: ''; position: absolute; inset: 1px;
-    background: transparent;
-    clip-path: polygon(4px 0%, 100% 0%, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0% 100%, 0% 4px);
-    transition: background 0.15s;
-  }
-  .file-remove:hover::before { background: var(--orange); }
-  .file-remove:hover::after { background: var(--orange-pale); }
-  .file-remove:hover { color: var(--orange); }
-  .file-remove svg { width: 12px; height: 12px; stroke: currentColor; fill: none; position: relative; z-index: 1; }
+  .cat-card:hover .cat-icon { background: var(--line-mid); }
+  .cat-card.selected .cat-icon { background: rgba(255,255,255,0.12); }
+  .cat-icon svg { width: 11px; height: 11px; stroke: var(--text-mid); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.15s; }
+  .cat-card.selected .cat-icon svg { stroke: rgba(255,255,255,0.7); }
+  .cat-name { font-size: 11px; font-weight: 700; color: var(--text); letter-spacing: 0.09em; text-transform: uppercase; line-height: 1; transition: color 0.15s; }
+  .cat-card.selected .cat-name { color: #fff; }
 
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-
-  label {
-    font-size: 11px; color: var(--text-dim);
-    letter-spacing: 0.2em; text-transform: uppercase;
-    display: flex; align-items: center; gap: 5px;
-  }
-  label::before { content: '/'; color: var(--text-dim); font-weight: 700; }
-
-  input[type="number"], select {
-    padding: 12px 14px;
-    height: 46px;
-    border: 1px solid var(--line); border-left: 3px solid var(--bg3);
-    background: var(--bg); font-family: var(--mono);
-    font-size: 13px; color: var(--text); outline: none;
-    transition: border-color 0.15s, border-left-color 0.15s;
-    appearance: none; -webkit-appearance: none;
-    width: 100%;
-  }
-  /* hide number spinners */
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-  input[type="number"] { -moz-appearance: textfield; }
-  input[type="number"]:focus, select:focus { border-color: var(--text); border-left-color: var(--orange); background: #fff; }
-  input[type="number"]::placeholder { color: var(--text-dim); }
-  select option { background: var(--bg2); color: var(--text); }
-
-  .select-wrap { position: relative; }
-  .select-wrap::after {
-    content: '▼'; position: absolute; right: 14px; top: 50%;
-    transform: translateY(-50%); font-size: 8px; color: var(--text-dim); pointer-events: none;
-  }
-
-  .result-panel { display: flex; flex-direction: column; }
-  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-  .result-title { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.05em; }
-
-  .result-status-wrap {
-    display: inline-block;
-    padding: 1px;
-    background: var(--text-dim);
-    clip-path: polygon(7px 0%, 100% 0%, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0% 100%, 0% 7px);
-  }
-  .result-status {
-    display: block;
-    font-size: 10px; letter-spacing: 0.15em; padding: 4px 10px; text-transform: uppercase;
-    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
-  }
-  .status-waiting { background: var(--bg3); color: var(--text-dim); }
-  .result-status-wrap.sw { background: var(--line); }
-  .result-status-wrap.sl { background: var(--orange); }
-  .result-status-wrap.sd { background: rgba(0,200,100,0.4); }
-  .result-status-wrap.se { background: rgba(255,60,60,0.4); }
-  .status-loading { background: var(--orange-pale); color: var(--orange); border: 1px solid var(--orange-border); animation: statusPulse 1s ease infinite; }
-  .status-done { background: rgba(0,200,100,0.08); color: #3DCC7A; border: 1px solid rgba(0,200,100,0.2); }
-  .status-error { background: rgba(255,60,60,0.08); color: #FF5555; border: 1px solid rgba(255,60,60,0.2); }
-
-  .result-box {
-    flex: 1; min-height: 360px; background: var(--bg);
-    border: 1px solid var(--line); padding: 24px;
-    overflow-y: auto; position: relative; font-size: 13px;
-  }
-
+  /* ─── RESULT SECTION ─── */
+  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .result-title { font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--text); }
+  .result-box { min-height: 340px; position: relative; }
   .empty-state {
     position: absolute; inset: 0; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 12px; color: var(--text-dim); text-align: center; padding: 24px;
+    gap: 14px; color: var(--text-dim); text-align: center; padding: 28px;
   }
   .empty-icon {
-    width: 56px; height: 56px; position: relative;
+    width: 60px; height: 60px; position: relative;
     display: flex; align-items: center; justify-content: center;
   }
   .empty-icon::before {
     content: ''; position: absolute; inset: 0;
-    background: var(--line);
-    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+    background: var(--line-mid);
+    clip-path: polygon(9px 0%,100% 0%,100% calc(100% - 9px),calc(100% - 9px) 100%,0% 100%,0% 9px);
   }
   .empty-icon::after {
     content: ''; position: absolute; inset: 1px;
     background: var(--bg3);
-    clip-path: polygon(7px 0%, 100% 0%, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0% 100%, 0% 7px);
+    clip-path: polygon(8px 0%,100% 0%,100% calc(100% - 8px),calc(100% - 8px) 100%,0% 100%,0% 8px);
   }
-  .empty-icon svg { position: relative; z-index: 1; }
-  .empty-icon svg { width: 24px; height: 24px; stroke: var(--text-dim); fill: none; }
-  .empty-text { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
-  .empty-sub { font-size: 11px; color: var(--text-dim); line-height: 1.6; }
+  .empty-icon svg { position: relative; z-index: 1; width: 26px; height: 26px; stroke: var(--text-dim); fill: none; }
+  .empty-text { font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
+  .empty-sub  { font-family: var(--mono); font-size: 11px; color: var(--text-dim); line-height: 1.7; }
 
-  .loader {
+  .loader-abs {
     display: none; flex-direction: column; align-items: center; justify-content: center;
-    position: absolute; inset: 0; gap: 20px; background: var(--bg);
+    position: absolute; inset: 0; gap: 22px; background: var(--bg);
   }
-  .loader.show { display: flex; }
-  .loader-px { width: 40px; height: 40px; display: grid; grid-template-columns: repeat(4,1fr); grid-template-rows: repeat(4,1fr); gap: 3px; }
-  .loader-px span { background: var(--orange); animation: pixelSpin 1s step-end infinite; }
-  .loader-px span:nth-child(1)  { animation-delay: 0s; }
-  .loader-px span:nth-child(2)  { animation-delay: 0.0625s; }
-  .loader-px span:nth-child(3)  { animation-delay: 0.125s; }
-  .loader-px span:nth-child(4)  { animation-delay: 0.1875s; }
-  .loader-px span:nth-child(5)  { animation-delay: 0.25s; }
-  .loader-px span:nth-child(6)  { animation-delay: 0.3125s; }
-  .loader-px span:nth-child(7)  { animation-delay: 0.375s; }
-  .loader-px span:nth-child(8)  { animation-delay: 0.4375s; }
-  .loader-px span:nth-child(9)  { animation-delay: 0.5s; }
-  .loader-px span:nth-child(10) { animation-delay: 0.5625s; }
-  .loader-px span:nth-child(11) { animation-delay: 0.625s; }
-  .loader-px span:nth-child(12) { animation-delay: 0.6875s; }
-  .loader-px span:nth-child(13) { animation-delay: 0.75s; }
-  .loader-px span:nth-child(14) { animation-delay: 0.8125s; }
-  .loader-px span:nth-child(15) { animation-delay: 0.875s; }
-  .loader-px span:nth-child(16) { animation-delay: 0.9375s; }
-  .loader-text { font-size: 12px; color: var(--text-dim); text-align: center; line-height: 1.7; letter-spacing: 0.05em; }
+  .loader-abs.show { display: flex; }
+  .result-content { display: none; animation: fadeUp 0.3s ease both; }
+  .result-content.show { display: block; }
 
-  .result-content { display: none; font-size: 13px; line-height: 1.8; color: var(--text-mid); }
-  .result-content.show { display: block; animation: fadeIn 0.3s ease both; }
-  .result-content h3 { font-size: 12px; font-weight: 700; color: var(--text); letter-spacing: 0.15em; text-transform: uppercase; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
-  .result-content h3:first-child { margin-top: 0; }
-  .result-content p { margin-bottom: 10px; }
-  .result-content .tag-normal { display: inline-flex; align-items: center; gap: 4px; background: rgba(0,200,100,0.1); color: #3DCC7A; font-size: 10px; font-weight: 700; padding: 2px 6px; text-transform: uppercase; }
-  .result-content .tag-high   { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,60,60,0.1);  color: #FF5555; font-size: 10px; font-weight: 700; padding: 2px 6px; text-transform: uppercase; }
-  .result-content .tag-low    { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,200,0,0.1);  color: #C89000; font-size: 10px; font-weight: 700; padding: 2px 6px; text-transform: uppercase; }
-
-  .error-display {
-    display: none; align-items: center; gap: 10px;
-    padding: 14px 16px; background: rgba(255,60,60,0.08); border: 1px solid rgba(255,60,60,0.25);
-    color: #FF5555; font-size: 12px; font-weight: 500;
-    position: absolute; inset: 16px; height: fit-content;
-  }
-  .error-display.show { display: flex; }
-  .error-display svg { width: 16px; height: 16px; stroke: currentColor; fill: none; flex-shrink: 0; }
-
+  /* ─── HOW IT WORKS ─── */
   .steps-section {
-    background: #ffffff; padding: 80px 48px;
+    background: var(--white);
+    padding: 88px 52px;
     border-top: 2px solid var(--text); border-bottom: 2px solid var(--text);
     position: relative; z-index: 1;
   }
-  .steps-inner { max-width: 1100px; margin: 0 auto; }
+  .steps-inner { max-width: 1140px; margin: 0 auto; }
   .steps-grid-wrap {
-    margin-top: 48px;
-    padding: 2px;
+    margin-top: 52px; padding: 2px;
     background: var(--text);
-    clip-path: polygon(18px 0%, 100% 0%, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0% 100%, 0% 18px);
+    clip-path: polygon(20px 0%,100% 0%,100% calc(100% - 20px),calc(100% - 20px) 100%,0% 100%,0% 20px);
   }
   .steps-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr);
+    display: grid; grid-template-columns: repeat(3,1fr);
     gap: 2px; background: var(--text);
-    clip-path: polygon(16px 0%, 100% 0%, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0% 100%, 0% 16px);
+    clip-path: polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px);
   }
-  .step-card { background: #ffffff; padding: 36px 32px; position: relative; overflow: hidden; transition: background 0.15s; }
+  .step-card {
+    background: var(--white); padding: 40px 34px;
+    position: relative; overflow: hidden; transition: background 0.18s;
+  }
   .step-card:hover { background: var(--bg); }
-  .step-num-bg { position: absolute; top: -10px; right: 16px; font-size: 80px; font-weight: 700; color: rgba(255,90,0,0.04); line-height: 1; pointer-events: none; letter-spacing: -4px; }
-  .step-num { font-size: 11px; font-weight: 700; color: var(--orange); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
-  .step-num::before { content: ''; width: 16px; height: 1px; background: var(--orange); }
-  .step-icon {
-    width: 44px; height: 44px; position: relative;
-    display: flex; align-items: center; justify-content: center; margin-bottom: 16px; transition: all 0.15s;
+  .step-bg-num {
+    position: absolute; top: -8px; right: 14px;
+    font-family: var(--sans); font-size: 84px; font-weight: 700;
+    color: rgba(255,90,0,0.04); line-height: 1; pointer-events: none; letter-spacing: -4px;
   }
-  .step-icon::before {
-    content: ''; position: absolute; inset: 0;
-    background: var(--line);
-    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
+  .step-num-label {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--orange);
+    letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 22px;
+    display: flex; align-items: center; gap: 9px;
   }
-  .step-icon::after {
-    content: ''; position: absolute; inset: 1px;
-    background: var(--bg);
-    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
-    transition: background 0.15s;
+  .step-num-label::before { content: ''; width: 18px; height: 1px; background: var(--orange); }
+  .step-icon-wrap {
+    width: 46px; height: 46px; position: relative;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 18px;
   }
-  .step-icon svg { position: relative; z-index: 1; }
-  .step-card:hover .step-icon::after { background: var(--orange); }
-  .step-card:hover .step-icon svg { stroke: #ffffff; }
-  .step-card:hover .step-icon::before { background: var(--orange); }
-  .step-card:hover .step-icon svg { stroke: #ffffff; }
-  .step-icon svg { width: 20px; height: 20px; stroke: var(--orange); fill: none; transition: stroke 0.15s; }
-  .step-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
-  .step-desc { font-size: 12px; color: var(--text-dim); line-height: 1.7; letter-spacing: 0.03em; }
+  .step-icon-wrap::before {
+    content: ''; position: absolute; inset: 0; background: var(--line-mid);
+    clip-path: polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
+  }
+  .step-icon-wrap::after {
+    content: ''; position: absolute; inset: 1px; background: var(--bg);
+    clip-path: polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
+    transition: background 0.18s;
+  }
+  .step-card:hover .step-icon-wrap::after { background: var(--orange); }
+  .step-icon-wrap svg { position: relative; z-index: 1; width: 21px; height: 21px; stroke: var(--orange); fill: none; transition: stroke 0.18s; }
+  .step-card:hover .step-icon-wrap svg { stroke: #fff; }
+  .step-title { font-family: var(--sans); font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+  .step-desc  { font-family: var(--mono); font-size: 12px; color: var(--text-dim); line-height: 1.75; }
 
-  footer {
-    padding: 40px 48px; display: flex; align-items: center; justify-content: space-between;
-    max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; border-top: 1px solid var(--line);
-  }
-  .footer-logo { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.1em; text-transform: uppercase; }
-  .footer-logo span { color: var(--orange); }
-  .footer-disclaimer { font-size: 11px; color: var(--text-dim); max-width: 380px; text-align: center; line-height: 1.7; }
-  .footer-copy { font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em; }
-
-  /* ─── STEPPER ─── */
-  .stepper { display:flex; align-items:center; gap:0; margin-bottom:32px; }
-  .step-item { display:flex; align-items:center; gap:10px; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-dim); transition:color 0.25s; }
-  .step-item.active { color:var(--orange); }
-  .step-item.done { color:#3DCC7A; }
-  .step-num { width:26px; height:26px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; background:var(--bg3); border:1px solid var(--line); clip-path:polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px); transition:background 0.25s,color 0.25s,border-color 0.25s; }
-  .step-item.active .step-num { background:var(--orange); color:#fff; border-color:var(--orange); }
-  .step-item.done .step-num { background:#3DCC7A; color:#fff; border-color:#3DCC7A; }
-  .step-line { flex:1; height:1px; background:var(--line); margin:0 12px; min-width:24px; }
-  /* ─── CARD INNER ─── */
-  .card-inner-pub { background:var(--bg2); padding:40px; min-height:380px; position:relative; }
-  /* ─── LOADER OVERLAY ─── */
-  .loader-overlay { display:none; position:absolute; inset:0; background:var(--bg2); z-index:10; flex-direction:column; align-items:center; justify-content:center; gap:20px; }
-  .loader-overlay.show { display:flex; }
-  /* ─── ERROR BANNER ─── */
-  .error-banner { display:none; align-items:center; gap:10px; padding:14px 16px; background:rgba(255,60,60,0.08); border:1px solid rgba(255,60,60,0.25); color:#FF5555; font-size:12px; font-weight:500; margin-bottom:20px; }
-  .error-banner.show { display:flex; }
-  .error-banner svg { width:16px; height:16px; stroke:currentColor; fill:none; flex-shrink:0; }
-  /* ─── INDICATOR TABLE ─── */
-  .indicators-info { font-size:12px; color:var(--text-mid); line-height:1.6; margin-bottom:16px; }
-  .indicators-info strong { color:var(--text); }
-  .ind-table-wrap { border:1px solid var(--line); background:var(--bg); margin-bottom:16px; max-height:300px; overflow-y:auto; }
-  .ind-table { width:100%; border-collapse:collapse; }
-  .ind-table thead th { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-dim); padding:10px 14px; text-align:left; border-bottom:1px solid var(--line); background:var(--bg3); font-weight:700; white-space:nowrap; }
-  .ind-table thead th:first-child::before { content:'/ '; color:var(--orange); }
-  .ind-table tbody tr { border-bottom:1px solid var(--line); transition:background 0.12s; }
-  .ind-table tbody tr:last-child { border-bottom:none; }
-  .ind-table tbody tr:hover { background:var(--orange-pale); }
-  .ind-table tbody td { padding:8px 14px; vertical-align:middle; }
-  .ind-input { padding:6px 10px; height:34px; border:1px solid var(--line); border-left:2px solid var(--bg3); background:var(--bg); font-family:var(--mono); font-size:12px; color:var(--text); outline:none; transition:border-color 0.12s; width:100%; min-width:80px; }
-  .ind-input:focus { border-color:var(--orange); border-left-color:var(--orange); background:#fff; }
-  .ind-del { width:28px; height:28px; background:transparent; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-dim); transition:color 0.12s; padding:0; }
-  .ind-del:hover { color:#FF5555; }
-  .ind-del svg { width:13px; height:13px; stroke:currentColor; fill:none; }
-  .add-indicator-row { display:flex; gap:8px; margin-bottom:8px; }
-  .add-indicator-row input { flex:1; padding:8px 12px; height:38px; border:1px dashed var(--line); border-left:2px dashed var(--bg3); background:var(--bg); font-family:var(--mono); font-size:12px; color:var(--text); outline:none; transition:border-color 0.12s; }
-  .add-indicator-row input:focus { border-color:var(--orange); border-style:solid; }
-  .add-indicator-row input::placeholder { color:var(--text-dim); }
-  .btn-add-row { padding:8px 14px; background:var(--bg3); border:1px solid var(--line); font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; color:var(--text-mid); transition:all 0.15s; white-space:nowrap; clip-path:polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px); }
-  .btn-add-row:hover { background:var(--orange); color:#fff; border-color:var(--orange); }
-  .empty-indicators { text-align:center; padding:32px 24px; color:var(--text-dim); font-size:12px; line-height:1.8; }
-  .empty-indicators strong { display:block; font-size:13px; margin-bottom:8px; color:var(--text-mid); }
-  /* ─── BTN ROW ─── */
-  .btn-row-pub { display:flex; gap:10px; margin-top:24px; }
-  .btn-ghost-pub { background:var(--bg3) !important; color:var(--text-mid) !important; }
-  .btn-ghost-pub:hover { background:var(--text) !important; color:#fff !important; }
-  /* ─── RESULT ─── */
-  .result-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-  .result-title { font-size:14px; font-weight:700; color:var(--text); letter-spacing:0.05em; }
-  .result-status-wrap { display:inline-block; padding:1px; background:rgba(0,200,100,0.4); clip-path:polygon(7px 0%,100% 0%,100% calc(100% - 7px),calc(100% - 7px) 100%,0% 100%,0% 7px); }
-  .result-status { display:block; font-size:10px; letter-spacing:0.15em; padding:4px 10px; text-transform:uppercase; background:rgba(0,200,100,0.08); color:#3DCC7A; clip-path:polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px); }
-  .result-box { background:var(--bg); border:1px solid var(--line); padding:24px; font-size:13px; line-height:1.8; color:var(--text-mid); max-height:420px; overflow-y:auto; }
-  .result-box h3 { font-size:11px; font-weight:700; color:var(--text); letter-spacing:0.15em; text-transform:uppercase; margin:20px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--line); }
-  .result-box h3:first-child { margin-top:0; }
-  .result-box p { margin-bottom:10px; }
-  .tag-normal { display:inline-flex;align-items:center;gap:4px;background:rgba(0,200,100,0.1);color:#3DCC7A;font-size:10px;font-weight:700;padding:2px 6px;text-transform:uppercase; }
-  .tag-high { display:inline-flex;align-items:center;gap:4px;background:rgba(255,60,60,0.1);color:#FF5555;font-size:10px;font-weight:700;padding:2px 6px;text-transform:uppercase; }
-  .tag-low { display:inline-flex;align-items:center;gap:4px;background:rgba(255,200,0,0.1);color:#C89000;font-size:10px;font-weight:700;padding:2px 6px;text-transform:uppercase; }
-
-  @media (max-width: 900px) {
-    header { padding: 0 24px; }
-    .hero { padding: 100px 24px 80px; }
-    .main-section { padding: 60px 24px 80px; }
-    .analyzer-wrap { clip-path: none; }
-    .card-inner-pub { clip-path: none; }
-    .steps-section { padding: 60px 24px; }
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 960px) {
+    .analyzer-panels { grid-template-columns: 1fr; }
+    .analyzer-grid-wrap { clip-path: none; }
+    .analyzer-panels { clip-path: none; }
+    .main-section { padding: 70px 28px 90px; }
+    .steps-section { padding: 70px 28px; }
     .steps-grid { grid-template-columns: 1fr; clip-path: none; }
-    footer { flex-direction: column; gap: 20px; text-align: center; padding: 32px 24px; }
-    .btn-auth span { display: none; }
-    .stepper { flex-wrap: wrap; gap: 8px; }
-    .step-line { display: none; }
   }
-  @media (max-width: 600px) {
-    h1 { font-size: 30px; }
-    .form-row { grid-template-columns: 1fr; }
-    .card-inner-pub { padding: 24px 16px; }
-    .btn-row-pub { flex-direction: column; }
-    .add-indicator-row { flex-wrap: wrap; }
+  @media (max-width: 640px) {
+    .hero { padding: 110px 20px 80px; }
+    .hero h1 { font-size: 32px; }
   }
 </style>
 </head>
@@ -507,15 +213,18 @@
 <header>
   <a class="logo" href="index.html">
     <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
         <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
       </svg>
     </div>
-    <div class="logo-text">Medeus<span>.</span></div>
+    <div class="logo-wordmark">
+      <div class="logo-text">Medeus<span>.</span></div>
+      <div class="logo-sub">Medical AI</div>
+    </div>
   </a>
   <div class="header-right">
     <span class="nav-badge"><span class="nav-dot"></span>AI · Beta</span>
-    <a href="auth.html" class="btn-auth">
+    <a href="auth.html" class="btn-nav">
       <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
       </svg>
@@ -528,255 +237,242 @@
   <div class="hero-tag">Медицинский ИИ-ассистент</div>
   <h1>Понять свои анализы<br>за <span class="accent">секунды</span><span class="cursor-blink"></span></h1>
   <p class="hero-sub">Загрузите фото или скан результатов — наш ИИ расшифрует каждый показатель и даст персональные рекомендации.</p>
-  <a href="#analyzer" class="btn-chamfer" style="margin-bottom:48px;"
-    onmouseover="this.style.background='#FF5A00'"
-    onmouseout="this.style.background='#1A1714'">
-    <span>Начать анализ</span>
-    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-  </a>
+  <div class="hero-cta">
+    <a href="#analyzer" class="btn-primary">
+      <span>Начать анализ</span>
+      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
 </section>
 
 <section class="main-section" id="analyzer">
-  <div class="section-label">// 01 — Анализатор</div>
+  <div class="section-label">01 — Анализатор</div>
   <div class="section-title">Загрузите ваши анализы</div>
 
   <!-- STEPPER -->
   <div class="stepper" id="stepper">
     <div class="step-item active" id="si1">
-      <div class="step-num">1</div>
+      <div class="step-num-badge">1</div>
       <span>Загрузка</span>
     </div>
     <div class="step-line"></div>
     <div class="step-item" id="si2">
-      <div class="step-num">2</div>
-      <span>Проверка показателей</span>
+      <div class="step-num-badge">2</div>
+      <span>Показатели</span>
     </div>
     <div class="step-line"></div>
     <div class="step-item" id="si3">
-      <div class="step-num">3</div>
+      <div class="step-num-badge">3</div>
       <span>Результат</span>
     </div>
   </div>
 
   <!-- ═══ STEP 1 ═══ -->
   <div id="step1Panel">
-    <div class="analyzer-wrap">
-      <div class="card-inner-pub" style="position:relative;">
+    <div class="analyzer-grid-wrap">
+      <div class="analyzer-panels">
 
-        <div class="loader-overlay" id="step1Loader">
-          <div class="loader-px">
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
+        <!-- Left: upload + form -->
+        <div class="a-panel" style="position:relative;">
+          <div class="loader-overlay" id="step1Loader">
+            <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="loader-text">Извлекаем показатели...<br><span>Обычно 5–15 секунд</span></div>
           </div>
-          <div class="loader-text">Извлекаем показатели из документа...<br><span style="font-size:11px;opacity:.7;">Обычно 5–15 секунд</span></div>
-        </div>
 
-        <div class="panel-label">Документ и данные</div>
+          <div class="panel-label">Документ и данные</div>
 
-        <div class="error-banner" id="step1Error">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          <span id="step1ErrorText">Ошибка</span>
-        </div>
-
-        <div class="upload-zone" id="uploadZone">
-          <input type="file" id="fileInput" accept="image/*,.pdf">
-          <div class="upload-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
+          <div class="error-banner" id="step1Error">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="step1ErrorText">Ошибка</span>
           </div>
-          <div class="upload-title">Загрузите результаты анализов</div>
-          <div class="upload-sub">Перетащите файл или нажмите для выбора</div>
-          <div class="upload-formats"><span>PNG</span>·<span>JPG</span>·<span>JPEG</span>·<span>PDF</span></div>
-        </div>
 
-        <div class="file-preview" id="filePreview">
-          <div class="file-preview-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" accept="image/*,.pdf">
+            <div class="upload-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="upload-title">Загрузите результаты анализов</div>
+            <div class="upload-sub">Перетащите файл или нажмите для выбора</div>
+            <div class="upload-formats"><span>PNG</span>·<span>JPG</span>·<span>PDF</span></div>
           </div>
-          <div class="file-preview-info">
-            <div class="file-preview-name" id="fileName">—</div>
-            <div class="file-preview-size" id="fileSize">—</div>
+
+          <div class="file-preview" id="filePreview">
+            <div class="file-preview-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <div class="file-preview-info">
+              <div class="file-preview-name" id="fileName">—</div>
+              <div class="file-preview-size" id="fileSize">—</div>
+            </div>
+            <button class="file-remove" id="fileRemove" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
-          <button class="file-remove" id="fileRemove" title="Удалить файл">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+
+          <div class="form-row" style="margin-bottom:22px;">
+            <div class="form-group">
+              <label for="age">Возраст</label>
+              <input type="number" id="age" placeholder="30" min="1" max="120">
+            </div>
+            <div class="form-group">
+              <label for="gender">Пол</label>
+              <div class="select-wrap">
+                <select id="gender">
+                  <option value="">— выберите —</option>
+                  <option value="мужской">Мужской</option>
+                  <option value="женский">Женский</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <button id="extractBtn" disabled type="button" class="btn-primary btn-full">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <span>Извлечь показатели</span>
           </button>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="age">Возраст</label>
-            <input type="number" id="age" placeholder="30" min="1" max="120">
+        <!-- Right: result preview -->
+        <div class="a-panel">
+          <div class="panel-label">Результат анализа</div>
+          <div class="result-header">
+            <div class="result-title">Расшифровка</div>
+            <div class="pill pill-gray" id="statusPill"><span class="pill-inner">Ожидание</span></div>
           </div>
-          <div class="form-group">
-            <label for="gender">Пол</label>
-            <div class="select-wrap">
-              <select id="gender">
-                <option value="">— выберите —</option>
-                <option value="мужской">Мужской</option>
-                <option value="женский">Женский</option>
-              </select>
+          <div class="result-box">
+            <div class="empty-state" id="emptyState">
+              <div class="empty-icon">
+                <svg viewBox="0 0 24 24" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <div class="empty-text">Нет данных</div>
+              <div class="empty-sub">Загрузите файл и<br>запустите анализ</div>
             </div>
+            <div class="loader-abs" id="resultLoader">
+              <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              <div class="loader-text">Анализируем...<br><span>Это может занять до 30 секунд</span></div>
+            </div>
+            <div class="result-content" id="resultContent"></div>
           </div>
         </div>
 
-        <button id="extractBtn" disabled type="button" class="btn-chamfer" style="width:100%;">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <span>Извлечь показатели</span>
-        </button>
       </div>
     </div>
   </div>
 
   <!-- ═══ STEP 2 ═══ -->
   <div id="step2Panel" style="display:none;">
-    <div class="analyzer-wrap">
-      <div class="card-inner-pub" style="position:relative;">
-
+    <div class="card-wrap">
+      <div class="card-inner" style="min-height:auto;">
         <div class="loader-overlay" id="step2Loader">
-          <div class="loader-px">
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-          </div>
-          <div class="loader-text">ИИ анализирует показатели...<br><span style="font-size:11px;opacity:.7;">Это может занять до 30 секунд</span></div>
+          <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="loader-text">ИИ анализирует показатели...<br><span>До 30 секунд</span></div>
         </div>
 
         <div class="panel-label">Проверка показателей</div>
 
         <div class="error-banner" id="step2Error">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span id="step2ErrorText">Ошибка</span>
         </div>
 
-        <div class="indicators-info">
-          <strong>Проверьте и при необходимости отредактируйте показатели</strong><br>
+        <p style="font-family:var(--mono);font-size:12px;color:var(--text-mid);line-height:1.75;margin-bottom:20px;">
+          <strong style="color:var(--text);">Проверьте и при необходимости отредактируйте показатели.</strong><br>
           ИИ извлёк их из документа. Исправьте ошибки, удалите лишнее или добавьте пропущенное.
-        </div>
+        </p>
 
         <div class="ind-table-wrap">
           <table class="ind-table">
-            <thead>
-              <tr>
-                <th>Показатель</th>
-                <th>Значение</th>
-                <th>Единица</th>
-                <th></th>
-              </tr>
-            </thead>
+            <thead><tr><th>Показатель</th><th>Значение</th><th>Единица</th><th></th></tr></thead>
             <tbody id="indicatorsBody"></tbody>
           </table>
         </div>
 
         <div class="add-indicator-row">
           <input type="text" id="newIndName" placeholder="Название показателя">
-          <input type="text" id="newIndValue" placeholder="Значение" style="max-width:100px;">
-          <input type="text" id="newIndUnit" placeholder="Ед." style="max-width:80px;">
+          <input type="text" id="newIndValue" placeholder="Значение" style="max-width:110px;">
+          <input type="text" id="newIndUnit" placeholder="Ед." style="max-width:90px;">
           <button class="btn-add-row" id="addIndBtn" type="button">+ Добавить</button>
         </div>
 
-        <div class="btn-row-pub">
-          <button class="btn-chamfer btn-ghost-pub" id="backToStep1Btn" type="button">
-            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        <div class="btn-row">
+          <button class="btn-secondary" id="backToStep1Btn" type="button">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
             Назад
           </button>
-          <button class="btn-chamfer" id="continueBtn" type="button" style="flex:1;">
-            <svg viewBox="0 0 24 24"><path d="M9 12h6m-3-3 3 3-3 3"/><circle cx="12" cy="12" r="10"/></svg>
+          <button class="btn-primary" id="continueBtn" type="button" style="flex:1;">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6m-3-3 3 3-3 3"/><circle cx="12" cy="12" r="10"/></svg>
             <span>Получить анализ</span>
           </button>
         </div>
-
       </div>
     </div>
   </div>
 
   <!-- ═══ STEP 3 ═══ -->
   <div id="step3Panel" style="display:none;">
-    <div class="analyzer-wrap">
-      <div class="card-inner-pub">
+    <div class="card-wrap">
+      <div class="card-inner" style="min-height:auto;">
         <div class="panel-label">Результат анализа</div>
-
-        <div class="result-header">
-          <div class="result-title">Расшифровка и рекомендации</div>
-          <div class="result-status-wrap sd"><div class="result-status status-done">Готово</div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+          <div style="font-family:var(--sans);font-size:15px;font-weight:600;color:var(--text);">Расшифровка и рекомендации</div>
+          <div class="pill pill-green"><span class="pill-inner">Готово</span></div>
         </div>
-
-        <div class="result-box" id="resultBox">
-          <div class="result-content show" id="resultContent"></div>
+        <div class="result-box" id="resultBox3">
+          <div id="resultContent3"></div>
         </div>
-
-        <div class="btn-row-pub" style="margin-top:20px;">
-          <button class="btn-chamfer btn-ghost-pub" id="backToStep2Btn" type="button">
-            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        <div class="btn-row" style="margin-top:20px;">
+          <button class="btn-secondary" id="backToStep2Btn" type="button">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
             Назад
           </button>
-          <button class="btn-chamfer" id="startOverBtn" type="button" style="flex:1;">
-            <svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-            <span>Новый анализ</span>
+          <button class="btn-primary" id="startOverBtn" type="button" style="flex:1;">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            Новый анализ
           </button>
-          <a href="auth.html" class="btn-chamfer" style="flex:1;background:var(--orange);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:10px;">
-            <svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
-            <span>Войти и сохранить</span>
+          <a href="auth.html" class="btn-primary" style="flex:1;background:var(--orange);text-decoration:none;">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+            Войти и сохранить
           </a>
         </div>
       </div>
     </div>
   </div>
-
 </section>
 
+<!-- HOW IT WORKS -->
 <section class="steps-section">
   <div class="steps-inner">
-    <div class="section-label">// 02 — Как это работает</div>
+    <div class="section-label">02 — Как это работает</div>
     <div class="section-title">Три шага до ясности</div>
     <div class="steps-grid-wrap">
-    <div class="steps-grid">
-      <div class="step-card">
-        <div class="step-num-bg">01</div>
-        <div class="step-num">01</div>
-        <div class="step-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
-          </svg>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-bg-num">01</div>
+          <div class="step-num-label">01</div>
+          <div class="step-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          </div>
+          <div class="step-title">Сфотографируйте бланк</div>
+          <div class="step-desc">Загрузите фото или скан результатов анализов — мы сами распознаем текст и извлечём показатели.</div>
         </div>
-        <div class="step-title">Сфотографируйте бланк</div>
-        <div class="step-desc">Загрузите фото или скан результатов анализов в любом формате — мы сами распознаем текст.</div>
-      </div>
-      <div class="step-card">
-        <div class="step-num-bg">02</div>
-        <div class="step-num">02</div>
-        <div class="step-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
-          </svg>
+        <div class="step-card">
+          <div class="step-bg-num">02</div>
+          <div class="step-num-label">02</div>
+          <div class="step-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="step-title">Укажите данные</div>
+          <div class="step-desc">Введите возраст и пол — для точного сравнения с референсными значениями вашей группы.</div>
         </div>
-        <div class="step-title">Укажите данные</div>
-        <div class="step-desc">Введите возраст и пол — это нужно для точного сравнения с референсными значениями.</div>
-      </div>
-      <div class="step-card">
-        <div class="step-num-bg">03</div>
-        <div class="step-num">03</div>
-        <div class="step-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-          </svg>
+        <div class="step-card">
+          <div class="step-bg-num">03</div>
+          <div class="step-num-label">03</div>
+          <div class="step-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="step-title">Получите расшифровку</div>
+          <div class="step-desc">ИИ проанализирует каждый показатель, выделит отклонения и даст конкретные рекомендации.</div>
         </div>
-        <div class="step-title">Получите расшифровку</div>
-        <div class="step-desc">ИИ проанализирует каждый показатель, выделит отклонения и даст рекомендации.</div>
       </div>
     </div>
   </div>
@@ -794,7 +490,6 @@
 <script>
 const API_BASE = 'https://medeus.onrender.com';
 
-// ─── REFS ───
 const fileInput   = document.getElementById('fileInput');
 const uploadZone  = document.getElementById('uploadZone');
 const filePreview = document.getElementById('filePreview');
@@ -811,17 +506,19 @@ const s1ErrorText = document.getElementById('step1ErrorText');
 const s2Error     = document.getElementById('step2Error');
 const s2ErrorText = document.getElementById('step2ErrorText');
 const indicatorsBody = document.getElementById('indicatorsBody');
-const resultContent  = document.getElementById('resultContent');
 const panel1 = document.getElementById('step1Panel');
 const panel2 = document.getElementById('step2Panel');
 const panel3 = document.getElementById('step3Panel');
+const resultLoader  = document.getElementById('resultLoader');
+const resultContent = document.getElementById('resultContent');
+const emptyState    = document.getElementById('emptyState');
+const statusPill    = document.getElementById('statusPill');
 
 let selectedFile = null;
 let indicators   = [];
 
-// ─── FILE UPLOAD ───
 uploadZone.addEventListener('click', () => fileInput.click());
-uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragover',  e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
 uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
 uploadZone.addEventListener('drop', e => {
   e.preventDefault(); uploadZone.classList.remove('dragover');
@@ -836,48 +533,27 @@ function formatBytes(b) {
 }
 
 function handleFile(file) {
-  if (file.size > 10 * 1024 * 1024) {
-    showError(1, 'Файл слишком большой. Максимум — 10 МБ.');
-    return;
-  }
+  if (file.size > 10 * 1024 * 1024) { showError(1, 'Файл слишком большой. Максимум — 10 МБ.'); return; }
   selectedFile = file;
   fileNameEl.textContent = file.name;
   fileSizeEl.textContent = formatBytes(file.size);
   uploadZone.style.display = 'none';
   filePreview.classList.add('show');
-  hideError(1);
-  checkForm();
+  hideError(1); checkForm();
 }
 
 fileRemove.addEventListener('click', () => {
-  selectedFile = null;
-  fileInput.value = '';
+  selectedFile = null; fileInput.value = '';
   filePreview.classList.remove('show');
-  uploadZone.style.display = '';
-  checkForm();
+  uploadZone.style.display = ''; checkForm();
 });
 
 function checkForm() {
-  const valid = selectedFile && ageInput.value && genderInput.value;
-  extractBtn.disabled = !valid;
-  if (valid) {
-    extractBtn.style.background = '#1A1714';
-    extractBtn.style.color = '#ffffff';
-    extractBtn.style.cursor = 'pointer';
-    extractBtn.onmouseover = () => { extractBtn.style.background = '#FF5A00'; };
-    extractBtn.onmouseout  = () => { extractBtn.style.background = '#1A1714'; };
-  } else {
-    extractBtn.style.background = '#C8C6C2';
-    extractBtn.style.color = '#888480';
-    extractBtn.style.cursor = 'not-allowed';
-    extractBtn.onmouseover = null;
-    extractBtn.onmouseout  = null;
-  }
+  extractBtn.disabled = !(selectedFile && ageInput.value && genderInput.value);
 }
 ageInput.addEventListener('input', checkForm);
 genderInput.addEventListener('change', checkForm);
 
-// ─── STEPPER ───
 function setStep(n) {
   for (let i = 1; i <= 3; i++) {
     const el = document.getElementById('si' + i);
@@ -888,7 +564,6 @@ function setStep(n) {
   panel3.style.display = n === 3 ? '' : 'none';
 }
 
-// ─── ERROR HELPERS ───
 function showError(step, msg) {
   if (step === 1) { s1ErrorText.textContent = msg; s1Error.classList.add('show'); }
   else            { s2ErrorText.textContent = msg; s2Error.classList.add('show'); }
@@ -898,21 +573,18 @@ function hideError(step) {
   else            s2Error.classList.remove('show');
 }
 
-// ─── STEP 1 → 2: Extract ───
+// STEP 1 → 2
 extractBtn.addEventListener('click', async () => {
   if (!selectedFile || !ageInput.value || !genderInput.value) return;
   hideError(1);
   s1Loader.classList.add('show');
   extractBtn.disabled = true;
-
   try {
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-
-    const resp = await fetch(API_BASE + '/extract-public', { method: 'POST', body: formData });
+    const fd = new FormData();
+    fd.append('file', selectedFile);
+    const resp = await fetch(API_BASE + '/extract-public', { method: 'POST', body: fd });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Ошибка сервера: ' + resp.status);
-
     indicators = data.indicators || [];
     renderIndicators();
     setStep(2);
@@ -920,12 +592,10 @@ extractBtn.addEventListener('click', async () => {
     showError(1, err.message || 'Не удалось подключиться к серверу');
   } finally {
     s1Loader.classList.remove('show');
-    extractBtn.disabled = false;
-    checkForm();
+    extractBtn.disabled = false; checkForm();
   }
 });
 
-// ─── RENDER INDICATORS ───
 function escHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -938,69 +608,46 @@ function renderIndicators() {
   indicatorsBody.innerHTML = '';
   indicators.forEach((ind, i) => {
     const tr = document.createElement('tr');
-    tr.dataset.idx = i;
-    tr.innerHTML = '<td><input class="ind-input" data-field="name" value="' + escHtml(ind.name) + '" placeholder="Название" style="min-width:140px;"></td>' +
-      '<td><input class="ind-input" data-field="value" value="' + escHtml(ind.value) + '" placeholder="0.00" style="max-width:100px;"></td>' +
-      '<td><input class="ind-input" data-field="unit" value="' + escHtml(ind.unit || '') + '" placeholder="ед." style="max-width:80px;"></td>' +
-      '<td><button class="ind-del" data-idx="' + i + '" title="Удалить"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></td>';
-
-    tr.querySelectorAll('.ind-input').forEach(inp => {
-      inp.addEventListener('input', () => { indicators[i][inp.dataset.field] = inp.value; });
-    });
-    tr.querySelector('.ind-del').addEventListener('click', () => {
-      indicators.splice(i, 1); renderIndicators();
-    });
+    tr.innerHTML = '<td><input class="ind-input" data-field="name" value="' + escHtml(ind.name) + '" style="min-width:140px;"></td>' +
+      '<td><input class="ind-input" data-field="value" value="' + escHtml(ind.value) + '" style="max-width:100px;"></td>' +
+      '<td><input class="ind-input" data-field="unit" value="' + escHtml(ind.unit||'') + '" style="max-width:80px;"></td>' +
+      '<td><button class="ind-del" data-idx="' + i + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></button></td>';
+    tr.querySelectorAll('.ind-input').forEach(inp => inp.addEventListener('input', () => { indicators[i][inp.dataset.field] = inp.value; }));
+    tr.querySelector('.ind-del').addEventListener('click', () => { indicators.splice(i, 1); renderIndicators(); });
     indicatorsBody.appendChild(tr);
   });
 }
 
-// ─── ADD INDICATOR ───
 document.getElementById('addIndBtn').addEventListener('click', () => {
-  const name  = document.getElementById('newIndName').value.trim();
+  const name = document.getElementById('newIndName').value.trim();
   const value = document.getElementById('newIndValue').value.trim();
   const unit  = document.getElementById('newIndUnit').value.trim();
   if (!name || !value) return;
-  indicators.push({ name, value, unit });
+  indicators.push({name,value,unit});
   renderIndicators();
-  document.getElementById('newIndName').value  = '';
-  document.getElementById('newIndValue').value = '';
-  document.getElementById('newIndUnit').value  = '';
+  ['newIndName','newIndValue','newIndUnit'].forEach(id => document.getElementById(id).value = '');
 });
 ['newIndName','newIndValue','newIndUnit'].forEach(id => {
-  document.getElementById(id).addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('addIndBtn').click();
-  });
+  document.getElementById(id).addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('addIndBtn').click(); });
 });
 
-// ─── BACK 2 → 1 ───
-document.getElementById('backToStep1Btn').addEventListener('click', () => {
-  hideError(2); setStep(1);
-});
+document.getElementById('backToStep1Btn').addEventListener('click', () => { hideError(2); setStep(1); });
 
-// ─── STEP 2 → 3: Analyze ───
+// STEP 2 → 3
 document.getElementById('continueBtn').addEventListener('click', async () => {
-  if (!indicators.length) {
-    showError(2, 'Добавьте хотя бы один показатель.');
-    return;
-  }
+  if (!indicators.length) { showError(2, 'Добавьте хотя бы один показатель.'); return; }
   hideError(2);
   s2Loader.classList.add('show');
   document.getElementById('continueBtn').disabled = true;
-
   try {
-    const formData = new FormData();
-    formData.append('indicators', JSON.stringify(indicators));
-    formData.append('age',        ageInput.value);
-    formData.append('gender',     genderInput.value);
-
-    const resp = await fetch(API_BASE + '/analyze-indicators-public', { method: 'POST', body: formData });
+    const fd = new FormData();
+    fd.append('indicators', JSON.stringify(indicators));
+    fd.append('age', ageInput.value);
+    fd.append('gender', genderInput.value);
+    const resp = await fetch(API_BASE + '/analyze-indicators-public', { method: 'POST', body: fd });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Ошибка сервера: ' + resp.status);
-
-    resultContent.textContent = '';
-    var tmp = document.createElement('div');
-    tmp.innerHTML = formatResult(data.analysis);
-    while (tmp.firstChild) resultContent.appendChild(tmp.firstChild);
+    document.getElementById('resultContent3').innerHTML = formatResult(data.analysis);
     setStep(3);
   } catch (err) {
     showError(2, err.message || 'Не удалось подключиться к серверу');
@@ -1010,26 +657,18 @@ document.getElementById('continueBtn').addEventListener('click', async () => {
   }
 });
 
-// ─── BACK 3 → 2 ───
-document.getElementById('backToStep2Btn').addEventListener('click', () => { setStep(2); });
+document.getElementById('backToStep2Btn').addEventListener('click', () => setStep(2));
 
-// ─── START OVER ───
 document.getElementById('startOverBtn').addEventListener('click', () => {
-  selectedFile = null;
-  indicators   = [];
-  fileInput.value = '';
-  filePreview.classList.remove('show');
+  selectedFile = null; indicators = [];
+  fileInput.value = ''; filePreview.classList.remove('show');
   uploadZone.style.display = '';
-  ageInput.value    = '';
-  genderInput.value = '';
-  resultContent.innerHTML = '';
+  ageInput.value = ''; genderInput.value = '';
+  document.getElementById('resultContent3').innerHTML = '';
   indicatorsBody.innerHTML = '';
-  hideError(1); hideError(2);
-  checkForm();
-  setStep(1);
+  hideError(1); hideError(2); checkForm(); setStep(1);
 });
 
-// ─── FORMAT RESULT ───
 function formatResult(text) {
   let html = text
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -1037,22 +676,17 @@ function formatResult(text) {
     .replace(/^#{1,3} (.+)$/gm, '<h3>$1</h3>')
     .replace(/выше нормы/gi, '<span class="tag-high">↑ выше нормы</span>')
     .replace(/ниже нормы/gi, '<span class="tag-low">↓ ниже нормы</span>')
-    .replace(/\bнорма\b/gi, function(match, offset, str) {
-      // Skip if preceded or followed by Cyrillic letter
-      var before = str[offset - 1];
-      var after  = str[offset + match.length];
-      var cyrRe  = /[а-яёА-ЯЁ]/;
-      if ((before && cyrRe.test(before)) || (after && cyrRe.test(after))) return match;
+    .replace(/\bнорма\b/gi, function(m, o, s) {
+      var b = s[o-1]; var a = s[o+m.length];
+      var c = /[а-яёА-ЯЁ]/;
+      if ((b&&c.test(b))||(a&&c.test(a))) return m;
       return '<span class="tag-normal">✓ норма</span>';
     })
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>');
+    .replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
   return '<p>' + html + '</p>';
 }
 
-// ─── INIT ───
-checkForm();
-setStep(1);
+checkForm(); setStep(1);
 </script>
 </body>
 </html>

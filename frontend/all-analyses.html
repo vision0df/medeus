@@ -4,167 +4,54 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // Все анализы</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="global.css">
 <style>
-  :root {
-    --orange: #FF5A00;
-    --bg: #F2F1EE; --bg2: #ECEAE6; --bg3: #E4E2DE;
-    --white: #ffffff;
-    --text: #1A1714; --text-mid: #5A5650; --text-dim: #8C8480;
-    --line: rgba(0,0,0,0.1);
-    --green: #2E9E5B; --red: #D93535;
-    --mono: 'IBM Plex Mono', monospace;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: var(--mono); background: var(--bg); color: var(--text);
-    min-height: 100vh; display: flex; flex-direction: column;
-  }
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
-    background-size: 32px 32px; pointer-events: none; z-index: 0;
-  }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes pixelSpin { 0%,60%,100%{opacity:0.1} 30%{opacity:1} }
+  body { display: flex; flex-direction: column; }
+  .page { flex:1; padding:88px 52px 64px; max-width:1100px; margin:0 auto; width:100%; position:relative; z-index:1; }
 
-  /* LOADER */
-  .card-loader { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:60px 24px; }
-  .card-loader.hidden { display:none; }
-  .loader-px { width:32px; height:32px; display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(4,1fr); gap:2px; }
-  .loader-px span { background:var(--orange); animation:pixelSpin 1s step-end infinite; }
-  .loader-px span:nth-child(1){animation-delay:0s}.loader-px span:nth-child(2){animation-delay:.0625s}.loader-px span:nth-child(3){animation-delay:.125s}.loader-px span:nth-child(4){animation-delay:.1875s}.loader-px span:nth-child(5){animation-delay:.25s}.loader-px span:nth-child(6){animation-delay:.3125s}.loader-px span:nth-child(7){animation-delay:.375s}.loader-px span:nth-child(8){animation-delay:.4375s}.loader-px span:nth-child(9){animation-delay:.5s}.loader-px span:nth-child(10){animation-delay:.5625s}.loader-px span:nth-child(11){animation-delay:.625s}.loader-px span:nth-child(12){animation-delay:.6875s}.loader-px span:nth-child(13){animation-delay:.75s}.loader-px span:nth-child(14){animation-delay:.8125s}.loader-px span:nth-child(15){animation-delay:.875s}.loader-px span:nth-child(16){animation-delay:.9375s}
-  .loader-text { font-size:11px; color:var(--text-dim); letter-spacing:.05em; }
-
-  /* HEADER */
-  header {
-    position:fixed; top:0; left:0; right:0; z-index:100;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 48px; height:56px;
-    background:var(--white); border-bottom:2px solid var(--text);
+  .search-wrap {
+    position: relative; margin-bottom: 28px;
   }
-  .logo { display:flex; align-items:center; gap:12px; text-decoration:none; }
-  .logo-icon {
-    width:30px; height:30px; background:var(--orange);
-    display:flex; align-items:center; justify-content:center;
-    clip-path:polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
-  }
-  .logo-icon svg { width:14px; height:14px; }
-  .logo-text { font-size:14px; font-weight:700; color:var(--text); letter-spacing:.1em; text-transform:uppercase; }
-  .logo-text span { color:var(--orange); }
-
-  .header-right { display: flex; align-items: center; gap: 12px; }
-
-  /* ─── HEADER UNIFIED BUTTONS ─── */
-  .btn-nav, .btn-nav-ghost {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 18px; background: var(--text); color: #ffffff;
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    text-decoration: none; border: none; outline: none; cursor: pointer;
-    transition: background 0.18s; white-space: nowrap;
-    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
-  }
-  .btn-nav:hover, .btn-nav-ghost:hover { background: var(--orange); }
-  .btn-nav svg, .btn-nav-ghost svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
-  .btn-nav.btn-danger { background: #c0392b; }
-  .btn-nav.btn-danger:hover { background: #e74c3c; }
-
-  .btn-sm svg { width:12px; height:12px; stroke:currentColor; fill:none; flex-shrink:0; }
-  .btn-primary-sm svg { width:12px; height:12px; stroke:currentColor; fill:none; flex-shrink:0; }
-
-  /* LAYOUT */
-  .page { flex:1; padding:80px 48px 60px; max-width:900px; margin:0 auto; width:100%; position:relative; z-index:1; }
-
-  .page-header {
-    display:flex; align-items:flex-end; justify-content:space-between;
-    margin-bottom:32px; padding-bottom:20px; border-bottom:2px solid var(--text);
-    animation:fadeIn .3s ease both;
-  }
-  .page-title-label {
-    font-size:10px; letter-spacing:.25em; text-transform:uppercase;
-    color:var(--orange); margin-bottom:6px; display:flex; align-items:center; gap:6px;
-  }
-  .page-title-label::before { content:'/'; font-weight:700; }
-  .page-title { font-size:28px; font-weight:700; letter-spacing:-.5px; }
-  .cursor-blink {
-    display:inline-block; width:10px; height:1.1em;
-    background:var(--orange); vertical-align:text-bottom;
-    animation:blink .9s step-end infinite;
-  }
-
-  /* SEARCH */
-  .search-wrap { position:relative; margin-bottom:20px; animation:fadeIn .35s ease both; }
+  .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--text-dim); fill: none; pointer-events: none; }
   .search-input {
-    width:100%; padding:10px 14px 10px 36px;
-    font-family:var(--mono); font-size:12px; color:var(--text);
-    background:var(--white); border:1px solid var(--line);
-    outline:none; letter-spacing:.03em; transition:border-color .15s;
+    width: 100%; padding: 14px 16px 14px 46px; height: 50px;
+    border: 1px solid var(--line-mid); border-left: 3px solid var(--bg3);
+    background: var(--white); font-family: var(--mono); font-size: 13px; color: var(--text);
+    outline: none; transition: border-color 0.15s, border-left-color 0.15s;
   }
-  .search-input:focus { border-color:var(--orange); }
-  .search-input::placeholder { color:var(--text-dim); }
-  .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); width:14px; height:14px; stroke:var(--text-dim); fill:none; pointer-events:none; }
+  .search-input:focus { border-color: var(--text); border-left-color: var(--orange); }
+  .search-input::placeholder { color: var(--text-dim); }
 
-  /* CARD / LIST */
-  .card-wrap {
-    background:var(--text);
-    clip-path:polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px);
-    padding:2px; animation:fadeIn .4s ease both;
-  }
-  .card { background:var(--white); clip-path:polygon(16px 0%,100% 0%,100% calc(100% - 16px),calc(100% - 16px) 100%,0% 100%,0% 16px); }
+  .list-card-wrap { background: var(--text); clip-path: polygon(20px 0%,100% 0%,100% calc(100% - 20px),calc(100% - 20px) 100%,0% 100%,0% 20px); padding: 2px; }
+  .list-card { background: var(--white); clip-path: polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px); }
 
-  .analyses-list { display:flex; flex-direction:column; }
+  .analyses-list { display: flex; flex-direction: column; }
   .analysis-row {
-    display:grid; grid-template-columns:auto 1fr auto auto;
-    align-items:center; gap:16px;
-    padding:16px 24px; border-bottom:1px solid var(--line);
-    cursor:pointer; transition:background .12s;
-    animation:fadeIn .3s ease both;
+    display: grid; grid-template-columns: 44px 1fr auto auto; align-items: center; gap: 16px;
+    padding: 14px 22px; border-bottom: 1px solid var(--line); cursor: pointer;
+    transition: background 0.15s; animation: fadeUp 0.3s ease both;
   }
-  .analysis-row:last-child { border-bottom:none; }
-  .analysis-row:hover { background:var(--bg); }
-  .analysis-icon {
-    width:36px; height:36px; background:var(--bg2); flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
-    clip-path:polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
-  }
-  .analysis-icon svg { width:16px; height:16px; stroke:var(--text-dim); fill:none; }
-  .analysis-info { min-width:0; }
-  .analysis-name { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:3px; }
-  .analysis-meta { font-size:10px; color:var(--text-dim); letter-spacing:.03em; }
-  .analysis-status {
-    font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
-    padding:3px 8px; white-space:nowrap;
-  }
-  .badge-neutral { background:var(--bg2); color:var(--text-dim); }
-  .analysis-arrow { color:var(--text-dim); }
-  .analysis-arrow svg { width:16px; height:16px; stroke:currentColor; fill:none; }
+  .analysis-row:last-child { border-bottom: none; }
+  .analysis-row:hover { background: var(--bg); }
+  .analysis-icon { width: 36px; height: 36px; flex-shrink: 0; background: var(--bg3); display: flex; align-items: center; justify-content: center; clip-path: polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px); transition: background 0.15s; }
+  .analysis-row:hover .analysis-icon { background: var(--orange); }
+  .analysis-icon svg { width: 16px; height: 16px; stroke: var(--text-dim); fill: none; transition: stroke 0.15s; }
+  .analysis-row:hover .analysis-icon svg { stroke: #fff; }
+  .analysis-info { min-width: 0; }
+  .analysis-name { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .analysis-meta { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 3px; letter-spacing: 0.03em; }
+  .analysis-badge { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 10px; background: var(--bg3); color: var(--text-dim); }
+  .analysis-arrow { color: var(--text-dim); }
+  .analysis-arrow svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
 
-  .analyses-empty { padding:48px 24px; text-align:center; font-size:12px; color:var(--text-dim); letter-spacing:.05em; }
+  .analyses-empty { font-family: var(--mono); padding: 52px 24px; text-align: center; font-size: 12px; color: var(--text-dim); letter-spacing: 0.05em; }
+  .count-label { font-family: var(--mono); font-size: 10px; color: var(--text-dim); padding: 11px 22px; border-top: 1px solid var(--line); letter-spacing: 0.05em; }
+  .count-label.hidden { display: none; }
 
-  .count-label { font-size:10px; color:var(--text-dim); padding:10px 24px; border-top:1px solid var(--line); letter-spacing:.05em; }
-  .count-label.hidden { display:none; }
+  .card-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 60px 24px; }
+  .card-loader.hidden { display: none; }
 
-  /* STATUS BAR */
-  .status-bar {
-    position:relative; z-index:10;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 48px; height:36px; background:var(--text);
-    color:rgba(255,255,255,.45); font-size:9px; letter-spacing:.15em; text-transform:uppercase;
-  }
-  .status-bar-dot { display:inline-block; width:5px; height:5px; background:var(--orange); margin-right:6px; animation:blink 1.4s step-end infinite; }
-  .status-bar-right { color:rgba(255,255,255,.3); }
-
-  @media (max-width:700px) {
-    header { padding:0 20px; }
-    .page { padding:72px 16px 48px; }
-    .analysis-row { grid-template-columns:auto 1fr auto; gap:12px; padding:14px 16px; }
-    .analysis-status { display:none; }
-    .status-bar { padding:0 20px; }
-  }
+  @media (max-width: 640px) { .page { padding: 78px 18px 52px; } }
 </style>
 </head>
 <body>
@@ -176,27 +63,19 @@
         <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
       </svg>
     </div>
-    <div class="logo-text">Medeus<span>.</span></div>
-  </a>
-    <div class="header-right">
-    <div class="user-badge" id="userBadge" style="display:none">
-      <div class="user-avatar" id="userAvatar">—</div>
-
+    <div class="logo-wordmark">
+      <div class="logo-text">Medeus<span>.</span></div>
+      <div class="logo-sub">Medical AI</div>
     </div>
-    <a href="cabinet.html" class="btn-nav-ghost">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-      </svg>
-      <span>Кабинет</span>
-    </a>
+  </a>
+  <div class="header-right">
     <a href="upload.html" class="btn-nav">
-      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-        <polyline points="17 8 12 3 7 8"/>
-        <line x1="12" y1="3" x2="12" y2="15"/>
-      </svg>
-      <span>Загрузить</span>
+      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Загрузить
+    </a>
+    <a href="cabinet.html" class="btn-nav btn-ghost">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Кабинет
     </a>
   </div>
 </header>
@@ -204,20 +83,18 @@
 <main class="page">
   <div class="page-header">
     <div>
-      <div class="page-title-label">Личный кабинет → Анализы</div>
+      <div class="page-title-label">Личный кабинет</div>
       <div class="page-title">Все анализы<span class="cursor-blink"></span></div>
     </div>
   </div>
 
   <div class="search-wrap">
-    <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-    </svg>
-    <input class="search-input" type="text" id="searchInput" placeholder="Поиск по названию файла...">
+    <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <input class="search-input" type="text" id="searchInput" placeholder="Поиск по названию...">
   </div>
 
-  <div class="card-wrap">
-    <div class="card">
+  <div class="list-card-wrap">
+    <div class="list-card">
       <div class="analyses-list" id="analysesList">
         <div class="card-loader" id="loader">
           <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
@@ -237,90 +114,38 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase.js"></script>
 <script>
-function escHtml(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function fmtDate(s) {
-  if (!s) return '—';
-  const d = new Date(s);
-  return isNaN(d) ? s : d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
-}
-async function apiFetch(path, session) {
-  const r = await fetch(`${API_BASE}${path}`, { headers:{'Authorization':`Bearer ${session.access_token}`} });
-  if (r.status === 401) { window.location.href='auth.html'; return null; }
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
-}
+function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmtDate(s){if(!s)return'—';const d=new Date(s);return isNaN(d)?s:d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});}
+async function apiFetch(path,session){const r=await fetch(`${API_BASE}${path}`,{headers:{'Authorization':`Bearer ${session.access_token}`}});if(r.status===401){window.location.href='auth.html';return null;}if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}
 
-document.getElementById('statusDate').textContent =
-  new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+document.getElementById('statusDate').textContent=new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+let allRows=[];
 
-let allRows = [];
-
-function renderList(rows) {
-  const list    = document.getElementById('analysesList');
-  const countEl = document.getElementById('countLabel');
-  const loader  = document.getElementById('loader');
-  if (loader) loader.classList.add('hidden');
-
-  if (!rows.length) {
-    list.innerHTML = '<div class="analyses-empty">Ничего не найдено</div>';
-    if (countEl) countEl.classList.add('hidden');
-    return;
-  }
-
-  list.innerHTML = rows.map((row, idx) => {
-    const name  = escHtml(row.analysis_name || row.filename || '—');
-    const aDate = row.analysis_date ? fmtDate(row.analysis_date) : fmtDate(row.created_at);
-    return `
-      <div class="analysis-row" style="animation-delay:${Math.min(idx*0.025,0.5)}s"
-           onclick="location.href='analysis.html?id=${row.id}'">
-        <div class="analysis-icon">
-          <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-          </svg>
-        </div>
-        <div class="analysis-info">
-          <div class="analysis-name">${name}</div>
-          <div class="analysis-meta">${aDate}</div>
-        </div>
-        <span class="analysis-status badge-neutral">готово</span>
-        <div class="analysis-arrow">
-          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
-        </div>
-      </div>`;
+function renderList(rows){
+  const list=document.getElementById('analysesList');
+  const countEl=document.getElementById('countLabel');
+  const loader=document.getElementById('loader');
+  if(loader)loader.classList.add('hidden');
+  if(!rows.length){list.innerHTML='<div class="analyses-empty">Ничего не найдено</div>';if(countEl)countEl.classList.add('hidden');return;}
+  list.innerHTML=rows.map((row,idx)=>{
+    const name=escHtml(row.analysis_name||row.filename||'—');
+    const aDate=row.analysis_date?fmtDate(row.analysis_date):fmtDate(row.created_at);
+    return`<div class="analysis-row" style="animation-delay:${Math.min(idx*0.025,0.5)}s" onclick="location.href='analysis.html?id=${row.id}'">
+      <div class="analysis-icon"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="analysis-info"><div class="analysis-name">${name}</div><div class="analysis-meta">${aDate}</div></div>
+      <span class="analysis-badge">готово</span>
+      <div class="analysis-arrow"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>`;
   }).join('');
-
-  if (countEl) {
-    countEl.textContent = `Всего: ${rows.length}`;
-    countEl.classList.remove('hidden');
-  }
+  if(countEl){countEl.textContent=`Всего: ${rows.length}`;countEl.classList.remove('hidden');}
 }
 
-document.getElementById('searchInput').addEventListener('input', e => {
-  const q = e.target.value.trim().toLowerCase();
-  renderList(q ? allRows.filter(r => (r.analysis_name||r.filename||'').toLowerCase().includes(q)) : allRows);
-});
+document.getElementById('searchInput').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();renderList(q?allRows.filter(r=>(r.analysis_name||r.filename||'').toLowerCase().includes(q)):allRows);});
 
-document.getElementById('logoutBtn')?.addEventListener('click', async e => {
-  e.preventDefault(); await signOut();
-});
-
-(async () => {
-  const session = await requireAuth();
-  if (!session) return;
-  const email = session.user.email || '';
-  document.getElementById('userBadge').style.display='flex'; document.getElementById('userAvatar').textContent = email.slice(0,2).toUpperCase();
-
-  try {
-    const data = await apiFetch('/history', session);
-    if (!data) return;
-    allRows = data.history || [];
-    renderList(allRows);
-  } catch(e) {
-    document.getElementById('loader').innerHTML = '<div class="loader-text">Ошибка загрузки</div>';
-  }
+(async()=>{
+  const session=await requireAuth();if(!session)return;
+  try{const data=await apiFetch('/history',session);if(!data)return;allRows=data.history||[];renderList(allRows);}
+  catch(e){document.getElementById('loader').innerHTML='<div class="loader-text" style="color:var(--red)">Ошибка загрузки</div>';}
 })();
 </script>
 </body>

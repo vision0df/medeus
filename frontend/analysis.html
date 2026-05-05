@@ -4,315 +4,101 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // Анализ</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="global.css">
 <style>
-  :root {
-    --orange: #FF5A00;
-    --orange-dim: #CC4800;
-    --orange-pale: rgba(255,90,0,0.08);
-    --bg: #F2F1EE;
-    --bg2: #ECEAE6;
-    --bg3: #E4E2DE;
-    --white: #ffffff;
-    --text: #1A1714;
-    --text-mid: #5A5650;
-    --text-dim: #8C8480;
-    --line: rgba(0,0,0,0.1);
-    --green: #2E9E5B;
-    --green-pale: rgba(46,158,91,0.08);
-    --red: #D93535;
-    --red-pale: rgba(217,53,53,0.08);
-    --yellow: #C89000;
-    --mono: 'IBM Plex Mono', monospace;
-  }
+  body { display: flex; flex-direction: column; }
+  .page { flex:1; padding:88px 52px 64px; max-width:1100px; margin:0 auto; width:100%; position:relative; z-index:1; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  /* ─── INFO + FILE GRID ─── */
+  .info-file-grid { display: grid; grid-template-columns: 240px 1fr; }
 
-  body {
-    font-family: var(--mono);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
-    background-size: 32px 32px;
-    pointer-events: none; z-index: 0;
-  }
-
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-
-  /* ─── HEADER ─── */
-  header {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 48px; height: 56px;
-    background: var(--white); border-bottom: 2px solid var(--text);
-  }
-
-  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-  .logo-icon {
-    width: 30px; height: 30px; background: var(--orange);
-    display: flex; align-items: center; justify-content: center;
-    clip-path: polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
-  }
-  .logo-icon svg { width: 14px; height: 14px; }
-  .logo-text { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.1em; text-transform: uppercase; }
-  .logo-text span { color: var(--orange); }
-
-  .header-right { display: flex; align-items: center; gap: 12px; }
-
-  /* ─── HEADER UNIFIED BUTTONS ─── */
-  .btn-nav, .btn-nav-ghost {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 18px; background: var(--text); color: #ffffff;
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    text-decoration: none; border: none; outline: none; cursor: pointer;
-    transition: background 0.18s; white-space: nowrap;
-    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
-  }
-  .btn-nav:hover, .btn-nav-ghost:hover { background: var(--orange); }
-  .btn-nav svg, .btn-nav-ghost svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
-  .btn-nav.btn-danger { background: #c0392b; }
-  .btn-nav.btn-danger:hover { background: #e74c3c; }
-  /* ─── CARD CTA BUTTONS ─── */
-  .btn-primary-sm {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 18px; background: var(--text); color: #ffffff;
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    text-decoration: none; border: none; outline: none; cursor: pointer;
-    transition: background 0.18s; white-space: nowrap;
-    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
-  }
-  .btn-primary-sm:hover { background: var(--orange); }
-  .btn-primary-sm svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
-  .btn-nav.btn-danger { background: #cc2a2a; }
-  .btn-nav.btn-danger:hover { background: #e03030; }
-
-
-  .btn-danger svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
-
-  /* ─── LAYOUT ─── */
-  .page {
-    flex: 1;
-    padding: 80px 48px 60px;
-    max-width: 900px;
-    margin: 0 auto;
-    width: 100%;
-    position: relative; z-index: 1;
-  }
-
-  .page-header {
-    display: flex; align-items: flex-end; justify-content: space-between;
-    margin-bottom: 32px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid var(--text);
-    animation: fadeIn 0.3s ease both;
-  }
-
-  .page-title-label {
-    font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
-    color: var(--orange); margin-bottom: 6px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .page-title-label::before { content: '/'; font-weight: 700; }
-
-  .page-title {
-    font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: var(--text);
-  }
-
-  /* ─── CARD ─── */
-  .card-wrap {
-    background: var(--text);
-    clip-path: polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px);
-    padding: 2px;
-    margin-bottom: 20px;
-    animation: fadeIn 0.4s ease both;
-  }
-
-  .card {
-    background: var(--white);
-    clip-path: polygon(16px 0%,100% 0%,100% calc(100% - 16px),calc(100% - 16px) 100%,0% 100%,0% 16px);
-  }
-
-  .card-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--line);
-    background: var(--bg2);
-  }
-
-  .card-label {
-    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--text-dim); display: flex; align-items: center; gap: 6px;
-  }
-  .card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
-
-  .card-body { padding: 24px; }
-
-  /* ─── META GRID ─── */
-  /* ─── INFO + FILE COMBINED ─── */
-  .info-file-grid { display: grid; grid-template-columns: 200px 1fr; min-height: 180px; }
-
-  .file-thumb-wrap {
-    border-right: 1px solid var(--line); background: var(--bg2);
-    display: flex; align-items: stretch; overflow: hidden; min-height: 180px;
-  }
-  .file-thumb {
-    flex: 1; position: relative; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; overflow: hidden;
-  }
-  .file-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s; }
-  .file-thumb:hover img { transform: scale(1.05); }
+  /* ─── FILE THUMB ─── */
+  .file-thumb-wrap { border-right: 1px solid var(--line); padding: 26px; display: flex; align-items: flex-start; justify-content: center; }
+  .file-thumb { cursor: zoom-in; position: relative; }
+  .file-thumb img { width: 190px; height: 190px; object-fit: cover; display: block; filter: brightness(0.97); }
   .file-thumb-overlay {
-    position: absolute; inset: 0; background: rgba(0,0,0,0);
-    display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+    position: absolute; inset: 0; background: rgba(0,0,0,0.45); opacity: 0;
+    transition: opacity 0.18s; display: flex; align-items: center; justify-content: center;
   }
-  .file-thumb:hover .file-thumb-overlay { background: rgba(0,0,0,0.38); }
-  .file-thumb-overlay svg { width: 28px; height: 28px; stroke: #fff; fill: none; opacity: 0; transition: opacity 0.2s; }
-  .file-thumb:hover .file-thumb-overlay svg { opacity: 1; }
+  .file-thumb:hover .file-thumb-overlay { opacity: 1; }
+  .file-thumb-overlay svg { width: 32px; height: 32px; stroke: #fff; fill: none; }
 
   .file-thumb-pdf {
-    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 10px; padding: 20px; color: var(--text-dim); text-align: center;
+    width: 190px; height: 190px; background: var(--bg3);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; color: var(--text-dim);
   }
-  .file-thumb-pdf svg { width: 36px; height: 36px; stroke: var(--text-dim); fill: none; }
-  .file-thumb-pdf span { font-size: 10px; letter-spacing: 0.05em; word-break: break-all; }
+  .file-thumb-pdf svg { width: 52px; height: 52px; stroke: var(--text-dim); fill: none; }
+  .file-thumb-pdf span { font-family: var(--mono); font-size: 10px; text-align: center; letter-spacing: 0.05em; word-break: break-all; padding: 0 10px; }
 
-  .meta-panel { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
-  .meta-item { display: flex; flex-direction: column; gap: 3px; }
-  .meta-key { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); }
-  .meta-val { font-size: 13px; font-weight: 600; color: var(--text); }
-  .meta-val.name { font-size: 15px; font-weight: 700; }
+  /* ─── META PANEL ─── */
+  .meta-panel { padding: 26px; display: flex; flex-direction: column; gap: 0; }
+  .meta-item { padding: 13px 0; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; gap: 16px; }
+  .meta-item:last-child { border-bottom: none; }
+  .meta-key { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); min-width: 110px; flex-shrink: 0; }
+  .meta-val { font-family: var(--mono); font-size: 13px; color: var(--text); font-weight: 500; }
+  .meta-val.name { font-family: var(--sans); font-size: 15px; font-weight: 600; }
 
   .file-open-btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 18px; margin-top: auto; align-self: flex-start;
-    background: var(--text); color: var(--white);
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 18px;
+    padding: 10px 18px; background: transparent; color: var(--orange);
     font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    text-decoration: none; border: none; cursor: pointer; transition: background 0.15s;
+    letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none;
+    border: 1px solid var(--orange-border); transition: all 0.15s;
     clip-path: polygon(7px 0%,100% 0%,100% calc(100% - 7px),calc(100% - 7px) 100%,0% 100%,0% 7px);
+    align-self: flex-start;
   }
-  .file-open-btn:hover { background: var(--orange); }
-  .file-open-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
+  .file-open-btn:hover { background: var(--orange-pale); border-color: var(--orange); }
+  .file-open-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
-  .lightbox {
-    display: none; position: fixed; inset: 0; z-index: 999;
-    background: rgba(0,0,0,0.88); align-items: center; justify-content: center; cursor: zoom-out;
-  }
-  .lightbox.open { display: flex; }
-  .lightbox img { max-width: 92vw; max-height: 90vh; object-fit: contain; display: block; cursor: default; }
-  .lightbox-close {
-    position: absolute; top: 20px; right: 24px; width: 36px; height: 36px;
-    background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: background 0.15s;
-    clip-path: polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
-  }
-  .lightbox-close:hover { background: var(--orange); }
-  .lightbox-close svg { width: 18px; height: 18px; stroke: #fff; fill: none; }
+  /* ─── CARD ─── */
+  .a-card-wrap { background: var(--text); clip-path: polygon(20px 0%,100% 0%,100% calc(100% - 20px),calc(100% - 20px) 100%,0% 100%,0% 20px); padding: 2px; margin-bottom: 24px; animation: fadeUp 0.35s ease both; }
+  .a-card-wrap:nth-child(2){animation-delay:.07s}
+  .a-card { background: var(--white); clip-path: polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px); }
+  .a-card-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 26px 16px; border-bottom: 1px solid var(--line); background: var(--bg2); }
+  .a-card-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; gap: 7px; }
+  .a-card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 13px; }
+  .a-card-body { padding: 26px; }
 
-  /* ─── AI RESULT ─── */
-  .result-body {
-    font-size: 13px;
-    line-height: 1.75;
-    color: var(--text);
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
+  /* ─── RESULT BODY ─── */
+  .result-body { font-family: var(--mono); font-size: 13px; line-height: 1.85; color: var(--text-mid); }
+  .result-body h3 { font-size: 11px; font-weight: 700; color: var(--text); letter-spacing: 0.16em; text-transform: uppercase; margin: 22px 0 11px; padding-bottom: 7px; border-bottom: 1px solid var(--line-mid); }
+  .result-body h3:first-child { margin-top: 0; }
+  .result-body p { margin-bottom: 11px; }
+  .result-body strong { color: var(--text); }
 
   /* ─── DELETE CONFIRM ─── */
-  .delete-confirm {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 200;
-    align-items: center; justify-content: center;
+  .delete-confirm-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    z-index: 500; align-items: center; justify-content: center; padding: 24px;
   }
-  .delete-confirm.show { display: flex; }
+  .delete-confirm-overlay.show { display: flex; }
+  .delete-confirm-box {
+    background: var(--white); max-width: 420px; width: 100%; padding: 36px;
+    position: relative;
+    clip-path: polygon(24px 0%,100% 0%,100% calc(100% - 24px),calc(100% - 24px) 100%,0% 100%,0% 24px);
+    box-shadow: 0 16px 60px rgba(0,0,0,0.3);
+  }
+  .delete-confirm-title { font-family: var(--sans); font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .delete-confirm-desc  { font-family: var(--mono); font-size: 12px; color: var(--text-mid); line-height: 1.7; margin-bottom: 28px; }
+  .delete-confirm-btns { display: flex; gap: 10px; }
 
-  .delete-dialog {
-    background: var(--white);
-    border: 2px solid var(--text);
-    padding: 32px;
-    max-width: 380px;
-    width: 90%;
-    animation: fadeIn 0.2s ease both;
-  }
+  /* ─── LIGHTBOX ─── */
+  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 600; align-items: center; justify-content: center; cursor: zoom-out; }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; cursor: default; }
+  .lightbox-close { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); cursor: pointer; transition: background 0.15s; }
+  .lightbox-close:hover { background: rgba(255,255,255,0.2); }
+  .lightbox-close svg { width: 18px; height: 18px; stroke: #fff; fill: none; }
 
-  .delete-dialog-title {
-    font-size: 16px; font-weight: 700; margin-bottom: 10px;
-  }
+  /* ─── STATES ─── */
+  .state-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 80px; }
+  .state-error { font-family: var(--mono); padding: 32px; text-align: center; color: var(--red); font-size: 13px; background: var(--red-pale); border: 1px solid var(--red-border); }
 
-  .delete-dialog-desc {
-    font-size: 12px; color: var(--text-dim); line-height: 1.6; margin-bottom: 24px;
-  }
-
-  .delete-dialog-btns {
-    display: flex; gap: 10px;
-  }
-
-  .btn-cancel {
-    flex: 1; padding: 12px;
-    background: var(--bg2); color: var(--text-mid);
-    border: 1px solid var(--line);
-    font-family: var(--mono); font-size: 12px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    cursor: pointer; outline: none; transition: background 0.15s;
-  }
-  .btn-cancel:hover { background: var(--bg3); }
-
-  .btn-confirm-delete {
-    flex: 1; padding: 12px;
-    background: var(--red); color: #fff;
-    border: none;
-    font-family: var(--mono); font-size: 12px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    cursor: pointer; outline: none; transition: background 0.15s;
-  }
-  .btn-confirm-delete:hover { background: #b02020; }
-  .btn-confirm-delete:disabled { opacity: 0.6; cursor: not-allowed; }
-
-  /* ─── LOADING / ERROR ─── */
-  .state-loading, .state-error {
-    text-align: center; padding: 80px 24px;
-    font-size: 12px; color: var(--text-dim); letter-spacing: 0.05em;
-    animation: fadeIn 0.3s ease both;
-  }
-  .state-error { color: var(--red); }
-
-  /* ─── STATUS BAR ─── */
-  .status-bar {
-    position: relative; z-index: 10;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 48px; height: 36px;
-    background: var(--text);
-    color: rgba(255,255,255,0.45);
-    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
-  }
-  .status-bar-dot {
-    display: inline-block; width: 5px; height: 5px;
-    background: var(--orange); margin-right: 6px;
-    animation: blink 1.4s step-end infinite;
-  }
-  .status-bar-right { color: rgba(255,255,255,0.3); }
-
-  @media (max-width: 700px) {
-    header { padding: 0 20px; }
-    .page { padding: 72px 16px 48px; }
-    .meta-grid { grid-template-columns: 1fr 1fr; }
-    .status-bar { padding: 0 20px; }
+  @media (max-width: 720px) {
+    .info-file-grid { grid-template-columns: 1fr; }
+    .file-thumb-wrap { border-right: none; border-bottom: 1px solid var(--line); }
+    .page { padding: 78px 18px 52px; }
   }
 </style>
 </head>
@@ -321,35 +107,45 @@
 <header>
   <a class="logo" href="cabinet.html">
     <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
         <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
       </svg>
     </div>
-    <div class="logo-text">Medeus<span>.</span></div>
+    <div class="logo-wordmark">
+      <div class="logo-text">Medeus<span>.</span></div>
+      <div class="logo-sub">Medical AI</div>
+    </div>
   </a>
-
-    <div class="header-right">
-    <a href="cabinet.html" class="btn-nav">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
-      </svg>
-      <span>Кабинет</span>
+  <div class="header-right">
+    <a href="all-analyses.html" class="btn-nav btn-ghost">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Все анализы
+    </a>
+    <a href="cabinet.html" class="btn-nav btn-ghost">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Кабинет
     </a>
   </div>
 </header>
 
 <main class="page" id="mainContent">
-  <div class="state-loading">Загрузка анализа...</div>
+  <div class="state-loader">
+    <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="loader-text">Загрузка анализа...</div>
+  </div>
 </main>
 
-<!-- Подтверждение удаления -->
-<div class="delete-confirm" id="deleteConfirm">
-  <div class="delete-dialog">
-    <div class="delete-dialog-title">Удалить анализ?</div>
-    <div class="delete-dialog-desc">Файл и результат будут удалены безвозвратно. Это действие нельзя отменить.</div>
-    <div class="delete-dialog-btns">
-      <button class="btn-cancel" id="cancelDelete">Отмена</button>
-      <button class="btn-confirm-delete" id="confirmDelete">Удалить</button>
+<!-- Delete confirm -->
+<div class="delete-confirm-overlay" id="deleteConfirm">
+  <div class="delete-confirm-box">
+    <div class="delete-confirm-title">Удалить анализ?</div>
+    <div class="delete-confirm-desc">Это действие необратимо. Файл и результат анализа будут удалены безвозвратно.</div>
+    <div class="delete-confirm-btns">
+      <button class="btn-secondary" id="cancelDelete">Отмена</button>
+      <button class="btn-primary" id="confirmDelete" style="flex:1;background:var(--red);">
+        <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+        Удалить
+      </button>
     </div>
   </div>
 </div>
@@ -361,216 +157,125 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase.js"></script>
-
 <script>
-  function escHtml(str) {
-    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function formatDate(s){if(!s)return'—';const d=new Date(s);return isNaN(d)?s:d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function isPdf(fn){return fn&&fn.toLowerCase().endsWith('.pdf');}
+
+const params=new URLSearchParams(location.search);
+const analysisId=params.get('id');
+
+function formatResultHtml(text){
+  if(!text)return'<p style="color:var(--text-dim);">Результат отсутствует</p>';
+  let html=text
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^#{1,3} (.+)$/gm,'<h3>$1</h3>')
+    .replace(/выше нормы/gi,'<span class="tag-high">↑ выше нормы</span>')
+    .replace(/ниже нормы/gi,'<span class="tag-low">↓ ниже нормы</span>')
+    .replace(/\bнорма\b/gi,function(m,o,s){var b=s[o-1];var a=s[o+m.length];var c=/[а-яёА-ЯЁ]/;if((b&&c.test(b))||(a&&c.test(a)))return m;return'<span class="tag-normal">✓ норма</span>';})
+    .replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
+  return'<p>'+html+'</p>';
+}
+
+async function loadAnalysis(){
+  const session=await requireAuth();if(!session)return;
+  try{
+    const resp=await fetch(`${API_BASE}/analysis/${analysisId}`,{headers:{'Authorization':`Bearer ${session.access_token}`}});
+    if(resp.status===401){window.location.href='auth.html';return;}
+    if(resp.status===404){document.getElementById('mainContent').innerHTML='<div class="state-error">Анализ не найден</div>';return;}
+    if(!resp.ok)throw new Error('Ошибка сервера');
+    const{analysis}=await resp.json();
+    renderAnalysis(analysis);
+  }catch(e){
+    document.getElementById('mainContent').innerHTML=`<div class="state-error">Ошибка загрузки: ${escHtml(e.message)}</div>`;
   }
+}
 
-  function formatDate(str) {
-    if (!str) return '—';
-    // ISO date "2026-04-12" or datetime
-    const d = new Date(str);
-    if (isNaN(d)) return str;
-    return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  }
-
-  function isPdf(filename) {
-    return String(filename).toLowerCase().endsWith('.pdf');
-  }
-
-  // Получаем ID из URL (?id=xxx)
-  const params = new URLSearchParams(location.search);
-  const analysisId = params.get('id');
-
-  if (!analysisId) {
-    document.getElementById('mainContent').innerHTML =
-      '<div class="state-error">ID анализа не указан</div>';
-  }
-
-  async function loadAnalysis() {
-    const session = await requireAuth();
-    if (!session) return;
-
-    try {
-      const resp = await fetch(`${API_BASE}/analysis/${analysisId}`, {
-        headers: { 'Authorization': `Bearer ${session.access_token}` },
-      });
-
-      if (resp.status === 401) { window.location.href = 'auth.html'; return; }
-      if (resp.status === 404) {
-        document.getElementById('mainContent').innerHTML =
-          '<div class="state-error">Анализ не найден</div>';
-        return;
-      }
-      if (!resp.ok) throw new Error('Ошибка сервера');
-
-      const { analysis } = await resp.json();
-      renderAnalysis(analysis);
-
-    } catch (e) {
-      document.getElementById('mainContent').innerHTML =
-        `<div class="state-error">Ошибка загрузки: ${escHtml(e.message)}</div>`;
-    }
-  }
-
-  function renderAnalysis(a) {
-    const name    = a.analysis_name || a.filename || '—';
-    const created = formatDate(a.created_at);
-    const aDate   = formatDate(a.analysis_date);
-    const gender  = a.gender === 'male' ? 'Мужской' : a.gender === 'female' ? 'Женский' : (a.gender || '—');
-
-
-    const isImg = a.file_url && !isPdf(a.filename);
-
-    document.getElementById('mainContent').innerHTML = `
-      <div class="page-header">
-        <div>
-          <div class="page-title-label">Анализ</div>
-          <div class="page-title">${escHtml(name)}</div>
-        </div>
+function renderAnalysis(a){
+  const name=a.analysis_name||a.filename||'—';
+  const created=formatDate(a.created_at);
+  const aDate=formatDate(a.analysis_date);
+  const isImg=a.file_url&&!isPdf(a.filename);
+  const mainContent=document.getElementById('mainContent');
+  mainContent.innerHTML=`
+    <div class="page-header">
+      <div>
+        <div class="page-title-label">Просмотр</div>
+        <div class="page-title">${escHtml(name)}</div>
       </div>
+      <div class="breadcrumb" style="align-self:center;">
+        <a href="cabinet.html">Кабинет</a>
+        <span class="sep">/</span>
+        <a href="all-analyses.html">Анализы</a>
+        <span class="sep">/</span>
+        <span>${escHtml(name)}</span>
+      </div>
+    </div>
 
-      <!-- Информация + файл -->
-      <div class="card-wrap">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-label">Информация</div>
-            <button class="btn-nav btn-danger" id="deleteBtn">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="3 6 5 6 21 6"/>
-        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-        <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
-      </svg>
-      <span>Удалить</span>
-    </button>
+    <div class="a-card-wrap">
+      <div class="a-card">
+        <div class="a-card-header">
+          <div class="a-card-label">Информация и файл</div>
+          <button class="btn-nav btn-danger" id="deleteBtn">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+            Удалить
+          </button>
+        </div>
+        <div class="info-file-grid">
+          <div class="file-thumb-wrap">
+            ${isImg?`<div class="file-thumb" onclick="openLightbox('${escHtml(a.file_url)}')"><img src="${escHtml(a.file_url)}" alt="${escHtml(a.filename)}"><div class="file-thumb-overlay"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></div></div>`:`<div class="file-thumb-pdf"><svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>${escHtml(a.filename||'Файл')}</span></div>`}
           </div>
-          <div class="info-file-grid">
-            <div class="file-thumb-wrap">
-              ${isImg ? `
-                <div class="file-thumb" onclick="openLightbox('${escHtml(a.file_url)}')">
-                  <img src="${escHtml(a.file_url)}" alt="${escHtml(a.filename)}">
-                  <div class="file-thumb-overlay">
-                    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-                      <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
-                    </svg>
-                  </div>
-                </div>` : `
-                <div class="file-thumb-pdf">
-                  <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                  </svg>
-                  <span>${escHtml(a.filename || 'Файл')}</span>
-                </div>`}
-            </div>
-            <div class="meta-panel">
-              <div class="meta-item">
-                <div class="meta-key">Название</div>
-                <div class="meta-val name">${escHtml(name)}</div>
-              </div>
-              <div class="meta-item">
-                <div class="meta-key">Дата сдачи</div>
-                <div class="meta-val">${aDate}</div>
-              </div>
-              <div class="meta-item">
-                <div class="meta-key">Загружен</div>
-                <div class="meta-val">${created}</div>
-              </div>
-              <div class="meta-item">
-                <div class="meta-key">Файл</div>
-                <div class="meta-val">${escHtml(a.filename || '—')}</div>
-              </div>
-              ${a.file_url ? `
-              <a href="${escHtml(a.file_url)}" target="_blank" class="file-open-btn">
-                <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-                Открыть файл
-              </a>` : ''}
-            </div>
+          <div class="meta-panel">
+            <div class="meta-item"><div class="meta-key">Название</div><div class="meta-val name">${escHtml(name)}</div></div>
+            <div class="meta-item"><div class="meta-key">Дата сдачи</div><div class="meta-val">${aDate}</div></div>
+            <div class="meta-item"><div class="meta-key">Загружен</div><div class="meta-val">${created}</div></div>
+            <div class="meta-item"><div class="meta-key">Файл</div><div class="meta-val">${escHtml(a.filename||'—')}</div></div>
+            ${a.file_url?`<div class="meta-item"><a href="${escHtml(a.file_url)}" target="_blank" class="file-open-btn"><svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Открыть файл</a></div>`:''}
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Результат ИИ -->
-      <div class="card-wrap" style="animation-delay:0.05s">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-label">Результат анализа ИИ</div>
-          </div>
-          <div class="card-body">
-            <div class="result-body">${escHtml(a.result || 'Результат отсутствует')}</div>
-          </div>
+    <div class="a-card-wrap" style="animation-delay:.07s">
+      <div class="a-card">
+        <div class="a-card-header">
+          <div class="a-card-label">Результат анализа ИИ</div>
+          <div class="pill pill-green"><span class="pill-inner">Готово</span></div>
+        </div>
+        <div class="a-card-body">
+          <div class="result-body">${formatResultHtml(a.result)}</div>
         </div>
       </div>
+    </div>
 
-      <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
-        <div class="lightbox-close" onclick="closeLightboxBtn()">
-          <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </div>
-        <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()">
-      </div>
-    `;
+    <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+      <div class="lightbox-close" onclick="closeLightboxBtn()"><svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+      <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()">
+    </div>`;
 
-    // ─── Удаление ───
-    document.getElementById('deleteBtn').addEventListener('click', () => {
-      document.getElementById('deleteConfirm').classList.add('show');
-    });
-  }
+  document.getElementById('deleteBtn').addEventListener('click',()=>{document.getElementById('deleteConfirm').classList.add('show');});
+}
 
-  document.getElementById('cancelDelete').addEventListener('click', () => {
-    document.getElementById('deleteConfirm').classList.remove('show');
-  });
+document.getElementById('cancelDelete').addEventListener('click',()=>{document.getElementById('deleteConfirm').classList.remove('show');});
+document.getElementById('confirmDelete').addEventListener('click',async()=>{
+  const btn=document.getElementById('confirmDelete');btn.disabled=true;btn.querySelector('span')&&(btn.querySelector('span').textContent='Удаляю...');
+  const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
+  try{
+    const resp=await fetch(`${API_BASE}/analysis/${analysisId}`,{method:'DELETE',headers:{'Authorization':`Bearer ${session.access_token}`}});
+    if(!resp.ok)throw new Error('Ошибка удаления');
+    try{localStorage.removeItem('medeus_dashboard_cache');}catch(e){}
+    window.location.href='cabinet.html';
+  }catch(e){btn.disabled=false;if(btn.querySelector('span'))btn.querySelector('span').textContent='Удалить';alert('Ошибка: '+e.message);}
+});
 
-  document.getElementById('confirmDelete').addEventListener('click', async () => {
-    const btn = document.getElementById('confirmDelete');
-    btn.disabled = true;
-    btn.textContent = 'Удаляю...';
+function openLightbox(url){const img=document.getElementById('lightboxImg');if(img)img.src=url;const lb=document.getElementById('lightbox');if(lb){lb.classList.add('open');document.body.style.overflow='hidden';}}
+function closeLightbox(e){if(e.target===document.getElementById('lightbox'))closeLightboxBtn();}
+function closeLightboxBtn(){const lb=document.getElementById('lightbox');if(lb)lb.classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightboxBtn();});
 
-    const session = await getCurrentSession();
-    if (!session) { window.location.href = 'auth.html'; return; }
-
-    try {
-      const resp = await fetch(`${API_BASE}/analysis/${analysisId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${session.access_token}` },
-      });
-
-      if (!resp.ok) throw new Error('Ошибка удаления');
-      try { localStorage.removeItem('medeus_dashboard_cache'); } catch (e) {}
-      window.location.href = 'cabinet.html';
-
-    } catch (e) {
-      btn.disabled = false;
-      btn.textContent = 'Удалить';
-      alert('Ошибка: ' + e.message);
-    }
-  });
-
-  // ─── Init ───
-  if (analysisId) loadAnalysis();
-
-  function openLightbox(url) {
-    document.getElementById('lightboxImg').src = url;
-    document.getElementById('lightbox').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeLightbox(e) {
-    if (e.target === document.getElementById('lightbox')) closeLightboxBtn();
-  }
-  function closeLightboxBtn() {
-    document.getElementById('lightbox').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightboxBtn(); });
+if(analysisId)loadAnalysis();
+else document.getElementById('mainContent').innerHTML='<div class="state-error">ID анализа не указан</div>';
 </script>
 </body>
 </html>

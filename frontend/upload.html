@@ -4,563 +4,129 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // Новый анализ</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="global.css">
 <style>
-  :root {
-    --orange: #FF5A00;
-    --orange-dim: #CC4800;
-    --orange-pale: rgba(255,90,0,0.08);
-    --orange-border: rgba(255,90,0,0.3);
-    --bg: #F2F1EE;
-    --bg2: #ECEAE6;
-    --bg3: #E4E2DE;
-    --line: rgba(0,0,0,0.12);
-    --text: #1A1714;
-    --text-dim: #8C8480;
-    --text-mid: #5A5650;
-    --mono: 'IBM Plex Mono', monospace;
-    --green: #3DCC7A;
-    --red: #FF5555;
-    --yellow: #C89000;
-  }
+  body { display: flex; flex-direction: column; }
+  .page { flex:1; padding:88px 52px 64px; max-width:1140px; margin:0 auto; width:100%; position:relative; z-index:1; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: var(--mono);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
-    background-size: 32px 32px;
-    pointer-events: none; z-index: 0;
-  }
-
-  /* ─── HEADER ─── */
-  header {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 48px; height: 56px;
-    background: #ffffff; border-bottom: 2px solid var(--text);
-  }
-  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-  .logo-icon {
-    width: 32px; height: 32px; background: var(--orange);
-    display: flex; align-items: center; justify-content: center;
-    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
-  }
-  .logo-icon svg { width: 16px; height: 16px; }
-  .logo-text { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.1em; text-transform: uppercase; }
-  .logo-text span { color: var(--orange); }
-  .header-right { display: flex; align-items: center; gap: 12px; }
-  .btn-nav, .btn-nav-ghost {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 18px; background: var(--text); color: #ffffff;
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    text-decoration: none; border: none; outline: none; cursor: pointer;
-    transition: background 0.18s; white-space: nowrap;
-    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
-  }
-  .btn-nav:hover, .btn-nav-ghost:hover { background: var(--orange); }
-  .btn-nav svg, .btn-nav-ghost svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
-
-  /* ─── ANIMATIONS ─── */
-  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes pixelSpin { 0%, 60%, 100% { opacity: 0.1; } 30% { opacity: 1; } }
-
-  /* ─── PAGE ─── */
-  .page-wrap {
-    padding: 80px 48px 80px;
-    max-width: 1100px;
-    margin: 0 auto;
-    position: relative; z-index: 1;
-  }
-  .page-header {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    padding: 40px 0 40px;
-    border-bottom: 1px solid var(--line);
-    margin-bottom: 48px; gap: 20px;
-  }
-  .page-breadcrumb {
-    font-size: 11px; color: var(--text-dim); letter-spacing: 0.2em; text-transform: uppercase;
-    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-  }
-  .page-breadcrumb a { color: var(--text-dim); text-decoration: none; transition: color 0.15s; }
-  .page-breadcrumb a:hover { color: var(--orange); }
-  .page-breadcrumb span { color: var(--orange); }
-  .page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; color: var(--text); line-height: 1.1; }
-  .page-title .cursor-blink {
-    display: inline-block; width: 8px; height: 1em;
-    background: var(--orange); vertical-align: text-bottom; margin-left: 4px;
-    animation: blink 0.9s step-end infinite;
-  }
-  .page-sub { font-size: 12px; color: var(--text-dim); margin-top: 10px; letter-spacing: 0.05em; line-height: 1.6; }
-  .page-sub::before { content: '// '; color: var(--text-dim); }
-  .page-header-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding-top: 8px; }
-
-  /* ─── STEPPER ─── */
-  .stepper {
-    display: flex; align-items: center; gap: 0;
-    margin-bottom: 40px; padding: 0 2px;
-  }
-  .step-item {
-    display: flex; align-items: center; gap: 10px;
-    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--text-dim);
-    transition: color 0.25s;
-  }
-  .step-item.active { color: var(--orange); }
-  .step-item.done   { color: var(--green); }
-  .step-num {
-    width: 26px; height: 26px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700;
-    background: var(--bg3); border: 1px solid var(--line);
-    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
-    transition: background 0.25s, color 0.25s, border-color 0.25s;
-  }
-  .step-item.active .step-num { background: var(--orange); color: #fff; border-color: var(--orange); }
-  .step-item.done   .step-num { background: var(--green);  color: #fff; border-color: var(--green); }
-  .step-line { flex: 1; height: 1px; background: var(--line); margin: 0 12px; min-width: 32px; }
-
-  /* ─── MAIN CARD ─── */
-  .card-wrap {
+  /* ─── PANELS WRAPPER ─── */
+  .panels-outer {
     background: var(--text);
-    clip-path: polygon(22px 0%, 100% 0%, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0% 100%, 0% 22px);
+    clip-path: polygon(24px 0%,100% 0%,100% calc(100% - 24px),calc(100% - 24px) 100%,0% 100%,0% 24px);
     padding: 2px;
   }
-  .card-inner {
-    background: var(--bg2);
-    clip-path: polygon(20px 0%, 100% 0%, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0% 100%, 0% 20px);
-    padding: 40px;
-    min-height: 520px;
+  .panels-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+    background: var(--line-mid);
+    clip-path: polygon(22px 0%,100% 0%,100% calc(100% - 22px),calc(100% - 22px) 100%,0% 100%,0% 22px);
   }
-  .panel-label {
-    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--text-dim); padding: 8px 0; margin-bottom: 28px;
-    border-bottom: 1px solid var(--line);
-    display: flex; align-items: center; gap: 8px;
-  }
-  .panel-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 13px; }
+  .panel-full { grid-column: 1/-1; }
+  .up-panel { background: var(--bg2); padding: 40px 44px; position: relative; }
 
-  /* ─── UPLOAD ZONE ─── */
-  .upload-zone {
-    border: 1px dashed var(--text-dim); padding: 44px 24px;
-    text-align: center; cursor: pointer; transition: all 0.15s;
-    position: relative; margin-bottom: 24px; background: var(--bg);
-  }
-  .upload-zone:hover, .upload-zone.dragover { border-color: var(--orange); border-style: solid; background: var(--orange-pale); }
-  .upload-icon {
-    width: 48px; height: 48px; background: var(--bg3);
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 18px; transition: all 0.15s;
-    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
-  }
-  .upload-zone:hover .upload-icon { background: var(--orange); }
-  .upload-icon svg { width: 22px; height: 22px; stroke: var(--text-mid); fill: none; transition: stroke 0.15s; }
-  .upload-zone:hover .upload-icon svg { stroke: #ffffff; }
-  .upload-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: 0.05em; }
-  .upload-sub { font-size: 12px; color: var(--text-dim); }
-  .upload-formats { font-size: 11px; color: var(--text-dim); margin-top: 10px; letter-spacing: 0.15em; }
-  .upload-formats span { color: var(--orange); opacity: 0.7; margin: 0 4px; }
-  #fileInput { display: none; }
+  /* ─── CATEGORY GRID ─── */
+  .category-section { margin-bottom: 26px; }
+  .cat-section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .cat-section-label::before { content: '/'; color: var(--orange); font-weight: 700; }
 
-  .file-preview {
-    display: none; align-items: center; gap: 12px;
-    padding: 12px 16px; background: var(--orange-pale);
-    border: 1px solid var(--orange-border); margin-bottom: 24px;
-  }
-  .file-preview.show { display: flex; }
-  .file-preview-icon {
-    width: 36px; height: 36px; background: var(--orange);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
-  }
-  .file-preview-icon svg { width: 16px; height: 16px; stroke: #ffffff; fill: none; }
-  .file-preview-info { flex: 1; min-width: 0; }
-  .file-preview-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .file-preview-size { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-  .file-remove {
-    width: 28px; height: 28px; background: transparent; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text-dim); transition: color 0.15s; flex-shrink: 0; border: none; position: relative;
-  }
-  .file-remove::before {
-    content: ''; position: absolute; inset: 0;
-    background: var(--line);
-    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
-    transition: background 0.15s;
-  }
-  .file-remove:hover::before { background: var(--orange); }
-  .file-remove:hover { color: var(--orange); }
-  .file-remove svg { width: 12px; height: 12px; stroke: currentColor; fill: none; position: relative; z-index: 1; }
-
-  /* ─── FORM ─── */
-  .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-  label {
-    font-size: 11px; color: var(--text-dim);
-    letter-spacing: 0.2em; text-transform: uppercase;
-    display: flex; align-items: center; gap: 5px;
-  }
-  label::before { content: '/'; color: var(--text-dim); font-weight: 700; }
-  input[type="text"], input[type="date"] {
-    padding: 12px 14px; height: 46px;
-    border: 1px solid var(--line); border-left: 3px solid var(--bg3);
-    background: var(--bg); font-family: var(--mono);
-    font-size: 13px; color: var(--text); outline: none;
-    transition: border-color 0.15s, border-left-color 0.15s; width: 100%;
-  }
-  input[type="text"]:focus, input[type="date"]:focus {
-    border-color: var(--text); border-left-color: var(--orange); background: #fff;
-  }
-  input[type="text"]::placeholder { color: var(--text-dim); }
-  input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.4; cursor: pointer; filter: invert(0.3); }
-  .field-hint { font-size: 11px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.05em; }
-
-  /* ─── CATEGORY SELECTOR ─── */
-  /* ─── CATEGORY LIST ─── */
-  .category-grid {
-    display: flex; flex-direction: column;
-    gap: 5px; margin-top: 6px;
-  }
-  .cat-row {
-    display: flex; align-items: stretch;
-    gap: 3px; position: relative;
-  }
+  .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .cat-card {
-    flex: 1; display: flex; align-items: center; gap: 10px;
-    padding: 8px 12px 8px 10px;
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-right: none;
-    clip-path: polygon(7px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 7px);
-    font-family: var(--mono); text-align: left;
-    cursor: pointer; outline: none;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg); border: 1px solid var(--line-mid);
+    clip-path: polygon(7px 0%,100% 0%,100% calc(100% - 7px),calc(100% - 7px) 100%,0% 100%,0% 7px);
+    font-family: var(--mono); text-align: left; cursor: pointer; outline: none;
     transition: background 0.15s, border-color 0.15s;
   }
   .cat-card:hover { background: var(--bg3); border-color: var(--text-mid); }
   .cat-card.selected { background: var(--text); border-color: var(--text); }
   .cat-icon {
-    width: 22px; height: 22px; flex-shrink: 0;
+    width: 24px; height: 24px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    background: var(--bg3);
-    clip-path: polygon(4px 0%, 100% 0%, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0% 100%, 0% 4px);
+    background: var(--bg3); font-size: 14px;
+    clip-path: polygon(4px 0%,100% 0%,100% calc(100% - 4px),calc(100% - 4px) 100%,0% 100%,0% 4px);
     transition: background 0.15s;
   }
-  .cat-card:hover .cat-icon { background: var(--line); }
+  .cat-card:hover .cat-icon { background: var(--line-mid); }
   .cat-card.selected .cat-icon { background: rgba(255,255,255,0.12); }
-  .cat-icon svg {
-    width: 11px; height: 11px; stroke: var(--text-mid); fill: none;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    transition: stroke 0.15s;
-  }
-  .cat-card.selected .cat-icon svg { stroke: rgba(255,255,255,0.7); }
-  .cat-name {
-    font-size: 11px; font-weight: 700; color: var(--text);
-    letter-spacing: 0.09em; text-transform: uppercase; line-height: 1;
-    transition: color 0.15s;
-  }
+  .cat-name { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--text); letter-spacing: 0.09em; text-transform: uppercase; line-height: 1; transition: color 0.15s; }
   .cat-card.selected .cat-name { color: #fff; }
-  .cat-info-btn-wrap {
-    width: 32px; flex-shrink: 0; position: relative;
-    background: var(--line);
-    clip-path: polygon(0% 0%, calc(100% - 7px) 0%, 100% 7px, 100% 100%, 7px 100%, 0% calc(100% - 7px));
-    padding: 1px;
-    transition: background 0.15s;
-  }
-  .cat-info-btn-wrap:hover { background: var(--text-dim); }
-  .cat-info-btn {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--bg3);
-    clip-path: polygon(0% 0%, calc(100% - 6px) 0%, 100% 6px, 100% 100%, 6px 100%, 0% calc(100% - 6px));
-    cursor: pointer; outline: none; border: none;
-    transition: background 0.15s;
-    padding: 0 0 1px 0;
-  }
-  .cat-info-btn-wrap:hover .cat-info-btn { background: var(--bg2); }
-  .cat-info-btn svg {
-    width: 11px; height: 11px; stroke: var(--text-dim); fill: none;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .cat-tooltip-wrap {
-    display: none; position: absolute; right: 0; top: calc(100% + 6px);
-    z-index: 99; pointer-events: none;
-    background: var(--text-mid);
-    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
-    padding: 1px;
-  }
-  .cat-tooltip {
-    background: var(--bg3); color: var(--text);
-    font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em;
-    padding: 8px 12px; line-height: 1.8; white-space: nowrap;
-    min-width: 180px;
-    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
-  }
-  .cat-row.tip-open .cat-tooltip-wrap { display: block; }
-  .cat-row.tip-open .cat-tooltip { display: block; }
-  @media (max-width: 600px) {
-    .cat-tooltip { right: auto; left: 0; }
-    .cat-tooltip::before { right: auto; left: 10px; }
-  }
 
-  /* ─── BUTTONS ─── */
-  .btn-primary {
-    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-    padding: 16px 32px; background: var(--text); color: #ffffff;
-    font-family: var(--mono); font-size: 13px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    cursor: pointer; border: none; outline: none;
-    transition: background 0.18s; white-space: nowrap; line-height: 1; width: 100%;
-    clip-path: polygon(12px 0%, 100% 0%, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0% 100%, 0% 12px);
-  }
-  .btn-primary:hover:not(:disabled) { background: var(--orange); }
-  .btn-primary:disabled { background: #C8C6C2; color: #888480; cursor: not-allowed; }
-  .btn-primary svg { width: 16px; height: 16px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  /* ─── DATE FIELD ─── */
+  .date-group { display: flex; flex-direction: column; gap: 7px; margin-bottom: 26px; }
 
-  .btn-save {
-    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-    padding: 14px 28px; background: transparent; color: var(--green);
-    font-family: var(--mono); font-size: 12px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    cursor: pointer; border: 1px solid rgba(61,204,122,0.35); outline: none;
-    transition: all 0.18s; white-space: nowrap; line-height: 1; width: 100%;
-    clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+  /* ─── EXTRACT LOADER overlay in panel ─── */
+  .panel-loader-overlay {
+    display: none; position: absolute; inset: 0; background: var(--bg2); z-index: 10;
+    flex-direction: column; align-items: center; justify-content: center; gap: 22px;
   }
-  .btn-save:hover:not(:disabled) { background: rgba(61,204,122,0.1); border-color: rgba(61,204,122,0.7); }
-  .btn-save:disabled { opacity: 0.3; cursor: not-allowed; }
-  .btn-save svg { width: 15px; height: 15px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  .panel-loader-overlay.show { display: flex; }
 
-  .btn-ghost {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 12px 24px; background: transparent; color: var(--text-mid);
-    font-family: var(--mono); font-size: 12px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    cursor: pointer; border: 1px solid var(--line); outline: none;
-    transition: all 0.18s; white-space: nowrap; line-height: 1;
-    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+  /* ─── RESULT BOX ─── */
+  .result-box {
+    background: var(--bg); border: 1px solid var(--line-mid);
+    padding: 26px; min-height: 360px;
+    font-family: var(--mono); font-size: 13px; line-height: 1.85; color: var(--text-mid);
+    max-height: 500px; overflow-y: auto;
+    position: relative;
   }
-  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
-  .btn-ghost svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  .result-box h3 { font-size: 11px; font-weight: 700; color: var(--text); letter-spacing: 0.16em; text-transform: uppercase; margin: 22px 0 11px; padding-bottom: 7px; border-bottom: 1px solid var(--line-mid); }
+  .result-box h3:first-child { margin-top: 0; }
+  .result-box p { margin-bottom: 11px; }
+  .result-box strong { color: var(--text); }
+  .result-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--text-dim); text-align: center; }
+  .result-empty-icon { width: 52px; height: 52px; position: relative; display: flex; align-items: center; justify-content: center; }
+  .result-empty-icon::before { content:''; position:absolute; inset:0; background:var(--line-mid); clip-path:polygon(8px 0%,100% 0%,100% calc(100% - 8px),calc(100% - 8px) 100%,0% 100%,0% 8px); }
+  .result-empty-icon::after  { content:''; position:absolute; inset:1px; background:var(--bg3); clip-path:polygon(7px 0%,100% 0%,100% calc(100% - 7px),calc(100% - 7px) 100%,0% 100%,0% 7px); }
+  .result-empty-icon svg { position:relative; z-index:1; width:22px; height:22px; stroke:var(--text-dim); fill:none; }
+  .result-empty-label { font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-dim); }
 
-  .btn-row { display: flex; gap: 10px; margin-top: 24px; }
-  .btn-row .btn-primary { flex: 1; }
-
-  /* ─── LOADER ─── */
-  .loader-overlay {
-    display: none; position: absolute; inset: 0;
-    background: var(--bg2); z-index: 10;
-    flex-direction: column; align-items: center; justify-content: center; gap: 20px;
-    pointer-events: all;
-  }
-  .loader-overlay.show { display: flex; }
-  .loader-px { width: 40px; height: 40px; display: grid; grid-template-columns: repeat(4,1fr); grid-template-rows: repeat(4,1fr); gap: 3px; }
-  .loader-px span { background: var(--orange); animation: pixelSpin 1s step-end infinite; }
-  .loader-px span:nth-child(1)  { animation-delay: 0s; }
-  .loader-px span:nth-child(2)  { animation-delay: 0.0625s; }
-  .loader-px span:nth-child(3)  { animation-delay: 0.125s; }
-  .loader-px span:nth-child(4)  { animation-delay: 0.1875s; }
-  .loader-px span:nth-child(5)  { animation-delay: 0.25s; }
-  .loader-px span:nth-child(6)  { animation-delay: 0.3125s; }
-  .loader-px span:nth-child(7)  { animation-delay: 0.375s; }
-  .loader-px span:nth-child(8)  { animation-delay: 0.4375s; }
-  .loader-px span:nth-child(9)  { animation-delay: 0.5s; }
-  .loader-px span:nth-child(10) { animation-delay: 0.5625s; }
-  .loader-px span:nth-child(11) { animation-delay: 0.625s; }
-  .loader-px span:nth-child(12) { animation-delay: 0.6875s; }
-  .loader-px span:nth-child(13) { animation-delay: 0.75s; }
-  .loader-px span:nth-child(14) { animation-delay: 0.8125s; }
-  .loader-px span:nth-child(15) { animation-delay: 0.875s; }
-  .loader-px span:nth-child(16) { animation-delay: 0.9375s; }
-  .loader-msg { font-size: 12px; color: var(--text-dim); text-align: center; line-height: 1.7; letter-spacing: 0.05em; }
+  /* ─── INDICATORS TABLE ─── */
+  .ind-table-wrap { border:1px solid var(--line-mid); background:var(--bg); max-height:380px; overflow-y:auto; margin-bottom:18px; }
+  .ind-table { width:100%; border-collapse:collapse; }
+  .ind-table thead th { font-family:var(--mono); font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-dim); padding:11px 16px; text-align:left; border-bottom:1px solid var(--line-mid); background:var(--bg3); font-weight:700; white-space:nowrap; }
+  .ind-table thead th:first-child::before { content:'/ '; color:var(--orange); }
+  .ind-table tbody tr { border-bottom:1px solid var(--line); transition:background 0.12s; }
+  .ind-table tbody tr:last-child { border-bottom:none; }
+  .ind-table tbody tr:hover { background:var(--orange-pale); }
+  .ind-table tbody td { padding:9px 16px; vertical-align:middle; }
+  .ind-input { padding:7px 11px; height:36px; border:1px solid var(--line); border-left:2px solid var(--bg3); background:var(--bg); font-family:var(--mono); font-size:12px; color:var(--text); outline:none; transition:border-color 0.12s; width:100%; min-width:80px; }
+  .ind-input:focus { border-color:var(--orange); border-left-color:var(--orange); background:var(--white); }
+  .ind-del { width:30px; height:30px; background:transparent; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-dim); transition:color 0.12s; padding:0; }
+  .ind-del:hover { color:var(--red); }
+  .ind-del svg { width:13px; height:13px; stroke:currentColor; fill:none; }
+  .add-indicator-row { display:flex; gap:8px; margin-bottom:22px; }
+  .add-indicator-row input { flex:1; padding:9px 13px; height:40px; border:1px dashed var(--line-mid); border-left:2px dashed var(--bg3); background:var(--bg); font-family:var(--mono); font-size:12px; color:var(--text); outline:none; transition:border-color 0.12s; }
+  .add-indicator-row input:focus { border-color:var(--orange); border-style:solid; }
+  .add-indicator-row input::placeholder { color:var(--text-dim); }
+  .btn-add-row { padding:9px 16px; background:var(--bg3); border:1px solid var(--line-mid); font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; color:var(--text-mid); transition:all 0.15s; white-space:nowrap; clip-path:polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px); }
+  .btn-add-row:hover { background:var(--orange); color:#fff; border-color:var(--orange); }
+  .empty-indicators { text-align:center; padding:40px 24px; color:var(--text-dim); font-family:var(--mono); font-size:12px; line-height:1.9; }
+  .empty-indicators strong { display:block; font-size:13px; margin-bottom:9px; color:var(--text-mid); }
 
   /* ─── ERROR BANNER ─── */
-  .error-banner {
-    display: none; align-items: center; gap: 10px;
-    padding: 14px 16px; background: rgba(255,60,60,0.08);
-    border: 1px solid rgba(255,60,60,0.25);
-    color: var(--red); font-size: 12px; font-weight: 500; margin-bottom: 20px;
-  }
-  .error-banner.show { display: flex; }
-  .error-banner svg { width: 16px; height: 16px; stroke: currentColor; fill: none; flex-shrink: 0; }
+  .err-banner { display:none; align-items:center; gap:10px; padding:12px 16px; background:var(--red-pale); border:1px solid var(--red-border); color:var(--red); font-family:var(--mono); font-size:12px; margin-bottom:20px; animation:shake 0.35s ease; }
+  .err-banner.show { display:flex; }
+  .err-banner svg { width:16px; height:16px; stroke:currentColor; fill:none; flex-shrink:0; }
 
-  /* ─── STEP 2: INDICATORS EDITOR ─── */
-  .indicators-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 20px; gap: 16px;
-  }
-  .indicators-info {
-    font-size: 12px; color: var(--text-mid); line-height: 1.6; flex: 1;
-  }
-  .indicators-info strong { color: var(--text); }
-
-  .ind-table-wrap {
-    border: 1px solid var(--line); background: var(--bg); margin-bottom: 24px;
-    max-height: 400px; overflow-y: auto;
-  }
-  .ind-table {
-    width: 100%; border-collapse: collapse;
-  }
-  .ind-table thead th {
-    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--text-dim); padding: 10px 14px; text-align: left;
-    border-bottom: 1px solid var(--line); background: var(--bg2);
-    font-weight: 700; white-space: nowrap;
-  }
-  .ind-table thead th:first-child::before { content: '/ '; color: var(--orange); }
-  .ind-table tbody tr { border-bottom: 1px solid var(--line); transition: background 0.12s; }
-  .ind-table tbody tr:last-child { border-bottom: none; }
-  .ind-table tbody tr:hover { background: var(--orange-pale); }
-  .ind-table tbody td { padding: 8px 14px; vertical-align: middle; }
-
-  .ind-name {
-    font-size: 12px; font-weight: 600; color: var(--text);
-    min-width: 160px;
-  }
-  .ind-input {
-    padding: 6px 10px; height: 34px;
-    border: 1px solid var(--line); border-left: 2px solid var(--bg3);
-    background: var(--bg); font-family: var(--mono);
-    font-size: 12px; color: var(--text); outline: none;
-    transition: border-color 0.12s, border-left-color 0.12s;
-    width: 100%; min-width: 80px;
-  }
-  .ind-input:focus { border-color: var(--orange); border-left-color: var(--orange); background: #fff; }
-  .ind-unit {
-    font-size: 11px; color: var(--text-dim); white-space: nowrap; padding-left: 4px;
-    min-width: 60px;
-  }
-  .ind-del {
-    width: 28px; height: 28px; background: transparent; border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text-dim); transition: color 0.12s; flex-shrink: 0; padding: 0;
-  }
-  .ind-del:hover { color: var(--red); }
-  .ind-del svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
-
-  .add-indicator-row {
-    display: flex; gap: 8px; margin-bottom: 8px;
-  }
-  .add-indicator-row input {
-    flex: 1; padding: 8px 12px; height: 38px;
-    border: 1px dashed var(--line); border-left: 2px dashed var(--bg3);
-    background: var(--bg); font-family: var(--mono);
-    font-size: 12px; color: var(--text); outline: none;
-    transition: border-color 0.12s;
-  }
-  .add-indicator-row input:focus { border-color: var(--orange); border-style: solid; }
-  .add-indicator-row input::placeholder { color: var(--text-dim); }
-  .btn-add-row {
-    padding: 8px 14px; background: var(--bg3); border: 1px solid var(--line);
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
-    color: var(--text-mid); transition: all 0.15s; white-space: nowrap;
-    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
-  }
-  .btn-add-row:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
-
-  .empty-indicators {
-    text-align: center; padding: 40px 24px;
-    color: var(--text-dim); font-size: 12px; line-height: 1.8;
-  }
-  .empty-indicators strong { display: block; font-size: 13px; margin-bottom: 8px; color: var(--text-mid); }
-
-  /* ─── STEP 3: RESULT ─── */
-  .result-status-bar {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 20px; gap: 12px;
-  }
-  .result-title { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.05em; }
-  .status-pill {
-    display: inline-block; padding: 1px;
-    background: rgba(61,204,122,0.4);
-    clip-path: polygon(7px 0%, 100% 0%, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0% 100%, 0% 7px);
-  }
-  .status-pill span {
-    display: block; font-size: 10px; letter-spacing: 0.15em; padding: 4px 10px;
-    text-transform: uppercase; background: rgba(61,204,122,0.08); color: var(--green);
-    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
-  }
-  .result-box {
-    background: var(--bg); border: 1px solid var(--line); padding: 24px;
-    margin-bottom: 24px; font-size: 13px; line-height: 1.8; color: var(--text-mid);
-    max-height: 460px; overflow-y: auto;
-  }
-  .result-box h3 {
-    font-size: 11px; font-weight: 700; color: var(--text);
-    letter-spacing: 0.15em; text-transform: uppercase;
-    margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line);
-  }
-  .result-box h3:first-child { margin-top: 0; }
-  .result-box p { margin-bottom: 10px; }
-  .tag-normal {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(0,200,100,0.1); color: var(--green);
-    font-size: 10px; font-weight: 700; padding: 2px 6px; text-transform: uppercase;
-  }
-  .tag-high {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(255,60,60,0.1); color: var(--red);
-    font-size: 10px; font-weight: 700; padding: 2px 6px; text-transform: uppercase;
-  }
-  .tag-low {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(255,200,0,0.1); color: var(--yellow);
-    font-size: 10px; font-weight: 700; padding: 2px 6px; text-transform: uppercase;
-  }
+  /* ─── BTN ROW ─── */
+  .btn-row { display:flex; gap:11px; margin-top:22px; }
 
   /* ─── TOAST ─── */
-  .toast {
-    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: var(--text); color: #fff;
-    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
-    padding: 12px 24px; display: flex; align-items: center; gap: 10px;
-    opacity: 0; transition: all 0.3s ease; z-index: 200; pointer-events: none;
-    clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast svg { width: 14px; height: 14px; stroke: var(--green); fill: none; flex-shrink: 0; }
-
-  /* ─── FOOTER ─── */
-  footer {
-    padding: 32px 48px; display: flex; align-items: center; justify-content: space-between;
-    max-width: 1100px; margin: 0 auto; position: relative; z-index: 1;
-    border-top: 1px solid var(--line);
-  }
-  .footer-copy { font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em; }
-  .footer-disclaimer { font-size: 11px; color: var(--text-dim); letter-spacing: 0.03em; line-height: 1.6; max-width: 360px; text-align: center; }
+  .toast { position:fixed; bottom:36px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--text); color:#fff; font-family:var(--mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; padding:14px 28px; display:flex; align-items:center; gap:10px; opacity:0; transition:all 0.35s ease; z-index:400; pointer-events:none; clip-path:polygon(11px 0%,100% 0%,100% calc(100% - 11px),calc(100% - 11px) 100%,0% 100%,0% 11px); }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast svg { width:15px; height:15px; stroke:var(--green); fill:none; flex-shrink:0; }
 
   /* ─── RESPONSIVE ─── */
-  @media (max-width: 900px) {
-    header { padding: 0 24px; }
-    .page-wrap { padding: 72px 24px 60px; }
-    .card-wrap { clip-path: none; }
-    .card-inner { clip-path: none; }
-    .page-header { flex-direction: column; gap: 16px; }
-    footer { flex-direction: column; gap: 16px; text-align: center; padding: 28px 24px; }
-    .stepper { flex-wrap: wrap; gap: 8px; }
-    .step-line { display: none; }
+  @media (max-width:960px) {
+    .panels-grid { grid-template-columns:1fr; }
+    .cat-grid    { grid-template-columns:1fr 1fr; }
+    .panels-outer, .panels-grid { clip-path:none; }
+    .page { padding:78px 28px 52px; }
   }
-  @media (max-width: 600px) {
-    .form-row { grid-template-columns: 1fr; }
-    .card-inner { padding: 24px 20px; }
-    .page-title { font-size: 22px; }
-    .btn-row { flex-direction: column; }
-  }
-  @media (max-width: 500px) {
-    header { padding: 0 16px; height: 52px; }
-    .logo-text { font-size: 13px; }
+  @media (max-width:480px) {
+    .cat-grid { grid-template-columns:1fr; }
+    .up-panel { padding:26px 20px; }
+    .add-indicator-row { flex-wrap:wrap; }
   }
 </style>
 </head>
@@ -569,224 +135,138 @@
 <header>
   <a class="logo" href="cabinet.html">
     <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
         <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
       </svg>
     </div>
-    <div class="logo-text">Medeus<span>.</span></div>
+    <div class="logo-wordmark">
+      <div class="logo-text">Medeus<span>.</span></div>
+      <div class="logo-sub">Medical AI</div>
+    </div>
   </a>
   <div class="header-right">
-    <a href="cabinet.html" class="btn-nav-ghost">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
-      </svg>
-      <span>Кабинет</span>
+    <a href="cabinet.html" class="btn-nav btn-ghost">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Кабинет
     </a>
   </div>
 </header>
 
-<div class="page-wrap">
-
-  <!-- Page header -->
+<main class="page">
   <div class="page-header">
-    <div class="page-header-left">
-      <div class="page-breadcrumb">
-        <a href="cabinet.html">Кабинет</a>
-        <span>/</span>
-        <span>Новый анализ</span>
-      </div>
-      <div class="page-title">Загрузка анализа<span class="cursor-blink"></span></div>
-      <div class="page-sub" id="pageSubtitle">Загрузите документ и заполните поля</div>
+    <div>
+      <div class="page-title-label">Новый анализ</div>
+      <div class="page-title">Загрузка и анализ<span class="cursor-blink"></span></div>
     </div>
-    <div class="page-header-right">
-      <a href="cabinet.html" class="btn-nav-ghost">
-        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 5l-7 7 7 7"/>
-        </svg>
-        <span>Назад</span>
-      </a>
-    </div>
+    <div class="page-meta" id="pageSubtitleEl">Шаг 1 из 3</div>
   </div>
 
-  <!-- Stepper -->
-  <div class="stepper">
-    <div class="step-item active" id="si1">
-      <div class="step-num">1</div>
-      <span>Загрузка</span>
-    </div>
+  <!-- STEPPER -->
+  <div class="stepper" id="stepper" style="margin-bottom:36px;">
+    <div class="step-item active" id="si1"><div class="step-num-badge">1</div><span>Загрузка</span></div>
     <div class="step-line"></div>
-    <div class="step-item" id="si2">
-      <div class="step-num">2</div>
-      <span>Проверка показателей</span>
-    </div>
+    <div class="step-item" id="si2"><div class="step-num-badge">2</div><span>Показатели</span></div>
     <div class="step-line"></div>
-    <div class="step-item" id="si3">
-      <div class="step-num">3</div>
-      <span>Анализ и сохранение</span>
-    </div>
+    <div class="step-item" id="si3"><div class="step-num-badge">3</div><span>Результат</span></div>
   </div>
 
-  <!-- ════════════════════════ STEP 1 ════════════════════════ -->
+  <!-- ═══════════ STEP 1 ═══════════ -->
   <div id="step1Panel">
-    <div class="card-wrap">
-      <div class="card-inner" style="position:relative;">
+    <div class="panels-outer">
+      <div class="panels-grid">
 
-        <!-- Loader overlay -->
-        <div class="loader-overlay" id="step1Loader">
-          <div class="loader-px">
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
+        <!-- Left: file + meta -->
+        <div class="up-panel">
+          <div class="panel-loader-overlay" id="step1Loader">
+            <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="loader-text">Извлекаем показатели...<br><span>Обычно 5–15 секунд</span></div>
           </div>
-          <div class="loader-msg">Извлекаем показатели из документа...<br>Обычно 5–15 секунд</div>
-        </div>
 
-        <div class="panel-label">Документ и данные</div>
+          <div class="panel-label">Файл и данные</div>
 
-        <!-- Error -->
-        <div class="error-banner" id="step1Error">
-          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          <span id="step1ErrorText">Ошибка</span>
-        </div>
-
-        <!-- Upload zone -->
-        <div class="upload-zone" id="uploadZone">
-          <input type="file" id="fileInput" accept="image/*,.pdf">
-          <div class="upload-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
+          <div class="err-banner" id="step1Error">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="step1ErrorText"></span>
           </div>
-          <div class="upload-title">Загрузите результаты анализов</div>
-          <div class="upload-sub">Перетащите файл или нажмите для выбора</div>
-          <div class="upload-formats"><span>PNG</span>·<span>JPG</span>·<span>JPEG</span>·<span>PDF</span></div>
-        </div>
 
-        <!-- File preview -->
-        <div class="file-preview" id="filePreview">
-          <div class="file-preview-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
+          <!-- Upload zone -->
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" accept="image/*,.pdf">
+            <div class="upload-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="upload-title">Загрузите результаты анализов</div>
+            <div class="upload-sub">Перетащите или нажмите для выбора</div>
+            <div class="upload-formats"><span>PNG</span>·<span>JPG</span>·<span>PDF</span></div>
           </div>
-          <div class="file-preview-info">
-            <div class="file-preview-name" id="fileName">—</div>
-            <div class="file-preview-size" id="fileSize">—</div>
+
+          <div class="file-preview" id="filePreview">
+            <div class="file-preview-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <div class="file-preview-info">
+              <div class="file-preview-name" id="fileName">—</div>
+              <div class="file-preview-size" id="fileSize">—</div>
+            </div>
+            <button class="file-remove" id="fileRemove" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
-          <button class="file-remove" id="fileRemove" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
 
-        <!-- Fields -->
-        <div class="form-group">
-          <label>Тип анализа</label>
-          <div class="category-grid" id="categoryGrid">
-
-            <div class="cat-row">
-              <button type="button" class="cat-card" data-value="Кровь">
-                <div class="cat-icon">
-                  <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-                </div>
-                <div class="cat-name">Кровь</div>
-              </button>
-              <div class="cat-info-btn-wrap">
-                <button type="button" class="cat-info-btn">
-                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                </button>
-              </div>
-              <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Кровь</span><br>ОАК · биохимия · коагулограмма · онкомаркеры</div></div>
-            </div>
-
-            <div class="cat-row">
-              <button type="button" class="cat-card" data-value="Гормоны">
-                <div class="cat-icon">
-                  <svg viewBox="0 0 24 24"><path d="M2 12c1.5-4 3-6 4.5-6S9 9 10.5 12s3 6 4.5 6 3-2 4.5-6" fill="none"/><circle cx="6.5" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="17.5" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg>
-                </div>
-                <div class="cat-name">Гормоны</div>
-              </button>
-              <div class="cat-info-btn-wrap">
-                <button type="button" class="cat-info-btn">
-                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                </button>
-              </div>
-              <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Гормоны</span><br>ТТГ · половые · надпочечники · инсулин</div></div>
-            </div>
-
-            <div class="cat-row">
-              <button type="button" class="cat-card" data-value="Инфекции">
-                <div class="cat-icon">
-                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
-                </div>
-                <div class="cat-name">Инфекции</div>
-              </button>
-              <div class="cat-info-btn-wrap">
-                <button type="button" class="cat-info-btn">
-                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                </button>
-              </div>
-              <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Инфекции</span><br>ПЦР · антитела · гепатиты · ЗППП</div></div>
-            </div>
-
-            <div class="cat-row">
-              <button type="button" class="cat-card" data-value="Биоматериалы">
-                <div class="cat-icon">
-                  <svg viewBox="0 0 24 24"><path d="M9 3h6v11l3.5 4.5A1 1 0 0 1 17.7 20H6.3a1 1 0 0 1-.8-1.5L9 14V3z"/><line x1="9" y1="9" x2="15" y2="9"/></svg>
-                </div>
-                <div class="cat-name">Биоматериалы</div>
-              </button>
-              <div class="cat-info-btn-wrap">
-                <button type="button" class="cat-info-btn">
-                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                </button>
-              </div>
-              <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Биоматериалы</span><br>Моча · кал · спермограмма · мазки</div></div>
-            </div>
-
-            <div class="cat-row">
-              <button type="button" class="cat-card" data-value="Диагностика">
-                <div class="cat-icon">
-                  <svg viewBox="0 0 24 24"><polyline points="2 12 6 12 8 5 11 19 14 9 16 14 18 12 22 12"/></svg>
-                </div>
-                <div class="cat-name">Диагностика</div>
-              </button>
-              <div class="cat-info-btn-wrap">
-                <button type="button" class="cat-info-btn">
-                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                </button>
-              </div>
-              <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Диагностика</span><br>ЭКГ · УЗИ · рентген · КТ · МРТ</div></div>
-            </div>
-
-          </div>
-          <input type="hidden" id="analysisName">
-        </div>
-
-        <div class="form-row" style="margin-top:16px;">
-          <div class="form-group" style="margin-bottom:0;">
-            <label for="analysisDate">Дата сдачи</label>
+          <div class="date-group">
+            <label for="analysisDate">Дата сдачи анализа</label>
             <input type="date" id="analysisDate">
           </div>
-          <div class="form-group" style="margin-bottom:0; justify-content:flex-end;">
-            <label style="visibility:hidden;">—</label>
-            <div style="font-size:11px; color:var(--text-dim); letter-spacing:0.05em; line-height:1.6; padding-top:4px;">
-              Нужна для<br>отслеживания динамики
-            </div>
-          </div>
         </div>
 
-        <div class="btn-row">
-          <button class="btn-primary" id="extractBtn">
-            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
+        <!-- Right: categories -->
+        <div class="up-panel">
+          <div class="panel-label">Тип анализа</div>
+
+          <div class="category-section">
+            <div class="cat-section-label">Выберите категорию</div>
+            <div class="cat-grid">
+              <button type="button" class="cat-card" data-value="Кровь">
+                <div class="cat-icon">🩸</div>
+                <div class="cat-name">Кровь</div>
+              </button>
+              <button type="button" class="cat-card" data-value="Гормоны">
+                <div class="cat-icon">⚗️</div>
+                <div class="cat-name">Гормоны</div>
+              </button>
+              <button type="button" class="cat-card" data-value="Инфекции">
+                <div class="cat-icon">🧬</div>
+                <div class="cat-name">Инфекции</div>
+              </button>
+              <button type="button" class="cat-card" data-value="Биоматериалы">
+                <div class="cat-icon">🔬</div>
+                <div class="cat-name">Биоматериалы</div>
+              </button>
+              <button type="button" class="cat-card" data-value="Диагностика">
+                <div class="cat-icon">🩺</div>
+                <div class="cat-name">Диагностика</div>
+              </button>
+              <button type="button" class="cat-card" data-value="Биохимия">
+                <div class="cat-icon">🫀</div>
+                <div class="cat-name">Биохимия</div>
+              </button>
+              <button type="button" class="cat-card" data-value="Иммунология">
+                <div class="cat-icon">🛡️</div>
+                <div class="cat-name">Иммунология</div>
+              </button>
+              <button type="button" class="cat-card" data-value="Витамины">
+                <div class="cat-icon">💊</div>
+                <div class="cat-name">Витамины</div>
+              </button>
+            </div>
+          </div>
+
+          <div class="date-group" style="margin-top:auto;">
+            <label for="analysisNameDisplay">Выбрано</label>
+            <input type="text" id="analysisNameDisplay" placeholder="— выберите категорию —" readonly style="cursor:pointer;border-left-color:var(--orange);">
+            <input type="hidden" id="analysisName">
+          </div>
+
+          <button id="extractBtn" disabled type="button" class="btn-primary btn-full" style="margin-top:14px;">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <span>Извлечь показатели</span>
           </button>
         </div>
@@ -795,577 +275,296 @@
     </div>
   </div>
 
-  <!-- ════════════════════════ STEP 2 ════════════════════════ -->
+  <!-- ═══════════ STEP 2 ═══════════ -->
   <div id="step2Panel" style="display:none;">
-    <div class="card-wrap">
-      <div class="card-inner" style="position:relative;">
-
-        <!-- Loader overlay -->
-        <div class="loader-overlay" id="step2Loader">
-          <div class="loader-px">
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-          </div>
-          <div class="loader-msg">Анализируем показатели и формируем отчёт...<br>Обычно 10–20 секунд</div>
+    <div class="panels-outer">
+      <div class="up-panel panel-full" style="position:relative;">
+        <div class="panel-loader-overlay" id="step2Loader">
+          <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="loader-text">ИИ анализирует показатели...<br><span>До 30 секунд</span></div>
         </div>
 
         <div class="panel-label">Проверка показателей</div>
 
-        <!-- Error -->
-        <div class="error-banner" id="step2Error">
-          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          <span id="step2ErrorText">Ошибка</span>
+        <div class="err-banner" id="step2Error">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="step2ErrorText"></span>
         </div>
 
-        <div class="indicators-header">
-          <div class="indicators-info">
-            <strong>Проверьте и при необходимости отредактируйте показатели</strong><br>
-            ИИ извлёк их из документа. Исправьте ошибки, удалите лишнее или добавьте пропущенное — и нажмите «Продолжить».
-          </div>
-        </div>
+        <p style="font-family:var(--mono);font-size:12px;color:var(--text-mid);line-height:1.75;margin-bottom:20px;">
+          <strong style="color:var(--text);">Проверьте и при необходимости отредактируйте показатели.</strong><br>
+          Исправьте ошибки, удалите лишнее или добавьте пропущенное.
+        </p>
 
-        <!-- Indicators table -->
         <div class="ind-table-wrap">
           <table class="ind-table">
-            <thead>
-              <tr>
-                <th>Показатель</th>
-                <th>Значение</th>
-                <th>Единица</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="indicatorsBody">
-            </tbody>
+            <thead><tr><th>Показатель</th><th>Значение</th><th>Единица</th><th></th></tr></thead>
+            <tbody id="indicatorsBody"></tbody>
           </table>
         </div>
 
-        <!-- Add row -->
         <div class="add-indicator-row">
           <input type="text" id="newIndName" placeholder="Название показателя">
-          <input type="text" id="newIndValue" placeholder="Значение" style="max-width:100px;">
-          <input type="text" id="newIndUnit"  placeholder="Ед." style="max-width:80px;">
-          <button class="btn-add-row" id="addIndBtn">+ Добавить</button>
+          <input type="text" id="newIndValue" placeholder="Значение" style="max-width:120px;">
+          <input type="text" id="newIndUnit" placeholder="Ед." style="max-width:90px;">
+          <button class="btn-add-row" id="addIndBtn" type="button">+ Добавить</button>
         </div>
 
         <div class="btn-row">
-          <button class="btn-ghost" id="backToStep1Btn">
-            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 12H5M12 5l-7 7 7 7"/>
-            </svg>
+          <button class="btn-secondary" id="backToStep1Btn" type="button">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
             Назад
           </button>
-          <button class="btn-primary" id="continueBtn">
-            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 12h6m-3-3 3 3-3 3"/><circle cx="12" cy="12" r="10"/>
-            </svg>
-            <span>Продолжить — получить анализ</span>
+          <button class="btn-primary" id="continueBtn" type="button" style="flex:1;">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6m-3-3 3 3-3 3"/><circle cx="12" cy="12" r="10"/></svg>
+            <span>Получить анализ</span>
           </button>
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- ════════════════════════ STEP 3 ════════════════════════ -->
+  <!-- ═══════════ STEP 3 ═══════════ -->
   <div id="step3Panel" style="display:none;">
-    <div class="card-wrap">
-      <div class="card-inner">
+    <div class="panels-outer">
+      <div class="panels-grid">
 
-        <div class="panel-label">Результат анализа</div>
-
-        <div class="result-status-bar">
-          <div class="result-title">Расшифровка и рекомендации</div>
-          <div class="status-pill"><span>Готово</span></div>
+        <!-- Left: result -->
+        <div class="up-panel">
+          <div class="panel-label">Результат анализа ИИ</div>
+          <div class="result-box" id="resultBox">
+            <div class="result-empty">
+              <div class="result-empty-icon"><svg viewBox="0 0 24 24" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div class="result-empty-label">Ожидание</div>
+            </div>
+          </div>
         </div>
 
-        <div class="result-box" id="resultBox"></div>
+        <!-- Right: save + info -->
+        <div class="up-panel" style="display:flex;flex-direction:column;gap:20px;">
+          <div class="panel-label">Сохранение</div>
 
-        <div class="btn-row">
-          <button class="btn-ghost" id="backToStep2Btn">
-            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 12H5M12 5l-7 7 7 7"/>
-            </svg>
-            Назад
-          </button>
-          <button class="btn-save" id="saveBtn">
-            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-              <polyline points="17 21 17 13 7 13 7 21"/>
-              <polyline points="7 3 7 8 15 8"/>
-            </svg>
-            <span>Сохранить в мои анализы</span>
-          </button>
+          <div style="background:var(--bg);padding:20px;border-left:3px solid var(--orange);">
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Анализ</div>
+            <div style="font-family:var(--sans);font-size:15px;font-weight:600;color:var(--text);" id="saveCategoryLabel">—</div>
+          </div>
+
+          <div style="background:var(--bg);padding:20px;border-left:3px solid var(--bg3);">
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Файл</div>
+            <div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="saveFileLabel">—</div>
+          </div>
+
+          <div style="background:var(--green-pale);padding:18px;border:1px solid var(--green-border);">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--green);line-height:1.7;">Анализ будет сохранён в ваш личный кабинет. Показатели войдут в общую сводку состояния здоровья.</div>
+          </div>
+
+          <div style="flex:1;"></div>
+
+          <div id="saveErrBanner" class="err-banner">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="saveErrText"></span>
+          </div>
+
+          <div style="display:flex;gap:10px;">
+            <button class="btn-secondary" id="backToStep2Btn" type="button">
+              <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+              Назад
+            </button>
+            <button class="btn-save" id="saveBtn" type="button">
+              <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <span>Сохранить в кабинет</span>
+            </button>
+          </div>
         </div>
 
       </div>
     </div>
   </div>
-
-</div>
+</main>
 
 <footer>
-  <div class="footer-copy">© 2026 Medeus</div>
+  <div class="footer-logo">Medeus<span>.</span></div>
   <div class="footer-disclaimer">Сервис предназначен только для информационных целей. Не является медицинским заключением.</div>
-  <div class="footer-copy" style="visibility:hidden;">pad</div>
+  <div class="footer-copy">© 2026 Medeus</div>
 </footer>
 
 <div class="toast" id="toast">
-  <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
+  <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
   <span>Анализ добавлен в кабинет</span>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase.js"></script>
 <script>
-// ─── AUTH ───
-let currentSession = null;
-let userProfile    = null;
+let currentSession=null,userProfile=null;
+(async()=>{currentSession=await requireAuth();if(currentSession)await loadUserProfile(currentSession);})();
+async function loadUserProfile(s){try{const c=getSupabase();const{data}=await c.from('profiles').select('gender,birth_date,full_name').eq('id',s.user.id).single();if(data)userProfile=data;}catch(e){console.warn('Профиль:',e);}}
+function calcAge(bd){if(!bd)return'';const t=new Date(),b=new Date(bd);let a=t.getFullYear()-b.getFullYear();const m=t.getMonth()-b.getMonth();if(m<0||(m===0&&t.getDate()<b.getDate()))a--;return String(a);}
 
-(async () => {
-  currentSession = await requireAuth();
-  if (currentSession) await loadUserProfile(currentSession);
-})();
+const fileInput=document.getElementById('fileInput');
+const uploadZone=document.getElementById('uploadZone');
+const filePreview=document.getElementById('filePreview');
+const fileNameEl=document.getElementById('fileName');
+const fileSizeEl=document.getElementById('fileSize');
+const fileRemove=document.getElementById('fileRemove');
+const analysisDate=document.getElementById('analysisDate');
+const analysisName=document.getElementById('analysisName');
+const analysisNameDisplay=document.getElementById('analysisNameDisplay');
+const extractBtn=document.getElementById('extractBtn');
+const continueBtn=document.getElementById('continueBtn');
+const saveBtn=document.getElementById('saveBtn');
+const indicatorsBody=document.getElementById('indicatorsBody');
+const resultBox=document.getElementById('resultBox');
+const toast=document.getElementById('toast');
+const s1Loader=document.getElementById('step1Loader');
+const s2Loader=document.getElementById('step2Loader');
+const panel1=document.getElementById('step1Panel');
+const panel2=document.getElementById('step2Panel');
+const panel3=document.getElementById('step3Panel');
 
-async function loadUserProfile(session) {
-  try {
-    const client = getSupabase();
-    const { data, error } = await client
-      .from('profiles')
-      .select('gender, birth_date, full_name')
-      .eq('id', session.user.id)
-      .single();
-    if (!error && data) userProfile = data;
-  } catch (e) { console.warn('Профиль не загружен:', e); }
+let selectedFile=null,indicators=[],analysisResult=null;
+
+uploadZone.addEventListener('click',()=>fileInput.click());
+uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.classList.add('dragover');});
+uploadZone.addEventListener('dragleave',()=>uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop',e=>{e.preventDefault();uploadZone.classList.remove('dragover');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change',()=>{if(fileInput.files[0])handleFile(fileInput.files[0]);});
+
+function formatBytes(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
+function handleFile(file){
+  if(file.size>10*1024*1024){showError(1,`Файл слишком большой: ${formatBytes(file.size)}. Максимум — 10 МБ.`);fileInput.value='';return;}
+  selectedFile=file;fileNameEl.textContent=file.name;fileSizeEl.textContent=formatBytes(file.size);
+  uploadZone.style.display='none';filePreview.classList.add('show');hideError(1);checkStep1();
 }
+fileRemove.addEventListener('click',()=>{selectedFile=null;fileInput.value='';filePreview.classList.remove('show');uploadZone.style.display='';hideError(1);checkStep1();});
 
-function calcAge(birthDate) {
-  if (!birthDate) return '';
-  const today = new Date(), bd = new Date(birthDate);
-  let age = today.getFullYear() - bd.getFullYear();
-  const m = today.getMonth() - bd.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) age--;
-  return String(age);
-}
+function checkStep1(){extractBtn.disabled=!(selectedFile&&analysisName.value.trim()&&analysisDate.value);}
+analysisDate.addEventListener('change',checkStep1);
 
-// ─── REFS ───
-const fileInput      = document.getElementById('fileInput');
-const uploadZone     = document.getElementById('uploadZone');
-const filePreview    = document.getElementById('filePreview');
-const fileNameEl     = document.getElementById('fileName');
-const fileSizeEl     = document.getElementById('fileSize');
-const fileRemove     = document.getElementById('fileRemove');
-const analysisName   = document.getElementById('analysisName');
-const analysisDate   = document.getElementById('analysisDate');
-const extractBtn     = document.getElementById('extractBtn');
-const continueBtn    = document.getElementById('continueBtn');
-const saveBtn        = document.getElementById('saveBtn');
-const indicatorsBody = document.getElementById('indicatorsBody');
-const resultBox      = document.getElementById('resultBox');
-const toast          = document.getElementById('toast');
-const s1Error        = document.getElementById('step1Error');
-const s1ErrorText    = document.getElementById('step1ErrorText');
-const s2Error        = document.getElementById('step2Error');
-const s2ErrorText    = document.getElementById('step2ErrorText');
-const s1Loader       = document.getElementById('step1Loader');
-const s2Loader       = document.getElementById('step2Loader');
-const panel1         = document.getElementById('step1Panel');
-const panel2         = document.getElementById('step2Panel');
-const panel3         = document.getElementById('step3Panel');
-
-let selectedFile   = null;
-let indicators     = [];
-let analysisResult = null;
-
-// ─── FILE UPLOAD ───
-uploadZone.addEventListener('click', () => fileInput.click());
-uploadZone.addEventListener('dragover',  e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
-uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
-uploadZone.addEventListener('drop', e => {
-  e.preventDefault(); uploadZone.classList.remove('dragover');
-  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-});
-fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
-
-function formatBytes(b) {
-  if (b < 1024) return b + ' B';
-  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
-  return (b/(1024*1024)).toFixed(1) + ' MB';
-}
-
-function handleFile(file) {
-  const MAX_SIZE = 10 * 1024 * 1024;
-  if (file.size > MAX_SIZE) {
-    showError(1, `Файл слишком большой: ${formatBytes(file.size)}. Максимум — 10 МБ.`);
-    fileInput.value = '';
-    return;
-  }
-  selectedFile = file;
-  fileNameEl.textContent = file.name;
-  fileSizeEl.textContent = formatBytes(file.size);
-  uploadZone.style.display = 'none';
-  filePreview.classList.add('show');
-  hideError(1);
-  checkStep1(); // разблокирует кнопку
-}
-
-fileRemove.addEventListener('click', () => {
-  selectedFile = null;
-  fileInput.value = '';
-  filePreview.classList.remove('show');
-  uploadZone.style.display = '';
-  hideError(1);
-  checkStep1();
-});
-
-function checkStep1() {
-  // Для извлечения показателей нужен только файл.
-  // Для извлечения нужны файл + выбранная категория + дата
-  extractBtn.disabled = !(selectedFile && analysisName.value.trim() && analysisDate.value);
-}
-analysisDate.addEventListener('change', checkStep1);
-
-// ─── CATEGORY CARDS ───
-document.querySelectorAll('.cat-card').forEach(card => {
-  card.addEventListener('click', () => {
-    document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
+document.querySelectorAll('.cat-card').forEach(card=>{
+  card.addEventListener('click',()=>{
+    document.querySelectorAll('.cat-card').forEach(c=>c.classList.remove('selected'));
     card.classList.add('selected');
-    analysisName.value = card.dataset.value;
-    checkStep1();
+    analysisName.value=card.dataset.value;
+    analysisNameDisplay.value=card.dataset.value;
+    hideError(1);checkStep1();
   });
 });
 
-// ─── INFO TOOLTIP TOGGLE ───
-document.querySelectorAll('.cat-info-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const row = btn.closest('.cat-row');
-    const isOpen = row.classList.contains('tip-open');
-    document.querySelectorAll('.cat-row').forEach(r => r.classList.remove('tip-open'));
-    if (!isOpen) row.classList.add('tip-open');
-  });
-});
-
-document.addEventListener('click', () => {
-  document.querySelectorAll('.cat-row').forEach(r => r.classList.remove('tip-open'));
-});
-
-// ─── STEPPER ───
-function setStep(n) {
-  for (let i = 1; i <= 3; i++) {
-    const el = document.getElementById(`si${i}`);
-    el.className = 'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
-  }
-  panel1.style.display = n === 1 ? '' : 'none';
-  panel2.style.display = n === 2 ? '' : 'none';
-  panel3.style.display = n === 3 ? '' : 'none';
-
-  const subtitles = {
-    1: 'Загрузите документ и заполните поля',
-    2: 'Проверьте и отредактируйте показатели',
-    3: 'Результат анализа — сохраните в кабинет',
-  };
-  document.getElementById('pageSubtitle').textContent = subtitles[n];
+function showError(panel,msg){
+  if(panel===1){document.getElementById('step1ErrorText').textContent=msg;document.getElementById('step1Error').classList.add('show');}
+  else if(panel===2){document.getElementById('step2ErrorText').textContent=msg;document.getElementById('step2Error').classList.add('show');}
+  else{document.getElementById('saveErrText').textContent=msg;document.getElementById('saveErrBanner').classList.add('show');}
+}
+function hideError(panel){
+  if(panel===1)document.getElementById('step1Error').classList.remove('show');
+  else if(panel===2)document.getElementById('step2Error').classList.remove('show');
+  else document.getElementById('saveErrBanner').classList.remove('show');
 }
 
-// ─── ERROR HELPERS ───
-function showError(panel, msg) {
-  if (panel === 1) { s1ErrorText.textContent = msg; s1Error.classList.add('show'); }
-  else             { s2ErrorText.textContent = msg; s2Error.classList.add('show'); }
+function setStep(n){
+  const subtitles={1:'Шаг 1 из 3 — загрузите документ',2:'Шаг 2 из 3 — проверьте показатели',3:'Шаг 3 из 3 — результат готов'};
+  document.getElementById('pageSubtitleEl').textContent=subtitles[n]||'';
+  for(let i=1;i<=3;i++){const el=document.getElementById('si'+i);el.className='step-item'+(i<n?' done':i===n?' active':'');}
+  panel1.style.display=n===1?'':'none';
+  panel2.style.display=n===2?'':'none';
+  panel3.style.display=n===3?'':'none';
 }
-function hideError(panel) {
-  if (panel === 1) s1Error.classList.remove('show');
-  else             s2Error.classList.remove('show');
-}
 
-// ─── STEP 1 → STEP 2: валидация → проверка дубликата → Extract ───
-extractBtn.addEventListener('click', async () => {
-  if (!selectedFile) return;
-
-  // Валидация полей ДО обращения к ИИ
-  if (!analysisName.value.trim()) {
-    showError(1, 'Выберите тип анализа.');
-    return;
-  }
-  if (!analysisDate.value) {
-    showError(1, 'Укажите дату сдачи анализа.');
-    return;
-  }
-
-  const session = await getCurrentSession();
-  if (!session) { window.location.href = 'auth.html'; return; }
-
-  hideError(1);
-  s1Loader.classList.add('show');
-  extractBtn.disabled = true;
-
-  try {
-    // ── 1. Сначала проверяем дубликат — без ИИ, только хэш ──
-    const dupForm = new FormData();
-    dupForm.append('file', selectedFile);
-
-    const dupResp = await fetch(`${API_BASE}/check-duplicate`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${session.access_token}` },
-      body: dupForm,
-    });
-    const dupData = await dupResp.json();
-    if (dupResp.status === 401) { window.location.href = 'auth.html'; return; }
-    if (!dupResp.ok) throw new Error(dupData.error || `Ошибка сервера: ${dupResp.status}`);
-
-    if (dupData.duplicate) {
-      showError(1, dupData.message);
-      return;
-    }
-
-    // ── 2. Дубликата нет — отправляем в ИИ ──
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-
-    const resp = await fetch(`${API_BASE}/extract`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${session.access_token}` },
-      body: formData,
-    });
-
-    const data = await resp.json();
-    if (resp.status === 401) { window.location.href = 'auth.html'; return; }
-    if (!resp.ok) throw new Error(data.error || `Ошибка сервера: ${resp.status}`);
-
-    indicators = data.indicators || [];
-    renderIndicators();
-    setStep(2);
-  } catch (err) {
-    showError(1, err.message || 'Не удалось подключиться к серверу');
-  } finally {
-    s1Loader.classList.remove('show');
-    extractBtn.disabled = false;
-    checkStep1();
-  }
+// STEP 1 → 2
+extractBtn.addEventListener('click',async()=>{
+  if(!selectedFile)return;
+  if(!analysisName.value.trim()){showError(1,'Выберите тип анализа.');return;}
+  if(!analysisDate.value){showError(1,'Укажите дату сдачи анализа.');return;}
+  const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
+  hideError(1);s1Loader.classList.add('show');extractBtn.disabled=true;
+  try{
+    const dupFd=new FormData();dupFd.append('file',selectedFile);
+    const dupR=await fetch(`${API_BASE}/check-duplicate`,{method:'POST',headers:{'Authorization':`Bearer ${session.access_token}`},body:dupFd});
+    const dupD=await dupR.json();
+    if(dupR.status===401){window.location.href='auth.html';return;}
+    if(!dupR.ok)throw new Error(dupD.error||`Ошибка: ${dupR.status}`);
+    if(dupD.duplicate){showError(1,dupD.message);return;}
+    const fd=new FormData();fd.append('file',selectedFile);
+    const resp=await fetch(`${API_BASE}/extract`,{method:'POST',headers:{'Authorization':`Bearer ${session.access_token}`},body:fd});
+    const data=await resp.json();
+    if(resp.status===401){window.location.href='auth.html';return;}
+    if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
+    indicators=data.indicators||[];renderIndicators();setStep(2);
+  }catch(err){showError(1,err.message||'Не удалось подключиться к серверу');}
+  finally{s1Loader.classList.remove('show');extractBtn.disabled=false;checkStep1();}
 });
 
-// ─── RENDER INDICATORS TABLE ───
-function renderIndicators() {
-  if (indicators.length === 0) {
-    indicatorsBody.innerHTML = `
-      <tr><td colspan="4">
-        <div class="empty-indicators">
-          <strong>Показатели не найдены</strong>
-          ИИ не обнаружил числовых показателей в документе.<br>
-          Добавьте их вручную с помощью формы ниже.
-        </div>
-      </td></tr>`;
-    return;
-  }
-  indicatorsBody.innerHTML = '';
-  indicators.forEach((ind, i) => {
-    const tr = document.createElement('tr');
-    tr.dataset.idx = i;
-    tr.innerHTML = `
-      <td class="ind-name">
-        <input class="ind-input" data-field="name" value="${escHtml(ind.name)}" placeholder="Название" style="min-width:140px;">
-      </td>
-      <td>
-        <input class="ind-input" data-field="value" value="${escHtml(ind.value)}" placeholder="0.00" style="max-width:100px;">
-      </td>
-      <td>
-        <input class="ind-input ind-unit" data-field="unit" value="${escHtml(ind.unit || '')}" placeholder="ед." style="max-width:80px;">
-      </td>
-      <td>
-        <button class="ind-del" data-idx="${i}" title="Удалить">
-          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-          </svg>
-        </button>
-      </td>`;
-
-    // Sync edits back to indicators array
-    tr.querySelectorAll('.ind-input').forEach(inp => {
-      inp.addEventListener('input', () => {
-        indicators[i][inp.dataset.field] = inp.value;
-      });
-    });
-
-    // Delete row
-    tr.querySelector('.ind-del').addEventListener('click', () => {
-      indicators.splice(i, 1);
-      renderIndicators();
-    });
-
+function escHtml(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function renderIndicators(){
+  if(!indicators.length){indicatorsBody.innerHTML='<tr><td colspan="4"><div class="empty-indicators"><strong>Показатели не найдены</strong>Добавьте вручную с помощью формы ниже.</div></td></tr>';return;}
+  indicatorsBody.innerHTML='';
+  indicators.forEach((ind,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><input class="ind-input" data-field="name" value="${escHtml(ind.name)}" style="min-width:140px;"></td><td><input class="ind-input" data-field="value" value="${escHtml(ind.value)}" style="max-width:100px;"></td><td><input class="ind-input" data-field="unit" value="${escHtml(ind.unit||'')}" style="max-width:80px;"></td><td><button class="ind-del" data-idx="${i}"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></td>`;
+    tr.querySelectorAll('.ind-input').forEach(inp=>inp.addEventListener('input',()=>{indicators[i][inp.dataset.field]=inp.value;}));
+    tr.querySelector('.ind-del').addEventListener('click',()=>{indicators.splice(i,1);renderIndicators();});
     indicatorsBody.appendChild(tr);
   });
 }
 
-function escHtml(str) {
-  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ─── ADD INDICATOR ───
-document.getElementById('addIndBtn').addEventListener('click', () => {
-  const name  = document.getElementById('newIndName').value.trim();
-  const value = document.getElementById('newIndValue').value.trim();
-  const unit  = document.getElementById('newIndUnit').value.trim();
-  if (!name || !value) return;
-  indicators.push({ name, value, unit });
-  renderIndicators();
-  document.getElementById('newIndName').value  = '';
-  document.getElementById('newIndValue').value = '';
-  document.getElementById('newIndUnit').value  = '';
+document.getElementById('addIndBtn').addEventListener('click',()=>{
+  const name=document.getElementById('newIndName').value.trim(),value=document.getElementById('newIndValue').value.trim(),unit=document.getElementById('newIndUnit').value.trim();
+  if(!name||!value)return;indicators.push({name,value,unit});renderIndicators();
+  ['newIndName','newIndValue','newIndUnit'].forEach(id=>{document.getElementById(id).value='';});
 });
+['newIndName','newIndValue','newIndUnit'].forEach(id=>{document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('addIndBtn').click();});});
 
-// Enter in add-row fields
-['newIndName','newIndValue','newIndUnit'].forEach(id => {
-  document.getElementById(id).addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('addIndBtn').click();
-  });
-});
+document.getElementById('backToStep1Btn').addEventListener('click',()=>{hideError(2);setStep(1);});
 
-// ─── BACK STEP 2 → 1 ───
-document.getElementById('backToStep1Btn').addEventListener('click', () => {
-  hideError(2);
-  setStep(1);
-});
-
-// ─── STEP 2 → STEP 3: Analyze indicators only (no file, no save) ───
-continueBtn.addEventListener('click', async () => {
-  if (indicators.length === 0) {
-    showError(2, 'Добавьте хотя бы один показатель перед продолжением.');
-    return;
-  }
-  const session = await getCurrentSession();
-  if (!session) { window.location.href = 'auth.html'; return; }
-
-  const age    = calcAge(userProfile?.birth_date) || '0';
-  const gender = userProfile?.gender || 'не указан';
-
-  hideError(2);
-  s2Loader.classList.add('show');
-  continueBtn.disabled = true;
-
-  try {
-    // Отправляем ТОЛЬКО показатели — без файла, без сохранения
-    const formData = new FormData();
-    formData.append('indicators', JSON.stringify(indicators));
-    formData.append('age',        age);
-    formData.append('gender',     gender);
-
-    const resp = await fetch(`${API_BASE}/analyze-indicators`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${session.access_token}` },
-      body: formData,
-    });
-
-    const data = await resp.json();
-    if (resp.status === 401) { window.location.href = 'auth.html'; return; }
-    if (!resp.ok) throw new Error(data.error || `Ошибка сервера: ${resp.status}`);
-
-    analysisResult = data.analysis;
-    resultBox.innerHTML = formatResult(analysisResult);
+// STEP 2 → 3
+continueBtn.addEventListener('click',async()=>{
+  if(!indicators.length){showError(2,'Добавьте хотя бы один показатель.');return;}
+  const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
+  const age=calcAge(userProfile?.birth_date)||'0',gender=userProfile?.gender||'не указан';
+  hideError(2);s2Loader.classList.add('show');continueBtn.disabled=true;
+  try{
+    const fd=new FormData();fd.append('indicators',JSON.stringify(indicators));fd.append('age',age);fd.append('gender',gender);
+    const resp=await fetch(`${API_BASE}/analyze-indicators`,{method:'POST',headers:{'Authorization':`Bearer ${session.access_token}`},body:fd});
+    const data=await resp.json();if(resp.status===401){window.location.href='auth.html';return;}if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
+    analysisResult=data.analysis;resultBox.innerHTML=formatResult(analysisResult);
+    document.getElementById('saveCategoryLabel').textContent=analysisName.value||'—';
+    document.getElementById('saveFileLabel').textContent=selectedFile?.name||'—';
     setStep(3);
-  } catch (err) {
-    showError(2, err.message || 'Не удалось подключиться к серверу');
-  } finally {
-    s2Loader.classList.remove('show');
-    continueBtn.disabled = false;
-  }
+  }catch(err){showError(2,err.message||'Не удалось подключиться к серверу');}
+  finally{s2Loader.classList.remove('show');continueBtn.disabled=false;}
 });
 
-// ─── BACK STEP 3 → 2 ───
-document.getElementById('backToStep2Btn').addEventListener('click', () => {
-  setStep(2);
-});
+document.getElementById('backToStep2Btn').addEventListener('click',()=>setStep(2));
 
-// ─── FORMAT RESULT ───
-function formatResult(text) {
-  let html = text
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^#{1,3} (.+)$/gm, '<h3>$1</h3>')
-    .replace(/(?<![а-яёА-ЯЁ])норма(?![а-яёА-ЯЁ])/gi, '<span class="tag-normal">✓ норма</span>')
-    .replace(/выше нормы/gi, '<span class="tag-high">↑ выше нормы</span>')
-    .replace(/ниже нормы/gi, '<span class="tag-low">↓ ниже нормы</span>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>');
-  return '<p>' + html + '</p>';
+function formatResult(text){
+  let html=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/^#{1,3} (.+)$/gm,'<h3>$1</h3>').replace(/выше нормы/gi,'<span class="tag-high">↑ выше нормы</span>').replace(/ниже нормы/gi,'<span class="tag-low">↓ ниже нормы</span>').replace(/(?<![а-яёА-ЯЁ])норма(?![а-яёА-ЯЁ])/gi,'<span class="tag-normal">✓ норма</span>').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
+  return'<p>'+html+'</p>';
 }
 
-// ─── SAVE: отправить файл + результат на сервер ───
-saveBtn.addEventListener('click', async () => {
-  if (!analysisResult || !selectedFile) return;
-
-  const session = await getCurrentSession();
-  if (!session) { window.location.href = 'auth.html'; return; }
-
-  const age    = calcAge(userProfile?.birth_date) || '0';
-  const gender = userProfile?.gender || 'не указан';
-
-  saveBtn.disabled = true;
-  saveBtn.innerHTML = `
-    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-    </svg><span>Сохраняем...</span>`;
-
-  try {
-    const formData = new FormData();
-    formData.append('file',          selectedFile);
-    formData.append('analysis',      analysisResult);
-    formData.append('analysis_name', analysisName.value.trim());
-    formData.append('analysis_date', analysisDate.value || '');
-    formData.append('age',           age);
-    formData.append('gender',        gender);
-
-    const resp = await fetch(`${API_BASE}/save-analysis`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${session.access_token}` },
-      body: formData,
-    });
-
-    const data = await resp.json();
-    if (resp.status === 401) { window.location.href = 'auth.html'; return; }
-    if (!resp.ok) throw new Error(data.error || `Ошибка сервера: ${resp.status}`);
-
-    // Успех
-    saveBtn.innerHTML = `
-      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="20 6 9 17 4 12"/>
-      </svg><span>Сохранено</span>`;
-    saveBtn.style.color = 'var(--green)';
-
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
-    setTimeout(() => {
-      try { localStorage.removeItem('medeus_dashboard_cache'); } catch(e) {}
-      window.location.href = 'cabinet.html';
-    }, 2000);
-
-  } catch (err) {
-    // Показываем ошибку прямо на кнопке и разблокируем
-    saveBtn.disabled = false;
-    saveBtn.innerHTML = `
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-        <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
-      </svg><span>Сохранить в мои анализы</span>`;
-
-    // Показываем ошибку над кнопкой — переиспользуем step3 banner
-    const errBanner = document.createElement('div');
-    errBanner.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,60,60,0.08);border:1px solid rgba(255,60,60,0.25);color:#FF5555;font-size:12px;margin-bottom:12px;';
-    errBanner.textContent = err.message || 'Не удалось сохранить';
-    saveBtn.parentNode.insertBefore(errBanner, saveBtn);
-    setTimeout(() => errBanner.remove(), 5000);
+// SAVE
+saveBtn.addEventListener('click',async()=>{
+  if(!analysisResult||!selectedFile)return;
+  const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
+  const age=calcAge(userProfile?.birth_date)||'0',gender=userProfile?.gender||'не указан';
+  saveBtn.disabled=true;hideError(3);
+  const origHtml=saveBtn.innerHTML;saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><circle cx="12" cy="12" r="10"/></svg><span>Сохраняем...</span>';
+  try{
+    const fd=new FormData();fd.append('file',selectedFile);fd.append('analysis',analysisResult);fd.append('analysis_name',analysisName.value.trim());fd.append('analysis_date',analysisDate.value||'');fd.append('age',age);fd.append('gender',gender);
+    const resp=await fetch(`${API_BASE}/save-analysis`,{method:'POST',headers:{'Authorization':`Bearer ${session.access_token}`},body:fd});
+    const data=await resp.json();if(resp.status===401){window.location.href='auth.html';return;}if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
+    saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><polyline points="20 6 9 17 4 12"/></svg><span>Сохранено!</span>';
+    saveBtn.style.color='var(--green)';saveBtn.style.borderColor='var(--green)';
+    toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3000);
+    setTimeout(()=>{try{localStorage.removeItem('medeus_dashboard_cache');}catch(e){}window.location.href='cabinet.html';},2000);
+  }catch(err){
+    saveBtn.disabled=false;saveBtn.innerHTML=origHtml;
+    showError(3,err.message||'Не удалось сохранить');
   }
 });
 
-// ─── INIT ───
-analysisDate.value = new Date().toISOString().split('T')[0];
-checkStep1();
-setStep(1);
+analysisDate.value=new Date().toISOString().split('T')[0];
+checkStep1();setStep(1);
 </script>
 </body>
 </html>
