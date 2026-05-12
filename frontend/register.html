@@ -304,13 +304,18 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
 
   try {
     const client = getSupabase();
-    const { data, error } = await client.auth.signUp({ email, password });
+    const { data, error } = await client.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          gender,
+          birth_date: birthDate
+        }
+      }
+    });
     if (error) throw error;
-    const userId = data.user?.id;
-    if (userId) {
-      const { error: pe } = await client.from('profiles').insert({ id: userId, full_name: fullName, gender, birth_date: birthDate });
-      if (pe) console.error('Профиль:', pe.message);
-    }
     if (data.user && !data.session) {
       document.getElementById('registerForm').style.display = 'none';
       document.getElementById('sentEmailAddr').textContent = email;
