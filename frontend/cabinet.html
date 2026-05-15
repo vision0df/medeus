@@ -169,116 +169,145 @@
   /* ─── ANATOMY BLOCK ─── */
   .anatomy-block {
     display: grid;
-    grid-template-columns: 1fr 260px;
+    grid-template-columns: 1fr 1fr;
     gap: 0;
-    min-height: 460px;
+    min-height: 480px;
   }
+
+  /* LEFT — силуэт */
   .anatomy-silhouette {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 24px 20px 20px;
+    justify-content: space-between;
+    padding: 28px 28px 24px;
     background: var(--bg);
     border-right: 1px solid var(--line);
     overflow: hidden;
   }
   .anatomy-silhouette-label {
     font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
-    text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px;
-    align-self: flex-start;
+    text-transform: uppercase; color: var(--text-dim);
+    align-self: flex-start; margin-bottom: 12px;
   }
   .silhouette-wrap {
     position: relative;
-    width: 150px;
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto;
   }
-  .silhouette-svg { width: 150px; height: auto; display: block; }
+  .silhouette-svg {
+    width: 200px;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 0 18px rgba(255,90,0,0.10));
+  }
+  /* Zone circles */
   .body-zone {
     position: absolute;
     border-radius: 50%;
-    border: 2px dashed transparent;
-    transition: border-color 0.3s;
+    border: 1.5px dashed transparent;
     pointer-events: none;
     transform: translate(-50%, -50%);
+    transition: border-color 0.25s, box-shadow 0.25s;
   }
   .body-zone.active {
     border-color: var(--orange);
-    animation: zonePulse 1.4s ease-in-out infinite;
+    box-shadow: 0 0 0 4px var(--orange-glow);
+    animation: zonePulse 1.5s ease-in-out infinite;
   }
   @keyframes zonePulse {
     0%,100% { opacity:1; transform:translate(-50%,-50%) scale(1); }
-    50%      { opacity:.5; transform:translate(-50%,-50%) scale(1.08); }
+    50%      { opacity:.55; transform:translate(-50%,-50%) scale(1.06); }
   }
+  /* Hint bar */
   .anatomy-hint {
-    margin-top: 18px;
-    width: 100%;
-    min-height: 52px;
-    background: var(--bg2);
-    padding: 11px 14px;
+    width: 100%; margin-top: 16px;
+    background: var(--bg2); padding: 12px 16px;
     border-left: 3px solid var(--orange);
-    opacity: 0;
-    transition: opacity 0.25s;
+    opacity: 0; transition: opacity 0.2s;
+    min-height: 60px;
   }
   .anatomy-hint.show { opacity: 1; }
   .anatomy-hint-title {
     font-family: var(--mono); font-size: 10px; font-weight: 700;
-    color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--orange); letter-spacing: 0.12em; text-transform: uppercase;
     margin-bottom: 5px;
   }
   .anatomy-hint-tests {
-    font-family: var(--mono); font-size: 10px; color: var(--text-mid);
-    line-height: 1.7;
+    font-family: var(--mono); font-size: 10px; color: var(--text-mid); line-height: 1.75;
   }
-  .anatomy-menu { display: flex; flex-direction: column; }
+
+  /* RIGHT — меню */
+  .anatomy-menu {
+    display: flex; flex-direction: column;
+    background: var(--white);
+  }
   .anatomy-menu-label {
     font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
     text-transform: uppercase; color: var(--text-dim);
-    padding: 16px 20px 12px;
+    padding: 18px 22px 13px;
     border-bottom: 1px solid var(--line);
   }
   .anatomy-cat {
-    display: flex; align-items: center; gap: 12px;
-    padding: 14px 20px;
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 22px;
     cursor: pointer;
     border-bottom: 1px solid var(--line);
     text-decoration: none;
     transition: background 0.15s;
+    position: relative;
   }
-  .anatomy-cat:hover { background: var(--bg2); }
+  .anatomy-cat:hover  { background: var(--bg); }
   .anatomy-cat.hovered { background: var(--orange-pale); }
-  .anatomy-cat-emoji { font-size: 18px; flex-shrink: 0; line-height: 1; }
-  .anatomy-cat-info { flex: 1; }
+  .anatomy-cat.hovered::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--orange);
+  }
+
+  /* SVG icon box — в стиле карточек сайта */
+  .anatomy-cat-icon {
+    width: 36px; height: 36px; flex-shrink: 0;
+    background: var(--bg3);
+    clip-path: polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .anatomy-cat-icon svg { width: 17px; height: 17px; stroke: var(--text-mid); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.15s; }
+  .anatomy-cat:hover .anatomy-cat-icon,
+  .anatomy-cat.hovered .anatomy-cat-icon { background: var(--orange); }
+  .anatomy-cat:hover .anatomy-cat-icon svg,
+  .anatomy-cat.hovered .anatomy-cat-icon svg { stroke: var(--white); }
+
+  .anatomy-cat-info { flex: 1; min-width: 0; }
   .anatomy-cat-name {
     font-family: var(--mono); font-size: 12px; font-weight: 600;
     color: var(--text); letter-spacing: 0.02em;
   }
   .anatomy-cat-sub {
-    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
-    margin-top: 2px;
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 2px;
   }
+
+  /* Warning triangle */
   .anatomy-cat-warn {
-    display: none;
-    width: 0; height: 0;
-    border-left: 7px solid transparent;
-    border-right: 7px solid transparent;
-    border-bottom: 13px solid var(--yellow);
-    flex-shrink: 0;
+    display: none; flex-shrink: 0;
+    width: 18px; height: 18px;
+    background: var(--yellow);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
     position: relative;
   }
   .anatomy-cat-warn::after {
     content: '!';
-    position: absolute;
-    top: 3px; left: -3.5px;
+    position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
     font-family: var(--mono); font-size: 8px; font-weight: 700; color: #000;
   }
   .anatomy-cat-warn.show { display: block; }
+
   .anatomy-cat-arrow {
-    font-family: var(--mono); font-size: 12px;
-    color: var(--text-dim); flex-shrink: 0;
+    font-family: var(--mono); font-size: 14px; color: var(--text-dim); flex-shrink: 0;
     transition: transform 0.15s, color 0.15s;
   }
   .anatomy-cat:hover .anatomy-cat-arrow,
@@ -357,69 +386,207 @@
         <div class="dash-card-body" style="padding:0;">
           <div class="anatomy-block">
 
-            <!-- Силуэт -->
+            <!-- ── ЛЕВАЯ ЧАСТЬ: силуэт ── -->
             <div class="anatomy-silhouette">
-              <div class="anatomy-silhouette-label">// Тело</div>
+              <div class="anatomy-silhouette-label">// Карта тела</div>
               <div class="silhouette-wrap" id="silhouetteWrap">
-                <!-- SVG силуэт человека -->
-                <svg class="silhouette-svg" viewBox="0 0 150 340" xmlns="http://www.w3.org/2000/svg">
-                  <!-- Голова -->
-                  <ellipse cx="75" cy="32" rx="22" ry="26" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
-                  <!-- Шея -->
-                  <rect x="67" y="55" width="16" height="18" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
-                  <!-- Туловище -->
-                  <path d="M38 73 Q30 85 28 130 Q27 155 32 170 L118 170 Q123 155 122 130 Q120 85 112 73 Q95 68 75 68 Q55 68 38 73Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
-                  <!-- Левая рука -->
-                  <path d="M38 76 Q22 90 18 130 Q16 148 20 162 Q24 172 30 170 Q34 162 36 148 Q40 128 42 110 L42 76Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
-                  <!-- Правая рука -->
-                  <path d="M112 76 Q128 90 132 130 Q134 148 130 162 Q126 172 120 170 Q116 162 114 148 Q110 128 108 110 L108 76Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
-                  <!-- Левая кисть -->
-                  <ellipse cx="22" cy="168" rx="10" ry="12" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
-                  <!-- Правая кисть -->
-                  <ellipse cx="128" cy="168" rx="10" ry="12" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
-                  <!-- Таз -->
-                  <path d="M32 170 Q28 185 30 200 L120 200 Q122 185 118 170Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
-                  <!-- Левое бедро -->
-                  <path d="M30 198 Q24 220 26 250 Q28 270 36 275 Q50 272 54 265 Q58 248 56 225 Q54 205 50 198Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
-                  <!-- Правое бедро -->
-                  <path d="M120 198 Q126 220 124 250 Q122 270 114 275 Q100 272 96 265 Q92 248 94 225 Q96 205 100 198Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
-                  <!-- Левая голень -->
-                  <path d="M36 273 Q30 295 32 318 Q34 328 40 330 Q50 330 54 326 Q56 316 56 300 Q56 285 54 273Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
-                  <!-- Правая голень -->
-                  <path d="M114 273 Q120 295 118 318 Q116 328 110 330 Q100 330 96 326 Q94 316 94 300 Q94 285 96 273Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
-                  <!-- Левая стопа -->
-                  <ellipse cx="38" cy="333" rx="14" ry="7" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
-                  <!-- Правая стопа -->
-                  <ellipse cx="112" cy="333" rx="14" ry="7" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
 
-                  <!-- Зоны (невидимые, позиционируются через JS) -->
+                <!-- Полигональный wireframe силуэт -->
+                <svg class="silhouette-svg" viewBox="0 0 220 520" xmlns="http://www.w3.org/2000/svg" fill="none">
+                  <defs>
+                    <style>
+                      .wf { stroke: var(--orange); stroke-width: 0.9; fill: none; opacity: 0.85; }
+                      .wf-bg { stroke: var(--orange); stroke-width: 1.4; fill: rgba(255,90,0,0.04); }
+                      .wf-dot { fill: var(--orange); opacity: 0.7; }
+                    </style>
+                  </defs>
+
+                  <!-- ── ГОЛОВА ── -->
+                  <polygon class="wf-bg" points="110,12 130,20 138,38 130,58 110,64 90,58 82,38 90,20"/>
+                  <line class="wf" x1="110" y1="12" x2="110" y2="64"/>
+                  <line class="wf" x1="82" y1="38" x2="138" y2="38"/>
+                  <line class="wf" x1="90" y1="20" x2="130" y2="58"/>
+                  <line class="wf" x1="130" y1="20" x2="90" y2="58"/>
+                  <line class="wf" x1="110" y1="12" x2="138" y2="38"/>
+                  <line class="wf" x1="110" y1="12" x2="82" y2="38"/>
+                  <circle class="wf-dot" cx="110" cy="12" r="2"/>
+                  <circle class="wf-dot" cx="130" cy="20" r="1.5"/>
+                  <circle class="wf-dot" cx="138" cy="38" r="1.5"/>
+                  <circle class="wf-dot" cx="130" cy="58" r="1.5"/>
+                  <circle class="wf-dot" cx="90" cy="20" r="1.5"/>
+                  <circle class="wf-dot" cx="82" cy="38" r="1.5"/>
+                  <circle class="wf-dot" cx="90" cy="58" r="1.5"/>
+                  <circle class="wf-dot" cx="110" cy="64" r="1.5"/>
+
+                  <!-- ── ШЕЯ ── -->
+                  <polygon class="wf-bg" points="100,64 120,64 122,80 98,80"/>
+                  <line class="wf" x1="100" y1="64" x2="122" y2="80"/>
+                  <line class="wf" x1="120" y1="64" x2="98" y2="80"/>
+                  <circle class="wf-dot" cx="110" cy="72" r="1.5"/>
+
+                  <!-- ── ПЛЕЧИ И ТУЛОВИЩЕ ── -->
+                  <!-- Основные точки: плечи 70,88 / 150,88, грудь, талия, таз -->
+                  <polygon class="wf-bg" points="70,88 150,88 158,130 152,175 110,182 68,175 62,130"/>
+                  <!-- верхние диагонали -->
+                  <line class="wf" x1="70" y1="88" x2="150" y2="88"/>
+                  <line class="wf" x1="70" y1="88" x2="110" y2="110"/>
+                  <line class="wf" x1="150" y1="88" x2="110" y2="110"/>
+                  <line class="wf" x1="110" y1="88" x2="110" y2="182"/>
+                  <line class="wf" x1="70" y1="88" x2="158" y2="130"/>
+                  <line class="wf" x1="150" y1="88" x2="62" y2="130"/>
+                  <line class="wf" x1="62" y1="130" x2="158" y2="130"/>
+                  <line class="wf" x1="62" y1="130" x2="110" y2="155"/>
+                  <line class="wf" x1="158" y1="130" x2="110" y2="155"/>
+                  <line class="wf" x1="68" y1="175" x2="152" y2="175"/>
+                  <line class="wf" x1="62" y1="130" x2="68" y2="175"/>
+                  <line class="wf" x1="158" y1="130" x2="152" y2="175"/>
+                  <line class="wf" x1="110" y1="155" x2="68" y2="175"/>
+                  <line class="wf" x1="110" y1="155" x2="152" y2="175"/>
+                  <!-- dots -->
+                  <circle class="wf-dot" cx="70" cy="88" r="2"/>
+                  <circle class="wf-dot" cx="150" cy="88" r="2"/>
+                  <circle class="wf-dot" cx="110" cy="110" r="2"/>
+                  <circle class="wf-dot" cx="62" cy="130" r="1.5"/>
+                  <circle class="wf-dot" cx="158" cy="130" r="1.5"/>
+                  <circle class="wf-dot" cx="110" cy="155" r="2"/>
+                  <circle class="wf-dot" cx="68" cy="175" r="1.5"/>
+                  <circle class="wf-dot" cx="152" cy="175" r="1.5"/>
+                  <circle class="wf-dot" cx="110" cy="182" r="1.5"/>
+
+                  <!-- ── ЛЕВАЯ РУКА ── -->
+                  <polygon class="wf-bg" points="70,88 50,100 38,130 34,165 44,200 58,210 66,175 62,130"/>
+                  <line class="wf" x1="70" y1="88" x2="38" y2="130"/>
+                  <line class="wf" x1="50" y1="100" x2="62" y2="130"/>
+                  <line class="wf" x1="50" y1="100" x2="34" y2="165"/>
+                  <line class="wf" x1="38" y1="130" x2="66" y2="175"/>
+                  <line class="wf" x1="34" y1="165" x2="58" y2="210"/>
+                  <line class="wf" x1="44" y1="200" x2="66" y2="175"/>
+                  <circle class="wf-dot" cx="50" cy="100" r="1.5"/>
+                  <circle class="wf-dot" cx="38" cy="130" r="1.5"/>
+                  <circle class="wf-dot" cx="34" cy="165" r="1.5"/>
+                  <circle class="wf-dot" cx="44" cy="200" r="1.5"/>
+                  <circle class="wf-dot" cx="58" cy="210" r="1.5"/>
+                  <!-- Кисть левая -->
+                  <polygon class="wf-bg" points="44,200 58,210 52,228 38,222"/>
+                  <line class="wf" x1="44" y1="200" x2="52" y2="228"/>
+                  <line class="wf" x1="58" y1="210" x2="38" y2="222"/>
+                  <circle class="wf-dot" cx="52" cy="228" r="1.5"/>
+                  <circle class="wf-dot" cx="38" cy="222" r="1.5"/>
+
+                  <!-- ── ПРАВАЯ РУКА ── -->
+                  <polygon class="wf-bg" points="150,88 170,100 182,130 186,165 176,200 162,210 154,175 158,130"/>
+                  <line class="wf" x1="150" y1="88" x2="182" y2="130"/>
+                  <line class="wf" x1="170" y1="100" x2="158" y2="130"/>
+                  <line class="wf" x1="170" y1="100" x2="186" y2="165"/>
+                  <line class="wf" x1="182" y1="130" x2="154" y2="175"/>
+                  <line class="wf" x1="186" y1="165" x2="162" y2="210"/>
+                  <line class="wf" x1="176" y1="200" x2="154" y2="175"/>
+                  <circle class="wf-dot" cx="170" cy="100" r="1.5"/>
+                  <circle class="wf-dot" cx="182" cy="130" r="1.5"/>
+                  <circle class="wf-dot" cx="186" cy="165" r="1.5"/>
+                  <circle class="wf-dot" cx="176" cy="200" r="1.5"/>
+                  <circle class="wf-dot" cx="162" cy="210" r="1.5"/>
+                  <!-- Кисть правая -->
+                  <polygon class="wf-bg" points="176,200 162,210 168,228 182,222"/>
+                  <line class="wf" x1="176" y1="200" x2="168" y2="228"/>
+                  <line class="wf" x1="162" y1="210" x2="182" y2="222"/>
+                  <circle class="wf-dot" cx="168" cy="228" r="1.5"/>
+                  <circle class="wf-dot" cx="182" cy="222" r="1.5"/>
+
+                  <!-- ── ТАЗ ── -->
+                  <polygon class="wf-bg" points="68,175 152,175 148,205 110,215 72,205"/>
+                  <line class="wf" x1="68" y1="175" x2="110" y2="215"/>
+                  <line class="wf" x1="152" y1="175" x2="110" y2="215"/>
+                  <line class="wf" x1="72" y1="205" x2="148" y2="205"/>
+                  <circle class="wf-dot" cx="110" cy="215" r="2"/>
+                  <circle class="wf-dot" cx="72" cy="205" r="1.5"/>
+                  <circle class="wf-dot" cx="148" cy="205" r="1.5"/>
+
+                  <!-- ── ЛЕВОЕ БЕДРО ── -->
+                  <polygon class="wf-bg" points="72,205 110,215 100,270 78,285 62,260 66,225"/>
+                  <line class="wf" x1="72" y1="205" x2="100" y2="270"/>
+                  <line class="wf" x1="110" y1="215" x2="78" y2="285"/>
+                  <line class="wf" x1="66" y1="225" x2="100" y2="270"/>
+                  <line class="wf" x1="62" y1="260" x2="78" y2="285"/>
+                  <circle class="wf-dot" cx="100" cy="270" r="1.5"/>
+                  <circle class="wf-dot" cx="78" cy="285" r="1.5"/>
+                  <circle class="wf-dot" cx="62" cy="260" r="1.5"/>
+
+                  <!-- ── ПРАВОЕ БЕДРО ── -->
+                  <polygon class="wf-bg" points="148,205 110,215 120,270 142,285 158,260 154,225"/>
+                  <line class="wf" x1="148" y1="205" x2="120" y2="270"/>
+                  <line class="wf" x1="110" y1="215" x2="142" y2="285"/>
+                  <line class="wf" x1="154" y1="225" x2="120" y2="270"/>
+                  <line class="wf" x1="158" y1="260" x2="142" y2="285"/>
+                  <circle class="wf-dot" cx="120" cy="270" r="1.5"/>
+                  <circle class="wf-dot" cx="142" cy="285" r="1.5"/>
+                  <circle class="wf-dot" cx="158" cy="260" r="1.5"/>
+
+                  <!-- ── ЛЕВАЯ ГОЛЕНЬ ── -->
+                  <polygon class="wf-bg" points="78,285 100,270 96,330 80,345 66,325 64,295"/>
+                  <line class="wf" x1="78" y1="285" x2="96" y2="330"/>
+                  <line class="wf" x1="100" y1="270" x2="80" y2="345"/>
+                  <line class="wf" x1="64" y1="295" x2="96" y2="330"/>
+                  <line class="wf" x1="66" y1="325" x2="80" y2="345"/>
+                  <circle class="wf-dot" cx="96" cy="330" r="1.5"/>
+                  <circle class="wf-dot" cx="80" cy="345" r="2"/>
+                  <circle class="wf-dot" cx="66" cy="325" r="1.5"/>
+
+                  <!-- ── ПРАВАЯ ГОЛЕНЬ ── -->
+                  <polygon class="wf-bg" points="142,285 120,270 124,330 140,345 154,325 156,295"/>
+                  <line class="wf" x1="142" y1="285" x2="124" y2="330"/>
+                  <line class="wf" x1="120" y1="270" x2="140" y2="345"/>
+                  <line class="wf" x1="156" y1="295" x2="124" y2="330"/>
+                  <line class="wf" x1="154" y1="325" x2="140" y2="345"/>
+                  <circle class="wf-dot" cx="124" cy="330" r="1.5"/>
+                  <circle class="wf-dot" cx="140" cy="345" r="2"/>
+                  <circle class="wf-dot" cx="154" cy="325" r="1.5"/>
+
+                  <!-- ── ЛЕВАЯ СТОПА ── -->
+                  <polygon class="wf-bg" points="66,325 80,345 76,365 58,360 54,340"/>
+                  <line class="wf" x1="66" y1="325" x2="76" y2="365"/>
+                  <line class="wf" x1="80" y1="345" x2="54" y2="340"/>
+                  <line class="wf" x1="58" y1="360" x2="76" y2="365"/>
+                  <circle class="wf-dot" cx="76" cy="365" r="1.5"/>
+                  <circle class="wf-dot" cx="58" cy="360" r="1.5"/>
+                  <circle class="wf-dot" cx="54" cy="340" r="1.5"/>
+
+                  <!-- ── ПРАВАЯ СТОПА ── -->
+                  <polygon class="wf-bg" points="154,325 140,345 144,365 162,360 166,340"/>
+                  <line class="wf" x1="154" y1="325" x2="144" y2="365"/>
+                  <line class="wf" x1="140" y1="345" x2="166" y2="340"/>
+                  <line class="wf" x1="162" y1="360" x2="144" y2="365"/>
+                  <circle class="wf-dot" cx="144" cy="365" r="1.5"/>
+                  <circle class="wf-dot" cx="162" cy="360" r="1.5"/>
+                  <circle class="wf-dot" cx="166" cy="340" r="1.5"/>
                 </svg>
 
-                <!-- Пунктирные круги зон -->
-                <div class="body-zone" id="zone-blood"    style="width:110px;height:110px;left:50%;top:55%;"></div>
-                <div class="body-zone" id="zone-hormones" style="width:80px;height:80px;left:50%;top:28%;"></div>
-                <div class="body-zone" id="zone-infect"   style="width:90px;height:90px;left:50%;top:42%;"></div>
-                <div class="body-zone" id="zone-organs"   style="width:100px;height:100px;left:50%;top:50%;"></div>
-                <div class="body-zone" id="zone-genetics" style="width:70px;height:70px;left:50%;top:20%;"></div>
-                <div class="body-zone" id="zone-diag"     style="width:120px;height:120px;left:50%;top:58%;"></div>
+                <!-- Зоны подсветки -->
+                <div class="body-zone" id="zone-blood"    style="width:115px;height:115px;left:50%;top:38%;"></div>
+                <div class="body-zone" id="zone-hormones" style="width:75px;height:75px;left:50%;top:15%;"></div>
+                <div class="body-zone" id="zone-infect"   style="width:85px;height:85px;left:50%;top:26%;"></div>
+                <div class="body-zone" id="zone-organs"   style="width:100px;height:100px;left:50%;top:34%;"></div>
+                <div class="body-zone" id="zone-genetics" style="width:65px;height:65px;left:50%;top:11%;"></div>
+                <div class="body-zone" id="zone-diag"     style="width:130px;height:130px;left:50%;top:44%;"></div>
               </div>
 
-              <!-- Подсказка снизу -->
               <div class="anatomy-hint" id="anatomyHint">
-                <div class="anatomy-hint-title" id="hintTitle">—</div>
-                <div class="anatomy-hint-tests" id="hintTests">—</div>
+                <div class="anatomy-hint-title" id="hintTitle"></div>
+                <div class="anatomy-hint-tests" id="hintTests"></div>
               </div>
             </div>
 
-            <!-- Меню разделов -->
+            <!-- ── ПРАВАЯ ЧАСТЬ: меню ── -->
             <div class="anatomy-menu">
-              <div class="anatomy-menu-label">// Разделы</div>
+              <div class="anatomy-menu-label">// Разделы анализов</div>
 
               <a href="indicators.html?category=blood" class="anatomy-cat"
                  data-zone="zone-blood"
-                 data-title="🩸 Кровь"
-                 data-tests="ОАК, Лейкоциты, Эритроциты, Гемоглобин, Тромбоциты, СОЭ, Гематокрит">
-                <span class="anatomy-cat-emoji">🩸</span>
+                 data-title="Кровь"
+                 data-tests="ОАК · Лейкоциты · Эритроциты · Гемоглобин · Тромбоциты · СОЭ · Гематокрит · Ретикулоциты">
+                <div class="anatomy-cat-icon">
+                  <svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg>
+                </div>
                 <div class="anatomy-cat-info">
                   <div class="anatomy-cat-name">Кровь</div>
                   <div class="anatomy-cat-sub">ОАК, биохимия</div>
@@ -430,9 +597,11 @@
 
               <a href="indicators.html?category=hormones" class="anatomy-cat"
                  data-zone="zone-hormones"
-                 data-title="🧠 Гормоны"
-                 data-tests="ТТГ, Т3, Т4, Кортизол, Инсулин, Тестостерон, Эстрадиол, ЛГ, ФСГ">
-                <span class="anatomy-cat-emoji">🧠</span>
+                 data-title="Гормоны"
+                 data-tests="ТТГ · Т3 · Т4 · Кортизол · Инсулин · Тестостерон · Эстрадиол · ЛГ · ФСГ · Пролактин">
+                <div class="anatomy-cat-icon">
+                  <svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="4" ry="5"/><path d="M12 11v4M8 19h8M10 15l-2 4M14 15l2 4"/><circle cx="7" cy="10" r="2"/><circle cx="17" cy="10" r="2"/></svg>
+                </div>
                 <div class="anatomy-cat-info">
                   <div class="anatomy-cat-name">Гормоны</div>
                   <div class="anatomy-cat-sub">Эндокринная система</div>
@@ -443,9 +612,11 @@
 
               <a href="indicators.html?category=infections" class="anatomy-cat"
                  data-zone="zone-infect"
-                 data-title="🦠 Инфекции"
-                 data-tests="ВИЧ, Гепатит B/C, Сифилис, ЦМВ, ВЭБ, Хламидии, Уреаплазма, Токсоплазма">
-                <span class="anatomy-cat-emoji">🦠</span>
+                 data-title="Инфекции"
+                 data-tests="ВИЧ · Гепатит B · Гепатит C · Сифилис · ЦМВ · ВЭБ · Хламидии · Уреаплазма · Токсоплазма">
+                <div class="anatomy-cat-icon">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="16.24" y2="7.76"/><line x1="7.76" y1="16.24" x2="4.93" y2="19.07"/></svg>
+                </div>
                 <div class="anatomy-cat-info">
                   <div class="anatomy-cat-name">Инфекции</div>
                   <div class="anatomy-cat-sub">Серология, ПЦР</div>
@@ -456,9 +627,11 @@
 
               <a href="indicators.html?category=organs" class="anatomy-cat"
                  data-zone="zone-organs"
-                 data-title="❤️ Органы"
-                 data-tests="АЛТ, АСТ, Билирубин, Креатинин, Мочевина, Амилаза, Липаза, Тропонин">
-                <span class="anatomy-cat-emoji">❤️</span>
+                 data-title="Органы"
+                 data-tests="АЛТ · АСТ · Билирубин · Креатинин · Мочевина · Амилаза · Липаза · Тропонин · ГГТ · ЩФ">
+                <div class="anatomy-cat-icon">
+                  <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                </div>
                 <div class="anatomy-cat-info">
                   <div class="anatomy-cat-name">Органы</div>
                   <div class="anatomy-cat-sub">Печень, почки, сердце</div>
@@ -469,9 +642,11 @@
 
               <a href="indicators.html?category=genetics" class="anatomy-cat"
                  data-zone="zone-genetics"
-                 data-title="🧬 Генетика"
-                 data-tests="Мутации BRCA1/2, Полиморфизмы, Фармакогенетика, HLA-типирование">
-                <span class="anatomy-cat-emoji">🧬</span>
+                 data-title="Генетика"
+                 data-tests="BRCA1/2 · Полиморфизмы · Фармакогенетика · HLA-типирование · Кариотип">
+                <div class="anatomy-cat-icon">
+                  <svg viewBox="0 0 24 24"><path d="M2 2c2 4 6 6 10 6S20 6 22 2"/><path d="M2 22c2-4 6-6 10-6s8 2 10 6"/><path d="M12 8v8"/><path d="M8 10c1 1 3 1.5 4 2"/><path d="M16 10c-1 1-3 1.5-4 2"/><path d="M8 14c1-1 3-1.5 4-2"/><path d="M16 14c-1-1-3-1.5-4-2"/></svg>
+                </div>
                 <div class="anatomy-cat-info">
                   <div class="anatomy-cat-name">Генетика</div>
                   <div class="anatomy-cat-sub">ДНК-маркеры</div>
@@ -482,9 +657,11 @@
 
               <a href="indicators.html?category=diagnostics" class="anatomy-cat"
                  data-zone="zone-diag"
-                 data-title="🧪 Диагностика"
-                 data-tests="Глюкоза, HbA1c, Холестерин, ЛПНП, ЛПВП, СРБ, Ферритин, Витамин D, B12">
-                <span class="anatomy-cat-emoji">🧪</span>
+                 data-title="Диагностика"
+                 data-tests="Глюкоза · HbA1c · Холестерин · ЛПНП · ЛПВП · СРБ · Ферритин · Витамин D · B12 · Фолиевая">
+                <div class="anatomy-cat-icon">
+                  <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+                </div>
                 <div class="anatomy-cat-info">
                   <div class="anatomy-cat-name">Диагностика</div>
                   <div class="anatomy-cat-sub">Маркеры и скрининг</div>
