@@ -166,6 +166,124 @@
   .health-bar-fill.warn  { background: var(--yellow); }
   .health-bar-fill.alert { background: var(--red); }
 
+  /* ─── ANATOMY BLOCK ─── */
+  .anatomy-block {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 0;
+    min-height: 460px;
+  }
+  .anatomy-silhouette {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 20px 20px;
+    background: var(--bg);
+    border-right: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .anatomy-silhouette-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px;
+    align-self: flex-start;
+  }
+  .silhouette-wrap {
+    position: relative;
+    width: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+  }
+  .silhouette-svg { width: 150px; height: auto; display: block; }
+  .body-zone {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px dashed transparent;
+    transition: border-color 0.3s;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+  }
+  .body-zone.active {
+    border-color: var(--orange);
+    animation: zonePulse 1.4s ease-in-out infinite;
+  }
+  @keyframes zonePulse {
+    0%,100% { opacity:1; transform:translate(-50%,-50%) scale(1); }
+    50%      { opacity:.5; transform:translate(-50%,-50%) scale(1.08); }
+  }
+  .anatomy-hint {
+    margin-top: 18px;
+    width: 100%;
+    min-height: 52px;
+    background: var(--bg2);
+    padding: 11px 14px;
+    border-left: 3px solid var(--orange);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .anatomy-hint.show { opacity: 1; }
+  .anatomy-hint-title {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .anatomy-hint-tests {
+    font-family: var(--mono); font-size: 10px; color: var(--text-mid);
+    line-height: 1.7;
+  }
+  .anatomy-menu { display: flex; flex-direction: column; }
+  .anatomy-menu-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--text-dim);
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .anatomy-cat {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .anatomy-cat:hover { background: var(--bg2); }
+  .anatomy-cat.hovered { background: var(--orange-pale); }
+  .anatomy-cat-emoji { font-size: 18px; flex-shrink: 0; line-height: 1; }
+  .anatomy-cat-info { flex: 1; }
+  .anatomy-cat-name {
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    color: var(--text); letter-spacing: 0.02em;
+  }
+  .anatomy-cat-sub {
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+    margin-top: 2px;
+  }
+  .anatomy-cat-warn {
+    display: none;
+    width: 0; height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 13px solid var(--yellow);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .anatomy-cat-warn::after {
+    content: '!';
+    position: absolute;
+    top: 3px; left: -3.5px;
+    font-family: var(--mono); font-size: 8px; font-weight: 700; color: #000;
+  }
+  .anatomy-cat-warn.show { display: block; }
+  .anatomy-cat-arrow {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--text-dim); flex-shrink: 0;
+    transition: transform 0.15s, color 0.15s;
+  }
+  .anatomy-cat:hover .anatomy-cat-arrow,
+  .anatomy-cat.hovered .anatomy-cat-arrow { color: var(--orange); transform: translateX(3px); }
+
   /* ─── RESPONSIVE ─── */
   @media (max-width: 960px) {
     .page { padding: 78px 28px 52px; }
@@ -228,6 +346,158 @@
   </div>
 
   <div class="dashboard">
+
+    <!-- ─── 00. АНАТОМИЯ / РАЗДЕЛЫ АНАЛИЗОВ ─── -->
+    <div class="dash-card-wrap col-full">
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div class="dash-card-label">00 — Разделы анализов</div>
+          <span class="card-badge badge-neutral">Наведите на раздел</span>
+        </div>
+        <div class="dash-card-body" style="padding:0;">
+          <div class="anatomy-block">
+
+            <!-- Силуэт -->
+            <div class="anatomy-silhouette">
+              <div class="anatomy-silhouette-label">// Тело</div>
+              <div class="silhouette-wrap" id="silhouetteWrap">
+                <!-- SVG силуэт человека -->
+                <svg class="silhouette-svg" viewBox="0 0 150 340" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Голова -->
+                  <ellipse cx="75" cy="32" rx="22" ry="26" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+                  <!-- Шея -->
+                  <rect x="67" y="55" width="16" height="18" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+                  <!-- Туловище -->
+                  <path d="M38 73 Q30 85 28 130 Q27 155 32 170 L118 170 Q123 155 122 130 Q120 85 112 73 Q95 68 75 68 Q55 68 38 73Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+                  <!-- Левая рука -->
+                  <path d="M38 76 Q22 90 18 130 Q16 148 20 162 Q24 172 30 170 Q34 162 36 148 Q40 128 42 110 L42 76Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+                  <!-- Правая рука -->
+                  <path d="M112 76 Q128 90 132 130 Q134 148 130 162 Q126 172 120 170 Q116 162 114 148 Q110 128 108 110 L108 76Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+                  <!-- Левая кисть -->
+                  <ellipse cx="22" cy="168" rx="10" ry="12" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+                  <!-- Правая кисть -->
+                  <ellipse cx="128" cy="168" rx="10" ry="12" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+                  <!-- Таз -->
+                  <path d="M32 170 Q28 185 30 200 L120 200 Q122 185 118 170Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+                  <!-- Левое бедро -->
+                  <path d="M30 198 Q24 220 26 250 Q28 270 36 275 Q50 272 54 265 Q58 248 56 225 Q54 205 50 198Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+                  <!-- Правое бедро -->
+                  <path d="M120 198 Q126 220 124 250 Q122 270 114 275 Q100 272 96 265 Q92 248 94 225 Q96 205 100 198Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+                  <!-- Левая голень -->
+                  <path d="M36 273 Q30 295 32 318 Q34 328 40 330 Q50 330 54 326 Q56 316 56 300 Q56 285 54 273Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+                  <!-- Правая голень -->
+                  <path d="M114 273 Q120 295 118 318 Q116 328 110 330 Q100 330 96 326 Q94 316 94 300 Q94 285 96 273Z" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+                  <!-- Левая стопа -->
+                  <ellipse cx="38" cy="333" rx="14" ry="7" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+                  <!-- Правая стопа -->
+                  <ellipse cx="112" cy="333" rx="14" ry="7" fill="var(--bg3)" stroke="var(--text)" stroke-width="1.5"/>
+
+                  <!-- Зоны (невидимые, позиционируются через JS) -->
+                </svg>
+
+                <!-- Пунктирные круги зон -->
+                <div class="body-zone" id="zone-blood"    style="width:110px;height:110px;left:50%;top:55%;"></div>
+                <div class="body-zone" id="zone-hormones" style="width:80px;height:80px;left:50%;top:28%;"></div>
+                <div class="body-zone" id="zone-infect"   style="width:90px;height:90px;left:50%;top:42%;"></div>
+                <div class="body-zone" id="zone-organs"   style="width:100px;height:100px;left:50%;top:50%;"></div>
+                <div class="body-zone" id="zone-genetics" style="width:70px;height:70px;left:50%;top:20%;"></div>
+                <div class="body-zone" id="zone-diag"     style="width:120px;height:120px;left:50%;top:58%;"></div>
+              </div>
+
+              <!-- Подсказка снизу -->
+              <div class="anatomy-hint" id="anatomyHint">
+                <div class="anatomy-hint-title" id="hintTitle">—</div>
+                <div class="anatomy-hint-tests" id="hintTests">—</div>
+              </div>
+            </div>
+
+            <!-- Меню разделов -->
+            <div class="anatomy-menu">
+              <div class="anatomy-menu-label">// Разделы</div>
+
+              <a href="indicators.html?category=blood" class="anatomy-cat"
+                 data-zone="zone-blood"
+                 data-title="🩸 Кровь"
+                 data-tests="ОАК, Лейкоциты, Эритроциты, Гемоглобин, Тромбоциты, СОЭ, Гематокрит">
+                <span class="anatomy-cat-emoji">🩸</span>
+                <div class="anatomy-cat-info">
+                  <div class="anatomy-cat-name">Кровь</div>
+                  <div class="anatomy-cat-sub">ОАК, биохимия</div>
+                </div>
+                <div class="anatomy-cat-warn" id="warn-blood"></div>
+                <div class="anatomy-cat-arrow">›</div>
+              </a>
+
+              <a href="indicators.html?category=hormones" class="anatomy-cat"
+                 data-zone="zone-hormones"
+                 data-title="🧠 Гормоны"
+                 data-tests="ТТГ, Т3, Т4, Кортизол, Инсулин, Тестостерон, Эстрадиол, ЛГ, ФСГ">
+                <span class="anatomy-cat-emoji">🧠</span>
+                <div class="anatomy-cat-info">
+                  <div class="anatomy-cat-name">Гормоны</div>
+                  <div class="anatomy-cat-sub">Эндокринная система</div>
+                </div>
+                <div class="anatomy-cat-warn" id="warn-hormones"></div>
+                <div class="anatomy-cat-arrow">›</div>
+              </a>
+
+              <a href="indicators.html?category=infections" class="anatomy-cat"
+                 data-zone="zone-infect"
+                 data-title="🦠 Инфекции"
+                 data-tests="ВИЧ, Гепатит B/C, Сифилис, ЦМВ, ВЭБ, Хламидии, Уреаплазма, Токсоплазма">
+                <span class="anatomy-cat-emoji">🦠</span>
+                <div class="anatomy-cat-info">
+                  <div class="anatomy-cat-name">Инфекции</div>
+                  <div class="anatomy-cat-sub">Серология, ПЦР</div>
+                </div>
+                <div class="anatomy-cat-warn" id="warn-infect"></div>
+                <div class="anatomy-cat-arrow">›</div>
+              </a>
+
+              <a href="indicators.html?category=organs" class="anatomy-cat"
+                 data-zone="zone-organs"
+                 data-title="❤️ Органы"
+                 data-tests="АЛТ, АСТ, Билирубин, Креатинин, Мочевина, Амилаза, Липаза, Тропонин">
+                <span class="anatomy-cat-emoji">❤️</span>
+                <div class="anatomy-cat-info">
+                  <div class="anatomy-cat-name">Органы</div>
+                  <div class="anatomy-cat-sub">Печень, почки, сердце</div>
+                </div>
+                <div class="anatomy-cat-warn" id="warn-organs"></div>
+                <div class="anatomy-cat-arrow">›</div>
+              </a>
+
+              <a href="indicators.html?category=genetics" class="anatomy-cat"
+                 data-zone="zone-genetics"
+                 data-title="🧬 Генетика"
+                 data-tests="Мутации BRCA1/2, Полиморфизмы, Фармакогенетика, HLA-типирование">
+                <span class="anatomy-cat-emoji">🧬</span>
+                <div class="anatomy-cat-info">
+                  <div class="anatomy-cat-name">Генетика</div>
+                  <div class="anatomy-cat-sub">ДНК-маркеры</div>
+                </div>
+                <div class="anatomy-cat-warn" id="warn-genetics"></div>
+                <div class="anatomy-cat-arrow">›</div>
+              </a>
+
+              <a href="indicators.html?category=diagnostics" class="anatomy-cat"
+                 data-zone="zone-diag"
+                 data-title="🧪 Диагностика"
+                 data-tests="Глюкоза, HbA1c, Холестерин, ЛПНП, ЛПВП, СРБ, Ферритин, Витамин D, B12">
+                <span class="anatomy-cat-emoji">🧪</span>
+                <div class="anatomy-cat-info">
+                  <div class="anatomy-cat-name">Диагностика</div>
+                  <div class="anatomy-cat-sub">Маркеры и скрининг</div>
+                </div>
+                <div class="anatomy-cat-warn" id="warn-diag"></div>
+                <div class="anatomy-cat-arrow">›</div>
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- ─── 01. СВОДКА ─── -->
     <div class="dash-card-wrap col-full">
@@ -439,3 +709,32 @@ function loadCache(uid){try{const r=localStorage.getItem(CACHE_KEY);if(!r)return
 </script>
 </body>
 </html>
+<script>
+// ─── ANATOMY HOVER ───
+(function(){
+  const cats = document.querySelectorAll('.anatomy-cat');
+  const hint = document.getElementById('anatomyHint');
+  const hintTitle = document.getElementById('hintTitle');
+  const hintTests = document.getElementById('hintTests');
+  let activeZone = null;
+
+  cats.forEach(cat => {
+    cat.addEventListener('mouseenter', () => {
+      if (activeZone) activeZone.classList.remove('active');
+      cats.forEach(c => c.classList.remove('hovered'));
+      const zoneId = cat.dataset.zone;
+      activeZone = document.getElementById(zoneId);
+      if (activeZone) activeZone.classList.add('active');
+      cat.classList.add('hovered');
+      hintTitle.textContent = cat.dataset.title;
+      hintTests.textContent = cat.dataset.tests;
+      hint.classList.add('show');
+    });
+    cat.addEventListener('mouseleave', () => {
+      if (activeZone) { activeZone.classList.remove('active'); activeZone = null; }
+      cat.classList.remove('hovered');
+      hint.classList.remove('show');
+    });
+  });
+})();
+</script>
