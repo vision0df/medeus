@@ -174,23 +174,7 @@
     min-height: 480px;
   }
 
-  /* LEFT — силуэт */
-  .anatomy-silhouette {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    padding: 28px 28px 24px;
-    background: var(--bg);
-    border-right: 1px solid var(--line);
-    overflow: hidden;
-  }
-  .anatomy-silhouette-label {
-    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
-    text-transform: uppercase; color: var(--text-dim);
-    align-self: flex-start; margin-bottom: 12px;
-  }
+  /* LEFT — силуэт (see below) */
   .silhouette-wrap {
     position: relative;
     flex: 1;
@@ -199,10 +183,44 @@
     justify-content: center;
   }
   .silhouette-svg {
-    width: 200px;
+    width: 100%;
+    max-width: 220px;
     height: auto;
     display: block;
-    filter: drop-shadow(0 0 18px rgba(255,90,0,0.10));
+    mix-blend-mode: multiply;
+  }
+  /* Dark background for the silhouette area to make orange lines pop */
+  .anatomy-silhouette {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 28px 24px;
+    background: #0e0c09;
+    border-right: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .anatomy-silhouette-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: rgba(255,90,0,0.6);
+    align-self: flex-start; margin-bottom: 12px;
+  }
+  /* Hint bar override for dark bg */
+  .anatomy-hint {
+    width: 100%; margin-top: 16px;
+    background: rgba(255,90,0,0.08); padding: 12px 16px;
+    border-left: 3px solid var(--orange);
+    opacity: 0; transition: opacity 0.2s;
+    min-height: 60px;
+  }
+  .anatomy-hint-title {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    color: var(--orange); letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .anatomy-hint-tests {
+    font-family: var(--mono); font-size: 10px; color: rgba(255,255,255,0.55); line-height: 1.75;
   }
   /* Zone circles */
   .body-zone {
@@ -222,23 +240,8 @@
     0%,100% { opacity:1; transform:translate(-50%,-50%) scale(1); }
     50%      { opacity:.55; transform:translate(-50%,-50%) scale(1.06); }
   }
-  /* Hint bar */
-  .anatomy-hint {
-    width: 100%; margin-top: 16px;
-    background: var(--bg2); padding: 12px 16px;
-    border-left: 3px solid var(--orange);
-    opacity: 0; transition: opacity 0.2s;
-    min-height: 60px;
-  }
   .anatomy-hint.show { opacity: 1; }
-  .anatomy-hint-title {
-    font-family: var(--mono); font-size: 10px; font-weight: 700;
-    color: var(--orange); letter-spacing: 0.12em; text-transform: uppercase;
-    margin-bottom: 5px;
-  }
-  .anatomy-hint-tests {
-    font-family: var(--mono); font-size: 10px; color: var(--text-mid); line-height: 1.75;
-  }
+  /* hint — see below */
 
   /* RIGHT — меню */
   .anatomy-menu {
@@ -392,174 +395,7 @@
               <div class="silhouette-wrap" id="silhouetteWrap">
 
                 <!-- Полигональный wireframe силуэт -->
-                <svg class="silhouette-svg" viewBox="0 0 220 520" xmlns="http://www.w3.org/2000/svg" fill="none">
-                  <defs>
-                    <style>
-                      .wf { stroke: var(--orange); stroke-width: 0.9; fill: none; opacity: 0.85; }
-                      .wf-bg { stroke: var(--orange); stroke-width: 1.4; fill: rgba(255,90,0,0.04); }
-                      .wf-dot { fill: var(--orange); opacity: 0.7; }
-                    </style>
-                  </defs>
-
-                  <!-- ── ГОЛОВА ── -->
-                  <polygon class="wf-bg" points="110,12 130,20 138,38 130,58 110,64 90,58 82,38 90,20"/>
-                  <line class="wf" x1="110" y1="12" x2="110" y2="64"/>
-                  <line class="wf" x1="82" y1="38" x2="138" y2="38"/>
-                  <line class="wf" x1="90" y1="20" x2="130" y2="58"/>
-                  <line class="wf" x1="130" y1="20" x2="90" y2="58"/>
-                  <line class="wf" x1="110" y1="12" x2="138" y2="38"/>
-                  <line class="wf" x1="110" y1="12" x2="82" y2="38"/>
-                  <circle class="wf-dot" cx="110" cy="12" r="2"/>
-                  <circle class="wf-dot" cx="130" cy="20" r="1.5"/>
-                  <circle class="wf-dot" cx="138" cy="38" r="1.5"/>
-                  <circle class="wf-dot" cx="130" cy="58" r="1.5"/>
-                  <circle class="wf-dot" cx="90" cy="20" r="1.5"/>
-                  <circle class="wf-dot" cx="82" cy="38" r="1.5"/>
-                  <circle class="wf-dot" cx="90" cy="58" r="1.5"/>
-                  <circle class="wf-dot" cx="110" cy="64" r="1.5"/>
-
-                  <!-- ── ШЕЯ ── -->
-                  <polygon class="wf-bg" points="100,64 120,64 122,80 98,80"/>
-                  <line class="wf" x1="100" y1="64" x2="122" y2="80"/>
-                  <line class="wf" x1="120" y1="64" x2="98" y2="80"/>
-                  <circle class="wf-dot" cx="110" cy="72" r="1.5"/>
-
-                  <!-- ── ПЛЕЧИ И ТУЛОВИЩЕ ── -->
-                  <!-- Основные точки: плечи 70,88 / 150,88, грудь, талия, таз -->
-                  <polygon class="wf-bg" points="70,88 150,88 158,130 152,175 110,182 68,175 62,130"/>
-                  <!-- верхние диагонали -->
-                  <line class="wf" x1="70" y1="88" x2="150" y2="88"/>
-                  <line class="wf" x1="70" y1="88" x2="110" y2="110"/>
-                  <line class="wf" x1="150" y1="88" x2="110" y2="110"/>
-                  <line class="wf" x1="110" y1="88" x2="110" y2="182"/>
-                  <line class="wf" x1="70" y1="88" x2="158" y2="130"/>
-                  <line class="wf" x1="150" y1="88" x2="62" y2="130"/>
-                  <line class="wf" x1="62" y1="130" x2="158" y2="130"/>
-                  <line class="wf" x1="62" y1="130" x2="110" y2="155"/>
-                  <line class="wf" x1="158" y1="130" x2="110" y2="155"/>
-                  <line class="wf" x1="68" y1="175" x2="152" y2="175"/>
-                  <line class="wf" x1="62" y1="130" x2="68" y2="175"/>
-                  <line class="wf" x1="158" y1="130" x2="152" y2="175"/>
-                  <line class="wf" x1="110" y1="155" x2="68" y2="175"/>
-                  <line class="wf" x1="110" y1="155" x2="152" y2="175"/>
-                  <!-- dots -->
-                  <circle class="wf-dot" cx="70" cy="88" r="2"/>
-                  <circle class="wf-dot" cx="150" cy="88" r="2"/>
-                  <circle class="wf-dot" cx="110" cy="110" r="2"/>
-                  <circle class="wf-dot" cx="62" cy="130" r="1.5"/>
-                  <circle class="wf-dot" cx="158" cy="130" r="1.5"/>
-                  <circle class="wf-dot" cx="110" cy="155" r="2"/>
-                  <circle class="wf-dot" cx="68" cy="175" r="1.5"/>
-                  <circle class="wf-dot" cx="152" cy="175" r="1.5"/>
-                  <circle class="wf-dot" cx="110" cy="182" r="1.5"/>
-
-                  <!-- ── ЛЕВАЯ РУКА ── -->
-                  <polygon class="wf-bg" points="70,88 50,100 38,130 34,165 44,200 58,210 66,175 62,130"/>
-                  <line class="wf" x1="70" y1="88" x2="38" y2="130"/>
-                  <line class="wf" x1="50" y1="100" x2="62" y2="130"/>
-                  <line class="wf" x1="50" y1="100" x2="34" y2="165"/>
-                  <line class="wf" x1="38" y1="130" x2="66" y2="175"/>
-                  <line class="wf" x1="34" y1="165" x2="58" y2="210"/>
-                  <line class="wf" x1="44" y1="200" x2="66" y2="175"/>
-                  <circle class="wf-dot" cx="50" cy="100" r="1.5"/>
-                  <circle class="wf-dot" cx="38" cy="130" r="1.5"/>
-                  <circle class="wf-dot" cx="34" cy="165" r="1.5"/>
-                  <circle class="wf-dot" cx="44" cy="200" r="1.5"/>
-                  <circle class="wf-dot" cx="58" cy="210" r="1.5"/>
-                  <!-- Кисть левая -->
-                  <polygon class="wf-bg" points="44,200 58,210 52,228 38,222"/>
-                  <line class="wf" x1="44" y1="200" x2="52" y2="228"/>
-                  <line class="wf" x1="58" y1="210" x2="38" y2="222"/>
-                  <circle class="wf-dot" cx="52" cy="228" r="1.5"/>
-                  <circle class="wf-dot" cx="38" cy="222" r="1.5"/>
-
-                  <!-- ── ПРАВАЯ РУКА ── -->
-                  <polygon class="wf-bg" points="150,88 170,100 182,130 186,165 176,200 162,210 154,175 158,130"/>
-                  <line class="wf" x1="150" y1="88" x2="182" y2="130"/>
-                  <line class="wf" x1="170" y1="100" x2="158" y2="130"/>
-                  <line class="wf" x1="170" y1="100" x2="186" y2="165"/>
-                  <line class="wf" x1="182" y1="130" x2="154" y2="175"/>
-                  <line class="wf" x1="186" y1="165" x2="162" y2="210"/>
-                  <line class="wf" x1="176" y1="200" x2="154" y2="175"/>
-                  <circle class="wf-dot" cx="170" cy="100" r="1.5"/>
-                  <circle class="wf-dot" cx="182" cy="130" r="1.5"/>
-                  <circle class="wf-dot" cx="186" cy="165" r="1.5"/>
-                  <circle class="wf-dot" cx="176" cy="200" r="1.5"/>
-                  <circle class="wf-dot" cx="162" cy="210" r="1.5"/>
-                  <!-- Кисть правая -->
-                  <polygon class="wf-bg" points="176,200 162,210 168,228 182,222"/>
-                  <line class="wf" x1="176" y1="200" x2="168" y2="228"/>
-                  <line class="wf" x1="162" y1="210" x2="182" y2="222"/>
-                  <circle class="wf-dot" cx="168" cy="228" r="1.5"/>
-                  <circle class="wf-dot" cx="182" cy="222" r="1.5"/>
-
-                  <!-- ── ТАЗ ── -->
-                  <polygon class="wf-bg" points="68,175 152,175 148,205 110,215 72,205"/>
-                  <line class="wf" x1="68" y1="175" x2="110" y2="215"/>
-                  <line class="wf" x1="152" y1="175" x2="110" y2="215"/>
-                  <line class="wf" x1="72" y1="205" x2="148" y2="205"/>
-                  <circle class="wf-dot" cx="110" cy="215" r="2"/>
-                  <circle class="wf-dot" cx="72" cy="205" r="1.5"/>
-                  <circle class="wf-dot" cx="148" cy="205" r="1.5"/>
-
-                  <!-- ── ЛЕВОЕ БЕДРО ── -->
-                  <polygon class="wf-bg" points="72,205 110,215 100,270 78,285 62,260 66,225"/>
-                  <line class="wf" x1="72" y1="205" x2="100" y2="270"/>
-                  <line class="wf" x1="110" y1="215" x2="78" y2="285"/>
-                  <line class="wf" x1="66" y1="225" x2="100" y2="270"/>
-                  <line class="wf" x1="62" y1="260" x2="78" y2="285"/>
-                  <circle class="wf-dot" cx="100" cy="270" r="1.5"/>
-                  <circle class="wf-dot" cx="78" cy="285" r="1.5"/>
-                  <circle class="wf-dot" cx="62" cy="260" r="1.5"/>
-
-                  <!-- ── ПРАВОЕ БЕДРО ── -->
-                  <polygon class="wf-bg" points="148,205 110,215 120,270 142,285 158,260 154,225"/>
-                  <line class="wf" x1="148" y1="205" x2="120" y2="270"/>
-                  <line class="wf" x1="110" y1="215" x2="142" y2="285"/>
-                  <line class="wf" x1="154" y1="225" x2="120" y2="270"/>
-                  <line class="wf" x1="158" y1="260" x2="142" y2="285"/>
-                  <circle class="wf-dot" cx="120" cy="270" r="1.5"/>
-                  <circle class="wf-dot" cx="142" cy="285" r="1.5"/>
-                  <circle class="wf-dot" cx="158" cy="260" r="1.5"/>
-
-                  <!-- ── ЛЕВАЯ ГОЛЕНЬ ── -->
-                  <polygon class="wf-bg" points="78,285 100,270 96,330 80,345 66,325 64,295"/>
-                  <line class="wf" x1="78" y1="285" x2="96" y2="330"/>
-                  <line class="wf" x1="100" y1="270" x2="80" y2="345"/>
-                  <line class="wf" x1="64" y1="295" x2="96" y2="330"/>
-                  <line class="wf" x1="66" y1="325" x2="80" y2="345"/>
-                  <circle class="wf-dot" cx="96" cy="330" r="1.5"/>
-                  <circle class="wf-dot" cx="80" cy="345" r="2"/>
-                  <circle class="wf-dot" cx="66" cy="325" r="1.5"/>
-
-                  <!-- ── ПРАВАЯ ГОЛЕНЬ ── -->
-                  <polygon class="wf-bg" points="142,285 120,270 124,330 140,345 154,325 156,295"/>
-                  <line class="wf" x1="142" y1="285" x2="124" y2="330"/>
-                  <line class="wf" x1="120" y1="270" x2="140" y2="345"/>
-                  <line class="wf" x1="156" y1="295" x2="124" y2="330"/>
-                  <line class="wf" x1="154" y1="325" x2="140" y2="345"/>
-                  <circle class="wf-dot" cx="124" cy="330" r="1.5"/>
-                  <circle class="wf-dot" cx="140" cy="345" r="2"/>
-                  <circle class="wf-dot" cx="154" cy="325" r="1.5"/>
-
-                  <!-- ── ЛЕВАЯ СТОПА ── -->
-                  <polygon class="wf-bg" points="66,325 80,345 76,365 58,360 54,340"/>
-                  <line class="wf" x1="66" y1="325" x2="76" y2="365"/>
-                  <line class="wf" x1="80" y1="345" x2="54" y2="340"/>
-                  <line class="wf" x1="58" y1="360" x2="76" y2="365"/>
-                  <circle class="wf-dot" cx="76" cy="365" r="1.5"/>
-                  <circle class="wf-dot" cx="58" cy="360" r="1.5"/>
-                  <circle class="wf-dot" cx="54" cy="340" r="1.5"/>
-
-                  <!-- ── ПРАВАЯ СТОПА ── -->
-                  <polygon class="wf-bg" points="154,325 140,345 144,365 162,360 166,340"/>
-                  <line class="wf" x1="154" y1="325" x2="144" y2="365"/>
-                  <line class="wf" x1="140" y1="345" x2="166" y2="340"/>
-                  <line class="wf" x1="162" y1="360" x2="144" y2="365"/>
-                  <circle class="wf-dot" cx="144" cy="365" r="1.5"/>
-                  <circle class="wf-dot" cx="162" cy="360" r="1.5"/>
-                  <circle class="wf-dot" cx="166" cy="340" r="1.5"/>
-                </svg>
+                <img class="silhouette-svg" src="body_wireframe.png" alt="body" />
 
                 <!-- Зоны подсветки -->
                 <div class="body-zone" id="zone-blood"    style="width:115px;height:115px;left:50%;top:38%;"></div>
