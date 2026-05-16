@@ -422,7 +422,7 @@
               <div class="silhouette-wrap" id="silhouetteWrap">
 
                 <!-- Полигональный wireframe силуэт -->
-                <img class="silhouette-svg" src="body_wireframe.png" alt="body" />
+                <img class="silhouette-svg" id="bodySilhouette" src="body_wireframe.png" alt="body" />
 
                 <!-- Зоны подсветки -->
                 <div class="body-zone" id="zone-blood"    style="width:115px;height:115px;left:50%;top:38%;"></div>
@@ -739,6 +739,15 @@ function loadCache(uid){try{const r=localStorage.getItem(CACHE_KEY);if(!r)return
 (async()=>{
   const session=await loadUser();if(!session)return;
   const uid=session.user.id;
+
+  // Смена силуэта по полу
+  try{
+    const {data:prof}=await client.from('profiles').select('gender').eq('id',uid).maybeSingle();
+    if(prof?.gender==='женский'){
+      const s=document.getElementById('bodySilhouette');
+      if(s) s.src='body_wireframe_female.png';
+    }
+  }catch(e){ console.warn('gender fetch:',e); }
   const cached=loadCache(uid);
   if(cached){renderHistory(cached.history||[]);renderIndicators(cached.indicators||[]);renderRecommendations(cached.recommendations||[]);renderHealthScore(cached.indicators||[]);}
   try{

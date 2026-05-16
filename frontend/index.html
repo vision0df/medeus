@@ -272,10 +272,10 @@
   <!-- ═══ STEP 1 ═══ -->
   <div id="step1Panel">
     <div class="analyzer-grid-wrap">
-      <div class="analyzer-panels">
+      <div class="analyzer-panels" style="grid-template-columns:1fr;">
 
-        <!-- Left: upload + form -->
-        <div class="a-panel" style="position:relative;">
+        <!-- Document + data -->
+        <div class="a-panel" style="position:relative;max-width:600px;margin:0 auto;width:100%;">
           <div class="loader-overlay" id="step1Loader">
             <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
             <div class="loader-text">Извлекаем показатели...<br><span>Обычно 5–15 секунд</span></div>
@@ -332,28 +332,7 @@
           </button>
         </div>
 
-        <!-- Right: result preview -->
-        <div class="a-panel">
-          <div class="panel-label">Результат анализа</div>
-          <div class="result-header">
-            <div class="result-title">Расшифровка</div>
-            <div class="pill pill-gray" id="statusPill"><span class="pill-inner">Ожидание</span></div>
-          </div>
-          <div class="result-box">
-            <div class="empty-state" id="emptyState">
-              <div class="empty-icon">
-                <svg viewBox="0 0 24 24" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              </div>
-              <div class="empty-text">Нет данных</div>
-              <div class="empty-sub">Загрузите файл и<br>запустите анализ</div>
-            </div>
-            <div class="loader-abs" id="resultLoader">
-              <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-              <div class="loader-text">Анализируем...<br><span>Это может занять до 30 секунд</span></div>
-            </div>
-            <div class="result-content" id="resultContent"></div>
-          </div>
-        </div>
+
 
       </div>
     </div>
