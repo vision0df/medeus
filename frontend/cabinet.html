@@ -214,9 +214,7 @@
   .anatomy-hint {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    background: rgba(232,230,226,0.93);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: transparent;
     padding: 11px 18px 14px;
     border-top: 2px solid var(--orange);
     opacity: 0;
@@ -229,10 +227,12 @@
     font-family: var(--mono); font-size: 10px; font-weight: 700;
     color: var(--orange); letter-spacing: 0.12em; text-transform: uppercase;
     margin-bottom: 4px;
+    text-shadow: 0 0 6px rgba(240,239,235,0.95), 0 1px 4px rgba(240,239,235,0.8);
   }
   .anatomy-hint-tests {
-    font-family: var(--mono); font-size: 10px; color: var(--text-mid); line-height: 1.65;
+    font-family: var(--mono); font-size: 10px; color: var(--text); line-height: 1.65;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-shadow: 0 0 6px rgba(240,239,235,0.95), 0 1px 4px rgba(240,239,235,0.8);
   }
   /* Zone circles */
   .body-zone {
@@ -533,12 +533,8 @@
                 <div class="anatomy-cat-arrow">›</div>
               </a>
 
-              <!-- Все анализы -->
-              <div style="padding: 14px 22px; border-top: 2px solid var(--text); margin-top: auto;">
-                <a href="all-analyses.html" class="btn-show-all" style="clip-path:polygon(10px 0%,100% 0%,100% calc(100% - 10px),calc(100% - 10px) 100%,0% 100%,0% 10px);">
-                  Все анализы
-                  <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a>
+              <div class="dash-card-footer" style="margin-top:auto;">
+                <a href="indicators.html" class="btn-show-all">Все показатели<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
               </div>
             </div>
 
