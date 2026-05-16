@@ -742,10 +742,12 @@ function loadCache(uid){try{const r=localStorage.getItem(CACHE_KEY);if(!r)return
 
   // Смена силуэта по полу
   try{
-    const {data:prof}=await client.from('profiles').select('gender').eq('id',uid).maybeSingle();
-    if(prof?.gender==='женский'){
-      const s=document.getElementById('bodySilhouette');
-      if(s) s.src='body_wireframe_female.png';
+    const _sc=getSupabase();
+    const {data:prof}=await _sc.from('profiles').select('gender').eq('id',uid).maybeSingle();
+    console.log('gender from profile:', prof?.gender);
+    const s=document.getElementById('bodySilhouette');
+    if(s){
+      s.src = prof?.gender==='женский' ? 'body_wireframe_female.png' : 'body_wireframe.png';
     }
   }catch(e){ console.warn('gender fetch:',e); }
   const cached=loadCache(uid);
