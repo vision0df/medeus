@@ -166,15 +166,72 @@
   .health-bar-fill.warn  { background: var(--yellow); }
   .health-bar-fill.alert { background: var(--red); }
 
-  /* ─── ANATOMY BLOCK ─── */
-  .anatomy-block {
+  /* ─── OVERVIEW BLOCK (00+01) ─── */
+  .overview-block {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 220px 1fr;
     gap: 0;
-    min-height: 480px;
+    min-height: 500px;
   }
 
-  /* LEFT — силуэт */
+  /* LEFT — сводка отклонений */
+  .overview-summary {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--line);
+  }
+  .overview-col-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--text-dim);
+    padding: 18px 22px 13px;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .overview-indicators {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+  }
+  .ov-ind-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 22px;
+    border-bottom: 1px solid var(--line);
+    border-left: 3px solid transparent;
+  }
+  .ov-ind-item.warn  { border-left-color: var(--yellow); }
+  .ov-ind-item.alert { border-left-color: var(--red); }
+  .ov-ind-item-name {
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+    letter-spacing: 0.05em; text-transform: uppercase; flex: 1;
+  }
+  .ov-ind-item-val {
+    font-family: var(--sans); font-size: 16px; font-weight: 700; color: var(--text);
+    letter-spacing: -0.3px; flex-shrink: 0;
+  }
+  .ov-ind-item-val span { font-family: var(--mono); font-size: 10px; font-weight: 400; color: var(--text-dim); margin-left: 3px; }
+  .ov-ind-item-status {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
+    text-transform: uppercase; flex-shrink: 0; width: 52px; text-align: right;
+  }
+  .ov-ind-item-status.warn  { color: var(--yellow); }
+  .ov-ind-item-status.alert { color: var(--red); }
+  .ov-empty {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px; padding: 32px;
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+    letter-spacing: 0.05em; text-align: center;
+  }
+  .ov-empty svg { width: 28px; height: 28px; stroke: var(--green); fill: none; stroke-width: 1.5; }
+  .overview-summary-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 22px; border-top: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+
+  /* CENTER — силуэт */
   .anatomy-silhouette {
     position: relative;
     display: flex;
@@ -207,8 +264,7 @@
     max-width: 280px;
     height: auto;
     display: block;
-    mix-blend-mode: multiply;
-    filter: invert(1) sepia(1) saturate(10) hue-rotate(345deg) brightness(0.82);
+    mix-blend-mode: screen;
   }
   /* Hint — overlay поверх картинки, фиксированная высота чтобы не двигала */
   .anatomy-hint {
@@ -334,12 +390,13 @@
     .dashboard { grid-template-columns: 1fr; }
     .col-full { grid-column: auto; }
     .summary-grid { grid-template-columns: 1fr 1fr; }
-    .anatomy-block { grid-template-columns: 1fr; min-height: auto; }
+    .overview-block { grid-template-columns: 1fr; min-height: auto; }
+    .overview-summary { border-right: none; border-bottom: 1px solid var(--line); }
     .anatomy-silhouette {
       border-right: none; border-bottom: 1px solid var(--line);
-      padding: 20px 20px 0; min-height: 340px;
+      padding: 20px 20px 0; min-height: 300px;
     }
-    .silhouette-svg { max-width: 200px; }
+    .silhouette-svg { max-width: 180px; }
     .anatomy-menu { border-top: none; }
     .anatomy-hint { height: 70px; }
   }
@@ -347,8 +404,8 @@
     .page { padding: 72px 18px 44px; }
     .summary-grid { grid-template-columns: 1fr; }
     .health-score-wrap { flex-direction: column; text-align: center; }
-    .anatomy-silhouette { min-height: 280px; }
-    .silhouette-svg { max-width: 150px; }
+    .anatomy-silhouette { min-height: 240px; }
+    .silhouette-svg { max-width: 140px; }
     .anatomy-cat { padding: 11px 14px; gap: 10px; }
     .anatomy-cat-icon { width: 30px; height: 30px; }
     .anatomy-cat-icon svg { width: 14px; height: 14px; }
@@ -406,32 +463,45 @@
 
   <div class="dashboard">
 
-    <!-- ─── 00. АНАТОМИЯ / РАЗДЕЛЫ АНАЛИЗОВ ─── -->
+    <!-- ─── 00+01. ТЕЛО + РАЗДЕЛЫ + СВОДКА ─── -->
     <div class="dash-card-wrap col-full">
       <div class="dash-card">
         <div class="dash-card-header">
-          <div class="dash-card-label">00 — Разделы анализов</div>
-          <span class="card-badge badge-neutral">Наведите на раздел</span>
+          <div class="dash-card-label">00 — Обзор здоровья</div>
+          <span class="card-badge badge-neutral" id="badge-summary">загрузка...</span>
         </div>
         <div class="dash-card-body" style="padding:0;">
-          <div class="anatomy-block">
+          <div class="overview-block">
 
-            <!-- ── ЛЕВАЯ ЧАСТЬ: силуэт ── -->
+            <!-- ── ЛЕВАЯ: Сводка отклонений ── -->
+            <div class="overview-summary">
+              <div class="overview-col-label">// Отклонения</div>
+              <div class="overview-indicators" id="summaryGrid">
+                <div class="card-loader" id="loaderSummary">
+                  <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                  <div class="loader-text">Загрузка...</div>
+                </div>
+              </div>
+              <div class="overview-summary-footer">
+                <span class="summary-footer-text" id="summaryFooterText">—</span>
+                <a href="indicators.html" class="btn-nav btn-ghost" style="font-size:10px;padding:6px 12px;">
+                  <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  Все показатели
+                </a>
+              </div>
+            </div>
+
+            <!-- ── ЦЕНТР: Силуэт ── -->
             <div class="anatomy-silhouette">
               <div class="anatomy-silhouette-label">// Карта тела</div>
               <div class="silhouette-wrap" id="silhouetteWrap">
-
-                <!-- Полигональный wireframe силуэт -->
                 <img class="silhouette-svg" id="bodySilhouette" src="body_wireframe.png" alt="body" />
-
-                <!-- Зоны подсветки -->
                 <div class="body-zone" id="zone-blood"    style="width:115px;height:115px;left:50%;top:38%;"></div>
                 <div class="body-zone" id="zone-hormones" style="width:75px;height:75px;left:50%;top:15%;"></div>
                 <div class="body-zone" id="zone-infect"   style="width:85px;height:85px;left:50%;top:26%;"></div>
                 <div class="body-zone" id="zone-organs"   style="width:100px;height:100px;left:50%;top:34%;"></div>
                 <div class="body-zone" id="zone-genetics" style="width:65px;height:65px;left:50%;top:11%;"></div>
                 <div class="body-zone" id="zone-diag"     style="width:130px;height:130px;left:50%;top:44%;"></div>
-                <!-- Hint overlay -->
                 <div class="anatomy-hint" id="anatomyHint">
                   <div class="anatomy-hint-title" id="hintTitle"></div>
                   <div class="anatomy-hint-tests" id="hintTests"></div>
@@ -439,14 +509,13 @@
               </div>
             </div>
 
-            <!-- ── ПРАВАЯ ЧАСТЬ: меню ── -->
+            <!-- ── ПРАВАЯ: Меню разделов ── -->
             <div class="anatomy-menu">
               <div class="anatomy-menu-label">// Разделы анализов</div>
 
               <a href="indicators.html?category=blood" class="anatomy-cat"
-                 data-zone="zone-blood"
-                 data-title="Кровь"
-                 data-tests="ОАК · Лейкоциты · Эритроциты · Гемоглобин · Тромбоциты · СОЭ · Гематокрит · Ретикулоциты">
+                 data-zone="zone-blood" data-title="Кровь"
+                 data-tests="ОАК · Лейкоциты · Эритроциты · Гемоглобин · Тромбоциты · СОЭ · Гематокрит">
                 <div class="anatomy-cat-icon">
                   <svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg>
                 </div>
@@ -459,9 +528,8 @@
               </a>
 
               <a href="indicators.html?category=hormones" class="anatomy-cat"
-                 data-zone="zone-hormones"
-                 data-title="Гормоны"
-                 data-tests="ТТГ · Т3 · Т4 · Кортизол · Инсулин · Тестостерон · Эстрадиол · ЛГ · ФСГ · Пролактин">
+                 data-zone="zone-hormones" data-title="Гормоны"
+                 data-tests="ТТГ · Т3 · Т4 · Кортизол · Инсулин · Тестостерон · Эстрадиол · ЛГ · ФСГ">
                 <div class="anatomy-cat-icon">
                   <svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="4" ry="5"/><path d="M12 11v4M8 19h8M10 15l-2 4M14 15l2 4"/><circle cx="7" cy="10" r="2"/><circle cx="17" cy="10" r="2"/></svg>
                 </div>
@@ -474,9 +542,8 @@
               </a>
 
               <a href="indicators.html?category=infections" class="anatomy-cat"
-                 data-zone="zone-infect"
-                 data-title="Инфекции"
-                 data-tests="ВИЧ · Гепатит B · Гепатит C · Сифилис · ЦМВ · ВЭБ · Хламидии · Уреаплазма · Токсоплазма">
+                 data-zone="zone-infect" data-title="Инфекции"
+                 data-tests="ВИЧ · Гепатит B · Гепатит C · Сифилис · ЦМВ · ВЭБ · Хламидии">
                 <div class="anatomy-cat-icon">
                   <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="16.24" y2="7.76"/><line x1="7.76" y1="16.24" x2="4.93" y2="19.07"/></svg>
                 </div>
@@ -489,9 +556,8 @@
               </a>
 
               <a href="indicators.html?category=organs" class="anatomy-cat"
-                 data-zone="zone-organs"
-                 data-title="Органы"
-                 data-tests="АЛТ · АСТ · Билирубин · Креатинин · Мочевина · Амилаза · Липаза · Тропонин · ГГТ · ЩФ">
+                 data-zone="zone-organs" data-title="Органы"
+                 data-tests="АЛТ · АСТ · Билирубин · Креатинин · Мочевина · Амилаза · Тропонин">
                 <div class="anatomy-cat-icon">
                   <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
                 </div>
@@ -504,9 +570,8 @@
               </a>
 
               <a href="indicators.html?category=genetics" class="anatomy-cat"
-                 data-zone="zone-genetics"
-                 data-title="Генетика"
-                 data-tests="BRCA1/2 · Полиморфизмы · Фармакогенетика · HLA-типирование · Кариотип">
+                 data-zone="zone-genetics" data-title="Генетика"
+                 data-tests="BRCA1/2 · Полиморфизмы · Фармакогенетика · HLA-типирование">
                 <div class="anatomy-cat-icon">
                   <svg viewBox="0 0 24 24"><path d="M2 2c2 4 6 6 10 6S20 6 22 2"/><path d="M2 22c2-4 6-6 10-6s8 2 10 6"/><path d="M12 8v8"/><path d="M8 10c1 1 3 1.5 4 2"/><path d="M16 10c-1 1-3 1.5-4 2"/><path d="M8 14c1-1 3-1.5 4-2"/><path d="M16 14c-1-1-3-1.5-4-2"/></svg>
                 </div>
@@ -519,9 +584,8 @@
               </a>
 
               <a href="indicators.html?category=diagnostics" class="anatomy-cat"
-                 data-zone="zone-diag"
-                 data-title="Диагностика"
-                 data-tests="Глюкоза · HbA1c · Холестерин · ЛПНП · ЛПВП · СРБ · Ферритин · Витамин D · B12 · Фолиевая">
+                 data-zone="zone-diag" data-title="Диагностика"
+                 data-tests="Глюкоза · HbA1c · Холестерин · ЛПНП · ЛПВП · СРБ · Ферритин · Витамин D">
                 <div class="anatomy-cat-icon">
                   <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
                 </div>
@@ -538,31 +602,6 @@
               </div>
             </div>
 
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ─── 01. СВОДКА ─── -->
-    <div class="dash-card-wrap col-full">
-      <div class="dash-card">
-        <div class="dash-card-header">
-          <div class="dash-card-label">01 — Сводка анализов</div>
-          <span class="card-badge badge-neutral" id="badge-summary">загрузка...</span>
-        </div>
-        <div class="dash-card-body">
-          <div class="summary-grid" id="summaryGrid">
-            <div class="card-loader" id="loaderSummary" style="grid-column:1/-1;">
-              <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-              <div class="loader-text">Загрузка показателей...</div>
-            </div>
-          </div>
-          <div class="summary-footer">
-            <span class="summary-footer-text" id="summaryFooterText">—</span>
-            <a href="indicators.html" class="btn-nav btn-ghost" style="font-size:10px;padding:7px 14px;">
-              <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              Все показатели
-            </a>
           </div>
         </div>
       </div>
@@ -698,7 +737,18 @@ function renderIndicators(indicators){
   }
   const dev=indicators.filter(i=>i.status!=='normal').length;
   if(badge){badge.textContent=dev?dev+' '+plural(dev,'отклонение','отклонения','отклонений'):'всё в норме';badge.className='card-badge '+(dev?'badge-warn':'badge-ok');}
-  grid.innerHTML=indicators.slice(0,9).map(ind=>{const cls=statusClass(ind.status);return`<div class="summary-item ${cls}"><div class="summary-item-name">${escHtml(ind.name)}</div><div class="summary-item-val">${escHtml(ind.value)}</div><div class="summary-item-status ${cls}">${statusLabel(ind.status)}</div></div>`;}).join('');
+  const abnormal=indicators.filter(i=>i.status!=='normal'&&i.status!=='ok');
+  const shown=abnormal.slice(0,6);
+  const warnCount=indicators.filter(i=>i.status==='warning'||i.status==='warn').length;
+  const alertCount=indicators.filter(i=>i.status==='alert'||i.status==='critical').length;
+  if(badge) badge.textContent=alertCount?`${alertCount} критич.`:warnCount?`${warnCount} отклон.`:`в норме`;
+  if(badge) badge.className='card-badge '+(alertCount?'badge-red':warnCount?'badge-yellow':'badge-green');
+  if(shown.length===0){
+    grid.innerHTML='<div class="ov-empty"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Все показатели<br>в норме</div>';
+  } else {
+    grid.innerHTML=shown.map(ind=>{const cls=statusClass(ind.status);return`<div class="ov-ind-item ${cls}"><div class="ov-ind-item-name">${escHtml(ind.name)}</div><div class="ov-ind-item-val">${escHtml(ind.value)}</div><div class="ov-ind-item-status ${cls}">${statusLabel(ind.status)}</div></div>`;}).join('');
+  }
+  if(footer) footer.textContent=abnormal.length>6?`+${abnormal.length-6} ещё отклонений`:(abnormal.length?`${abnormal.length} из ${indicators.length} не в норме`:`Все ${indicators.length} в норме`);
   if(footer&&indicators.length){const last=indicators.reduce((a,b)=>(a.date||'')>(b.date||'')?a:b);footer.textContent=`Последний: ${escHtml(last.source)} · ${fmtDate(last.date)}`;}
 }
 
