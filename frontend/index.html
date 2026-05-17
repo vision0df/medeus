@@ -78,6 +78,7 @@
   }
   .a-panel { background: var(--bg2); padding: 44px; }
   .a-panel-full { grid-column: 1/-1; }
+  .analyzer-panels--single { grid-template-columns: 1fr; background: var(--bg2); }
 
   /* ─── CATEGORY SELECTOR (upload page version, reused here) ─── */
   .category-grid { display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
@@ -272,10 +273,10 @@
   <!-- ═══ STEP 1 ═══ -->
   <div id="step1Panel">
     <div class="analyzer-grid-wrap">
-      <div class="analyzer-panels" style="grid-template-columns:1fr;">
+      <div class="analyzer-panels analyzer-panels--single">
 
         <!-- Document + data -->
-        <div class="a-panel" style="position:relative;max-width:600px;margin:0 auto;width:100%;">
+        <div class="a-panel" style="position:relative;">
           <div class="loader-overlay" id="step1Loader">
             <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
             <div class="loader-text">Извлекаем показатели...<br><span>Обычно 5–15 секунд</span></div>
