@@ -169,7 +169,7 @@
   /* ─── OVERVIEW BLOCK (00+01) ─── */
   .overview-block {
     display: grid;
-    grid-template-columns: 1fr 220px 1fr;
+    grid-template-columns: 1fr 280px 1fr;
     gap: 0;
     min-height: 500px;
   }
@@ -255,28 +255,30 @@
     position: relative;
     flex: 1;
     width: 100%;
+    min-height: 0;
     display: flex;
-    align-items: flex-end;
+    align-items: stretch;
     justify-content: center;
   }
   .silhouette-svg {
     width: 100%;
-    max-width: 280px;
-    height: auto;
+    max-width: 100%;
+    height: 100%;
+    object-fit: contain;
     display: block;
-    mix-blend-mode: screen;
+    mix-blend-mode: multiply;
   }
   /* Hint — overlay поверх картинки, фиксированная высота чтобы не двигала */
   .anatomy-hint {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    background: transparent;
-    padding: 11px 18px 14px;
+    background: rgba(240,239,235,0.55);
+    backdrop-filter: blur(2px);
+    padding: 10px 16px 12px;
     border-top: 2px solid var(--orange);
     opacity: 0;
     transition: opacity 0.22s;
     pointer-events: none;
-    height: 80px;
   }
   .anatomy-hint.show { opacity: 1; }
   .anatomy-hint-title {
@@ -287,8 +289,7 @@
   }
   .anatomy-hint-tests {
     font-family: var(--mono); font-size: 10px; color: var(--text); line-height: 1.65;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    text-shadow: 0 0 6px rgba(240,239,235,0.95), 0 1px 4px rgba(240,239,235,0.8);
+    white-space: normal; word-break: break-word;
   }
   /* Zone circles */
   .body-zone {
@@ -323,8 +324,8 @@
     border-bottom: 1px solid var(--line);
   }
   .anatomy-cat {
-    display: flex; align-items: center; gap: 14px;
-    padding: 13px 22px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 18px;
     cursor: pointer;
     border-bottom: 1px solid var(--line);
     text-decoration: none;
@@ -358,9 +359,7 @@
     font-family: var(--mono); font-size: 12px; font-weight: 600;
     color: var(--text); letter-spacing: 0.02em;
   }
-  .anatomy-cat-sub {
-    font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 2px;
-  }
+  .anatomy-cat-sub { display: none; }
 
   /* Warning triangle */
   .anatomy-cat-warn {
@@ -467,7 +466,7 @@
     <div class="dash-card-wrap col-full">
       <div class="dash-card">
         <div class="dash-card-header">
-          <div class="dash-card-label">00 — Обзор здоровья</div>
+          <div class="dash-card-label">01 — Обзор здоровья</div>
           <span class="card-badge badge-neutral" id="badge-summary">загрузка...</span>
         </div>
         <div class="dash-card-body" style="padding:0;">
@@ -475,7 +474,6 @@
 
             <!-- ── ЛЕВАЯ: Сводка отклонений ── -->
             <div class="overview-summary">
-              <div class="overview-col-label">// Отклонения</div>
               <div class="overview-indicators" id="summaryGrid">
                 <div class="card-loader" id="loaderSummary">
                   <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
@@ -493,7 +491,6 @@
 
             <!-- ── ЦЕНТР: Силуэт ── -->
             <div class="anatomy-silhouette">
-              <div class="anatomy-silhouette-label">// Карта тела</div>
               <div class="silhouette-wrap" id="silhouetteWrap">
                 <img class="silhouette-svg" id="bodySilhouette" src="body_wireframe.png" alt="body" />
                 <div class="body-zone" id="zone-blood"    style="width:115px;height:115px;left:50%;top:38%;"></div>
@@ -511,7 +508,6 @@
 
             <!-- ── ПРАВАЯ: Меню разделов ── -->
             <div class="anatomy-menu">
-              <div class="anatomy-menu-label">// Разделы анализов</div>
 
               <a href="indicators.html?category=blood" class="anatomy-cat"
                  data-zone="zone-blood" data-title="Кровь"
@@ -738,7 +734,7 @@ function renderIndicators(indicators){
   const dev=indicators.filter(i=>i.status!=='normal').length;
   if(badge){badge.textContent=dev?dev+' '+plural(dev,'отклонение','отклонения','отклонений'):'всё в норме';badge.className='card-badge '+(dev?'badge-warn':'badge-ok');}
   const abnormal=indicators.filter(i=>i.status!=='normal'&&i.status!=='ok');
-  const shown=abnormal.slice(0,6);
+  const shown=abnormal.slice(0,10);
   const warnCount=indicators.filter(i=>i.status==='warning'||i.status==='warn').length;
   const alertCount=indicators.filter(i=>i.status==='alert'||i.status==='critical').length;
   if(badge) badge.textContent=alertCount?`${alertCount} критич.`:warnCount?`${warnCount} отклон.`:`в норме`;
@@ -748,7 +744,7 @@ function renderIndicators(indicators){
   } else {
     grid.innerHTML=shown.map(ind=>{const cls=statusClass(ind.status);return`<div class="ov-ind-item ${cls}"><div class="ov-ind-item-name">${escHtml(ind.name)}</div><div class="ov-ind-item-val">${escHtml(ind.value)}</div><div class="ov-ind-item-status ${cls}">${statusLabel(ind.status)}</div></div>`;}).join('');
   }
-  if(footer) footer.textContent=abnormal.length>6?`+${abnormal.length-6} ещё отклонений`:(abnormal.length?`${abnormal.length} из ${indicators.length} не в норме`:`Все ${indicators.length} в норме`);
+  if(footer) footer.textContent=abnormal.length>10?`+${abnormal.length-10} ещё отклонений`:(abnormal.length?`${abnormal.length} из ${indicators.length} не в норме`:`Все ${indicators.length} в норме`);
   if(footer&&indicators.length){const last=indicators.reduce((a,b)=>(a.date||'')>(b.date||'')?a:b);footer.textContent=`Последний: ${escHtml(last.source)} · ${fmtDate(last.date)}`;}
 }
 
