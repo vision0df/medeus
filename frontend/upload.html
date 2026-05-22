@@ -538,7 +538,7 @@
 <script>
 let currentSession=null,userProfile=null;
 (async()=>{currentSession=await requireAuth();if(currentSession)await loadUserProfile(currentSession);})();
-async function loadUserProfile(s){try{const c=getSupabase();const{data}=await c.from('profiles').select('gender,birth_date,full_name').eq('id',s.user.id).single();if(data)userProfile=data;}catch(e){console.warn('Профиль:',e);}}
+async function loadUserProfile(s){try{const c=getSupabase();const{data}=await c.from('profiles').select('gender,birth_date,full_name').eq('id',s.user.id).maybeSingle();if(data)userProfile=data;}catch(e){console.warn('Профиль:',e);}}
 function calcAge(bd){if(!bd)return'';const t=new Date(),b=new Date(bd);let a=t.getFullYear()-b.getFullYear();const m=t.getMonth()-b.getMonth();if(m<0||(m===0&&t.getDate()<b.getDate()))a--;return String(a);}
 
 const fileInput=document.getElementById('fileInput');

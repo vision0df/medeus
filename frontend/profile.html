@@ -297,10 +297,12 @@ document.getElementById('btnSaveProfile').addEventListener('click',async()=>{
   const birthDate=document.getElementById('inputBirthDate').value;
   hideAlert('alertProfile');
   if(!fullName){showAlert('alertProfile','alertProfileText','Введите имя','error');return;}
+  if(!gender){showAlert('alertProfile','alertProfileText','Выберите пол','error');return;}
+  if(!birthDate){showAlert('alertProfile','alertProfileText','Укажите дату рождения','error');return;}
   btn.disabled=true;btn.querySelector('span').textContent='Сохранение...';
   try{
     const client=getSupabase();
-    const{error}=await client.from('profiles').upsert({id:currentSession.user.id,full_name:fullName,gender:gender||null,birth_date:birthDate||null},{onConflict:'id'});
+    const{error}=await client.from('profiles').upsert({id:currentSession.user.id,full_name:fullName,gender:gender,birth_date:birthDate},{onConflict:'id'});
     if(error)throw error;
     document.getElementById('profileName').textContent=fullName;
     document.getElementById('avatarBig').textContent=fullName.slice(0,2).toUpperCase();

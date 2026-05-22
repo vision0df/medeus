@@ -316,6 +316,18 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
       }
     });
     if (error) throw error;
+
+    // Сохраняем профиль в таблицу profiles
+    if (data.user) {
+      const { error: profileError } = await client.from('profiles').insert({
+        id: data.user.id,
+        full_name: fullName,
+        gender: gender,
+        birth_date: birthDate
+      });
+      if (profileError) console.warn('Ошибка сохранения профиля:', profileError.message);
+    }
+
     if (data.user && !data.session) {
       document.getElementById('registerForm').style.display = 'none';
       document.getElementById('sentEmailAddr').textContent = email;
