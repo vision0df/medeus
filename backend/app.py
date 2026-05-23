@@ -75,173 +75,12 @@ ALLOWED_MIME_TYPES = {
 
 
 
-def normalize_indicator_name(raw_name: str) -> str:
-    """
-    Нормализует написание показателя, сохраняя его специфику.
 
-    Цель — привести к единому виду одно и то же название,
-    НО не объединять разные показатели (например Гемоглобин,
-    Гемоглобин A1c и Гемоглобин F — это три разных показателя).
+def clean_name(raw_name: str) -> str:
+    """Минимальная очистка: trim пробелов. Вся нормализация — на стороне Gemini и indicator_names."""
+    return (raw_name or "").strip()
 
-    Алгоритм:
-    1. Чистим мусор: лишние пробелы, запятые-разделители, технические
-       аббревиатуры в скобках (WBC), (BASO%) и т.п.
-    2. Заменяем известные аббревиатуры/синонимы на русское написание,
-       но только саму базовую часть — уточнения (свободный, общий, A1c…)
-       остаются в названии.
-    3. Возвращаем очищенное название с сохранёнными уточнениями.
-    """
-    import unicodedata
 
-    # --- шаг 1: базовая чистка ---
-    name = raw_name.strip()
-    # убираем технические аббревиатуры в скобках: "(WBC)", "(BASO%)", "(HCT)"
-    # но НЕ убираем содержательные уточнения типа "(свободный)", "(A1c)"
-    # убираем скобки с техническими аббревиатурами: "(WBC)", "(BASO%)"
-    name = re.sub(r'\s*\([A-Z][A-Z0-9%#]{1,6}\)\s*', ' ', name)
-    # убираем скобки с кириллицей-дублёром: "WBC (Лейкоциты)" → "WBC"
-    name = re.sub(r'\s*\([А-Яа-яЁё][А-Яа-яЁё\s]{1,30}\)\s*', ' ', name)
-    # запятая как разделитель единиц → пробел: "Гемоглобин, г/л" → "Гемоглобин г/л"
-    name = re.sub(r',\s*', ' ', name)
-    # нормализуем пробелы
-    name = re.sub(r'\s+', ' ', name).strip()
-
-    lower = name.lower()
-
-    # --- шаг 2: словарь замен ---
-    # Каждая запись: (паттерн_для_поиска, что_заменить_на)
-    # Паттерн ищется в lower, замена применяется к name (с сохранением регистра уточнений).
-    # Порядок важен: специфичные — первыми.
-    REPLACEMENTS = [
-        # --- аббревиатуры → русское слово (только само слово, без уточнений) ---
-        # Гемоглобин — сначала специфичные формы
-        (r'\bhba1c\b',                   'HbA1c'),
-        (r'\bгемоглобин\s+a1c\b',        'HbA1c'),   # "Гемоглобин A1c" → "HbA1c"
-        (r'\bгликированный\s+гемоглобин\b', 'HbA1c'),
-        (r'\bгликозилированный\s+гемоглобин\b', 'HbA1c'),
-        (r'\bhbf\b',                     'Гемоглобин F'),
-        (r'\bhba\b',                     'Гемоглобин A'),
-        (r'\bhgb\b',                     'Гемоглобин'),
-        (r'\bhb\b',                      'Гемоглобин'),
-        # Лейкоциты
-        (r'\bwbc\b',          'Лейкоциты'),
-        # Эритроциты
-        (r'\brbc\b',          'Эритроциты'),
-        # Тромбоциты
-        (r'\bplt\b',          'Тромбоциты'),
-        (r'\bplatelet\b',     'Тромбоциты'),
-        # Гематокрит
-        (r'\bhct\b',          'Гематокрит'),
-        # Нейтрофилы
-        (r'\bneu\b',          'Нейтрофилы'),
-        (r'\bneut\b',         'Нейтрофилы'),
-        # Лимфоциты
-        (r'\blym\b',          'Лимфоциты'),
-        (r'\blymph\b',        'Лимфоциты'),
-        # Моноциты
-        (r'\bmon\b',          'Моноциты'),
-        (r'\bmono\b',         'Моноциты'),
-        # Эозинофилы
-        (r'\beos\b',          'Эозинофилы'),
-        # Базофилы
-        (r'\bbas\b',          'Базофилы'),
-        (r'\bbaso\b',         'Базофилы'),
-        # СОЭ
-        (r'\besr\b',          'СОЭ'),
-        # Глюкоза
-        (r'\bglucose\b',      'Глюкоза'),
-        # Холестерин
-        (r'\bldl\b',          'ЛПНП'),
-        (r'\bhdl\b',          'ЛПВП'),
-        (r'\bcholesterol\b',  'Холестерин'),
-        # Триглицериды
-        (r'\btriglycerides?\b','Триглицериды'),
-        (r'\btg\b',           'Триглицериды'),
-        # Печёночные
-        (r'\balt\b',          'АЛТ'),
-        (r'\bast\b',          'АСТ'),
-        (r'\balp\b',          'Щелочная фосфатаза'),
-        (r'\bggt\b',          'Гамма-ГТ'),
-        # Почечные
-        (r'\bcreatinine\b',   'Креатинин'),
-        (r'\burea\b',         'Мочевина'),
-        (r'\buric acid\b',    'Мочевая кислота'),
-        (r'\begfr\b',         'СКФ'),
-        (r'\bgfr\b',          'СКФ'),
-        # Белки
-        (r'\balbumin\b',      'Альбумин'),
-        (r'\btotal protein\b','Общий белок'),
-        # Билирубин
-        (r'\bbilirubin\b',    'Билирубин'),
-        # Железо и запасы
-        (r'\bferritin\b',     'Ферритин'),
-        (r'\btibc\b',         'ОЖСС'),
-        (r'\btransferrin\b',  'Трансферрин'),
-        (r'\biron\b',         'Железо'),
-        (r'\bfe\b',           'Железо'),
-        # Гормоны щитовидной
-        (r'\btsh\b',          'ТТГ'),
-        (r'\bft3\b',          'Т3 свободный'),
-        (r'\bft4\b',          'Т4 свободный'),
-        # Прочие гормоны
-        (r'\binsulin\b',      'Инсулин'),
-        (r'\bcortisol\b',     'Кортизол'),
-        (r'\bprolactin\b',    'Пролактин'),
-        (r'\bestradiol\b',    'Эстрадиол'),
-        (r'\btestosterone\b', 'Тестостерон'),
-        (r'\blh\b',           'ЛГ'),
-        (r'\bfsh\b',          'ФСГ'),
-        (r'\bpsa\b',          'ПСА'),
-        # Витамины
-        (r'\b25[\s-]*(?:oh|он)\b', 'Витамин D'),
-        (r'\bvitamin d\b',    'Витамин D'),
-        (r'\bvitamin b12\b',  'Витамин B12'),
-        (r'\bcobalamin\b',    'Витамин B12'),
-        (r'\bfolate\b',       'Фолиевая кислота'),
-        (r'\bfolic\b',        'Фолиевая кислота'),
-        # Воспаление
-        (r'\bcrp\b',          'СРБ'),
-        # Коагулограмма
-        (r'\binr\b',          'МНО'),
-        (r'\bfibrinogen\b',   'Фибриноген'),
-        (r'\bd[\s-]*dimer\b','D-димер'),
-        # Электролиты
-        (r'\bcalcium\b',      'Кальций'),
-        (r'\bca\b',           'Кальций'),
-        (r'\bpotassium\b',    'Калий'),
-        (r'\bsodium\b',       'Натрий'),
-        (r'\bmagnesium\b',    'Магний'),
-        (r'\bphosphorus\b',   'Фосфор'),
-        (r'\bchloride\b',     'Хлор'),
-        # Амилаза / липаза
-        (r'\bamylase\b',      'Амилаза'),
-        (r'\blipase\b',       'Липаза'),
-    ]
-
-    result = name
-    for pattern, replacement in REPLACEMENTS:
-        if re.search(pattern, lower):
-            # заменяем в оригинале (с учётом регистра) все вхождения паттерна
-            result = re.sub(pattern, replacement, result, flags=re.IGNORECASE)
-            lower = result.lower()
-
-    # финальная чистка пробелов
-    result = re.sub(r'\s+', ' ', result).strip()
-
-    # убираем дублирование целой фразы из 1-3 слов подряд:
-    # "Лейкоциты Лейкоциты" → "Лейкоциты", "Витамин D Витамин D" → "Витамин D"
-    result = re.sub(r'\b(\w+(?:\s+\w+){0,2})\s+\1\b', r'\1', result, flags=re.IGNORECASE)
-    # и одиночное слово на случай если фраза не совпала
-    # убираем дублирование слова подряд: "Лейкоциты Лейкоциты" → "Лейкоциты"
-    # возникает когда аббревиатура стояла рядом с переводом: "Лейкоциты WBC" → "Лейкоциты Лейкоциты"
-    result = re.sub(r'\b(\w+)\s+\1\b', r'\1', result, flags=re.IGNORECASE)  # однословный dedup
-    result = re.sub(r'\s+', ' ', result).strip()
-
-    return result if result else raw_name
-
-# ========================
-# Утилиты
-# ========================
 def get_mime_type(filename: str) -> str | None:
     ext = os.path.splitext(filename)[1].lower()
     return ALLOWED_MIME_TYPES.get(ext)
@@ -595,7 +434,7 @@ def parse_indicators(rows: list) -> list:
                 continue
 
             # Используем нормализованное имя как ключ группировки
-            canonical_name = normalize_indicator_name(parsed["name"])
+            canonical_name = clean_name(parsed["name"])
             name_key = canonical_name.lower().strip()
             existing = merged.get(name_key)
 
@@ -625,7 +464,7 @@ def parse_indicators(rows: list) -> list:
 def parse_indicators_history(rows: list, indicator_name: str) -> list:
     """Возвращает историю значений одного показателя по всем анализам."""
     result = []
-    canonical_target = normalize_indicator_name(indicator_name).lower()
+    canonical_target = clean_name(indicator_name).lower()
 
     for row in sorted(rows, key=lambda r: r.get("analysis_date") or ""):
         result_text = row.get("result", "") or ""
@@ -649,8 +488,8 @@ def parse_indicators_history(rows: list, indicator_name: str) -> list:
             if not parsed:
                 continue
 
-            canonical_name = normalize_indicator_name(parsed["name"]).lower()
-            original_canonical = normalize_indicator_name(parsed["original_name"]).lower()
+            canonical_name = clean_name(parsed["name"]).lower()
+            original_canonical = clean_name(parsed["original_name"]).lower()
 
             if canonical_name == canonical_target or original_canonical == canonical_target:
                 result.append({
@@ -801,11 +640,11 @@ def resolve_indicators_batch(indicators: list) -> dict:
     unknown: list = []
 
     for ind in indicators:
-        canonical = normalize_indicator_name(ind["name"])
+        canonical = clean_name(ind["name"])
         original  = ind.get("original_name", canonical)
         group_key = ind.get("group_key", "blood")
         c_lower   = canonical.lower()
-        o_lower   = normalize_indicator_name(original).lower()
+        o_lower   = clean_name(original).lower()
 
         ind_id = known_names.get(c_lower) or known_names.get(o_lower)
         if not ind_id:
@@ -840,12 +679,12 @@ def resolve_indicators_batch(indicators: list) -> dict:
 Список уже известных показателей в системе:
 {json.dumps(known_names_list, ensure_ascii=False)}
 
-Новые показатели из анализа (id, нормализованное name, оригинальное original):
+Новые показатели из анализа — каждый имеет id, название из документа (original) и название которое дал ИИ-анализатор (name):
 {unknown_list_str}
 
-Для КАЖДОГО реши:
-- Синоним существующего → action="alias", match=точное название из известных
-- Новый показатель → action="new"
+Для КАЖДОГО реши одно из двух:
+- Это тот же показатель что уже есть в системе (синоним/другое написание) → action="alias", match=точное название из списка известных
+- Это новый показатель которого нет в системе → action="new"
 
 Верни ТОЛЬКО JSON-массив без пояснений и markdown:
 [{{"id": 0, "action": "alias", "match": "Гемоглобин"}}, {{"id": 1, "action": "new"}}]
@@ -930,7 +769,7 @@ def save_user_indicators(
         return
 
     for ind in parsed_indicators:
-        canonical = normalize_indicator_name(ind["name"])
+        canonical = clean_name(ind["name"])
         ind_id = id_map.get(canonical.lower())
         if not ind_id:
             log.warning("нет indicator_id для '%s'", canonical)
@@ -1195,7 +1034,7 @@ def indicator_history():
             filters={"user_id": user["id"]},
         )
         history = parse_indicators_history(rows, name)
-        return jsonify({"name": normalize_indicator_name(name), "history": history})
+        return jsonify({"name": clean_name(name), "history": history})
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
     except Exception as e:
