@@ -54,6 +54,18 @@ log.info("SUPABASE KEY: %s", "OK" if SUPABASE_KEY  else "MISSING")
 
 gemini = genai.Client(api_key=GEMINI_API_KEY)
 
+# Модели для извлечения показателей (парсинг) — начинаем с лёгкой модели
+GEMINI_MODELS_EXTRACT = [
+    "gemini-2.5-flash-lite",  # основная для парсинга: 1000 запросов/день
+    "gemini-2.5-flash",       # фолбэк
+]
+
+# Модели для анализа — начинаем с лучшей
+GEMINI_MODELS_ANALYZE = [
+    "gemini-2.5-flash",       # основная: лучшее качество
+    "gemini-2.5-flash-lite",  # фолбэк при исчерпании лимита
+]
+
 ALLOWED_MIME_TYPES = {
     ".pdf":  "application/pdf",
     ".png":  "image/png",
@@ -452,10 +464,34 @@ def try_get_current_user(auth_header: str | None) -> dict | None:
 
 
 # ========================
+# Gemini: вызов с автоматическим фолбэком при 429
+# ========================
+def gemini_generate(models: list, contents: list) -> str:
+    """Вызывает Gemini с перебором моделей при ошибке 429 (лимит исчерпан)."""
+    last_error = None
+    for model in models:
+        try:
+            response = gemini.models.generate_content(
+                model=model,
+                contents=contents,
+            )
+            return response.text.strip()
+        except Exception as e:
+            err_str = str(e)
+            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
+                last_error = e
+                continue  # пробуем следующую модель
+            raise  # любая другая ошибка — пробрасываем сразу
+    raise Exception(
+        f"Все модели Gemini исчерпали лимит запросов. Попробуйте позже. "
+        f"(последняя ошибка: {last_error})"
+    )
+
+
+# ========================
 # Gemini: извлечение показателей
 # ========================
 def extract_indicators_from_file(file_bytes: bytes, filename: str) -> str:
-    log.info("Gemini EXTRACT start: %s", filename)
     prompt = """
 Ты — парсер медицинских документов. Твоя единственная задача — извлечь все числовые показатели из документа.
 
@@ -468,22 +504,19 @@ def extract_indicators_from_file(file_bytes: bytes, filename: str) -> str:
 6. Если в документе нет медицинских показателей — верни пустой массив: []
 7. НЕ интерпретируй, НЕ добавляй статус, НЕ пиши ничего кроме JSON.
 """
-    response = gemini.models.generate_content(
-        model="gemini-2.5-flash",
+    return gemini_generate(
+        models=GEMINI_MODELS_EXTRACT,
         contents=[
             types.Part.from_bytes(data=file_bytes, mime_type=get_mime_type(filename)),
             prompt,
         ],
     )
-    log.info("Gemini EXTRACT done")
-    return response.text.strip()
 
 
 # ========================
 # Gemini: анализ показателей
 # ========================
 def analyze_verified_indicators(indicators_json: str, age: str, gender: str) -> str:
-    log.info("Gemini ANALYZE start")
     prompt = f"""
 Ты — медицинский ассистент, анализирующий лабораторные показатели.
 
@@ -519,12 +552,10 @@ def analyze_verified_indicators(indicators_json: str, age: str, gender: str) -> 
 - Если отклонений нет — в РЕКОМЕНДАЦИИ напиши: "Все показатели в норме. Продолжайте вести здоровый образ жизни."
 - НЕ добавляй никакого текста после таблицы ПОКАЗАТЕЛИ
 """
-    response = gemini.models.generate_content(
-        model="gemini-2.5-flash",
+    return gemini_generate(
+        models=GEMINI_MODELS_ANALYZE,
         contents=[prompt],
     )
-    log.info("Gemini ANALYZE done")
-    return response.text
 
 
 # ========================
