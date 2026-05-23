@@ -149,9 +149,13 @@
 <main class="page">
   <div class="page-header">
     <div>
-      <div class="page-title-label">Личный кабинет</div>
-      <div class="page-title">Все показатели<span class="cursor-blink"></span></div>
+      <div class="page-title-label" id="pageLabel">Личный кабинет</div>
+      <div class="page-title" id="pageTitle">Все показатели<span class="cursor-blink"></span></div>
     </div>
+    <a href="cabinet.html" id="backLink" style="display:none;align-self:center;" class="btn-nav btn-ghost">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Назад
+    </a>
   </div>
 
   <!-- Stats -->
@@ -232,26 +236,68 @@ async function apiFetch(path,session){const r=await fetch(`${API_BASE}${path}`,{
 
 document.getElementById('statusDate').textContent=new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
 
+// ─── Category filter from URL ───
+const urlParams=new URLSearchParams(location.search);
+const categoryParam=urlParams.get('category')||'';
+
+// Category → keyword mapping (matches cabinet.html groups)
+const CATEGORY_MAP={
+  blood:    {label:'Анализы крови',    keys:['гемоглобин','лейкоцит','тромбоцит','соэ','эритроцит','нейтрофил','лимфоцит','моноцит','эозинофил','базофил','гематокрит','мчг','мцг','цветовой']},
+  hormones: {label:'Гормоны',          keys:['ттг','т3','т4','кортизол','тестостерон','эстрадиол','пролактин','инсулин','лг','фсг','амг','дгэа','прогестерон']},
+  infections:{label:'Инфекции и иммунитет', keys:['антитела','иммуноглобулин','igm','igg','iga','igе','крп','срб','прокальцитонин','ферритин','вич','гепатит','pcr','пцр']},
+  biomaterials:{label:'Биоматериалы',  keys:['моча','белок суточн','микроальбумин','глюкоза в моч','эпителий','лейкоциты в мочe','эритроциты в моч','цилиндр']},
+  genetics: {label:'Генетика и ДНК',   keys:['brca','кариотип','генотип','аллель','мутация']},
+  microbiome:{label:'Микрофлора',      keys:['посев','микрофлора','дисбактер','lactobacillus','bifidobacterium','кандида']},
+  oncology: {label:'Онкомаркеры',      keys:['пса','ca-125','ca 19','рэа','афп','he4','бета-хгч','хгч']},
+  functional:{label:'Функциональные',  keys:['глюкоза','hba1c','гликир','инсулин','с-пептид','мочевая кислота','мочевин','креатинин','алт','аст','билирубин','холестерин','лпнп','лпвп','триглицерид']},
+};
+
+let categoryFilter=''; // names that match the category
+if(categoryParam && CATEGORY_MAP[categoryParam]){
+  const cat=CATEGORY_MAP[categoryParam];
+  document.getElementById('pageLabel').textContent='Показатели';
+  document.getElementById('pageTitle').innerHTML=cat.label+'<span class="cursor-blink"></span>';
+  document.getElementById('backLink').style.display='flex';
+  categoryFilter=categoryParam;
+}
+
 let allIndicators=[],currentFilter='all',searchQuery='';
+
+function matchesCategory(ind){
+  if(!categoryFilter||!CATEGORY_MAP[categoryFilter])return true;
+  const keys=CATEGORY_MAP[categoryFilter].keys;
+  const n=ind.name.toLowerCase();
+  return keys.some(k=>n.includes(k));
+}
 
 function statusMeta(s){if(s==='above')return{cls:'warn',label:'↑ выше нормы'};if(s==='below')return{cls:'alert',label:'↓ ниже нормы'};return{cls:'ok',label:'✓ норма'};}
 
 function renderTable(){
   const body=document.getElementById('tableBody'),countEl=document.getElementById('countLabel'),loader=document.getElementById('loader');
   if(loader)loader.classList.add('hidden');
-  let filtered=allIndicators;
+  let filtered=allIndicators.filter(matchesCategory);
   if(currentFilter!=='all')filtered=filtered.filter(i=>i.status===currentFilter);
   if(searchQuery){const q=searchQuery.toLowerCase();filtered=filtered.filter(i=>i.name.toLowerCase().includes(q));}
   if(!filtered.length){body.innerHTML=`<div class="empty-state"><strong>${allIndicators.length?'Ничего не найдено':'Нет данных'}</strong>${allIndicators.length?'Попробуйте изменить фильтр':'Загрузите анализы, чтобы увидеть показатели'}</div>`;if(countEl){countEl.textContent='';countEl.classList.add('hidden');}return;}
-  body.innerHTML=filtered.map((ind,idx)=>{const{cls,label}=statusMeta(ind.status);return`<div class="table-row" style="animation-delay:${Math.min(idx*0.02,0.4)}s"><div class="col-name">${escHtml(ind.name)}</div><div class="col-value">${escHtml(ind.value)}</div><div class="col-status ${cls}"><span class="status-dot"></span>${label}</div><div class="col-date">${fmtDate(ind.date)}</div><div class="col-source">${escHtml(ind.source||'—')}</div></div>`;}).join('');
+  body.innerHTML=filtered.map((ind,idx)=>{
+    const{cls,label}=statusMeta(ind.status);
+    return`<div class="table-row" style="animation-delay:${Math.min(idx*0.02,0.4)}s;cursor:pointer;" onclick="openIndicator('${encodeURIComponent(ind.name)}')">
+      <div class="col-name">${escHtml(ind.name)}</div>
+      <div class="col-value">${escHtml(ind.value)}</div>
+      <div class="col-status ${cls}"><span class="status-dot"></span>${label}</div>
+      <div class="col-date">${fmtDate(ind.date)}</div>
+      <div class="col-source">${escHtml(ind.source||'—')}</div>
+    </div>`;
+  }).join('');
   if(countEl){countEl.textContent=`Показано: ${filtered.length} из ${allIndicators.length}`;countEl.classList.remove('hidden');}
 }
 
 function renderStats(indicators){
-  document.getElementById('statTotal').textContent=indicators.length;
-  document.getElementById('statNormal').textContent=indicators.filter(i=>i.status==='normal').length;
-  document.getElementById('statAbove').textContent=indicators.filter(i=>i.status==='above').length;
-  document.getElementById('statBelow').textContent=indicators.filter(i=>i.status==='below').length;
+  const catFiltered=indicators.filter(matchesCategory);
+  document.getElementById('statTotal').textContent=catFiltered.length;
+  document.getElementById('statNormal').textContent=catFiltered.filter(i=>i.status==='normal').length;
+  document.getElementById('statAbove').textContent=catFiltered.filter(i=>i.status==='above').length;
+  document.getElementById('statBelow').textContent=catFiltered.filter(i=>i.status==='below').length;
 }
 
 function setFilter(f){
@@ -261,6 +307,10 @@ function setFilter(f){
     if(btn.dataset.filter===f)btn.classList.add(f==='all'?'active':f==='normal'?'active-ok':f==='above'?'active-warn':'active-alert');
   });
   renderTable();
+}
+
+function openIndicator(encodedName){
+  window.location.href='indicator.html?name='+encodedName;
 }
 
 document.getElementById('searchInput').addEventListener('input',e=>{searchQuery=e.target.value.trim();renderTable();});

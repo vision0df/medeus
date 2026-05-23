@@ -455,6 +455,8 @@ textarea { height: auto; resize: vertical; }
 .pill-gray .pill-inner { background: var(--bg3); color: var(--text-dim); }
 .pill-red { background: var(--red-border); }
 .pill-red .pill-inner { background: var(--red-pale); color: var(--red); }
+.pill-blue { background: #bfdbfe; }
+.pill-blue .pill-inner { background: #eff6ff; color: #2563eb; }
 
 /* ─── TAG BADGES (inline in result text) ─── */
 .tag-normal { display:inline-flex;align-items:center;gap:4px;background:var(--green-pale);color:var(--green);font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 7px;text-transform:uppercase; }

@@ -23,89 +23,17 @@
   .panel-full { grid-column: 1/-1; }
   .up-panel { background: var(--bg2); padding: 40px 44px; position: relative; }
 
-  /* ─── CATEGORY GRID — original vertical list style ─── */
-  .category-grid {
-    display: flex; flex-direction: column;
-    gap: 5px; margin-top: 6px;
+  /* ─── NAME FIELD ─── */
+  .name-field-group { display:flex; flex-direction:column; gap:7px; margin-bottom:20px; }
+  .name-field-group label { font-family:var(--mono); font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-dim); }
+  .name-field-input {
+    width:100%; padding:12px 16px; height:48px;
+    background:var(--bg); border:1px solid var(--line-mid); border-left:3px solid var(--orange);
+    font-family:var(--sans); font-size:14px; font-weight:500; color:var(--text);
+    outline:none; transition:border-color 0.15s;
   }
-  .cat-row {
-    display: flex; align-items: stretch;
-    gap: 3px; position: relative;
-  }
-  .cat-card {
-    flex: 1; display: flex; align-items: center; gap: 10px;
-    padding: 8px 12px 8px 10px;
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-right: none;
-    clip-path: polygon(7px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 7px);
-    font-family: var(--mono); text-align: left;
-    cursor: pointer; outline: none;
-    transition: background 0.15s, border-color 0.15s;
-  }
-  .cat-card:hover { background: var(--bg3); border-color: var(--text-mid); }
-  .cat-card.selected { background: var(--text); border-color: var(--text); }
-  .cat-icon {
-    width: 22px; height: 22px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--bg3);
-    clip-path: polygon(4px 0%, 100% 0%, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0% 100%, 0% 4px);
-    transition: background 0.15s;
-  }
-  .cat-card:hover .cat-icon { background: var(--line); }
-  .cat-card.selected .cat-icon { background: rgba(255,255,255,0.12); }
-  .cat-icon svg {
-    width: 11px; height: 11px; stroke: var(--text-mid); fill: none;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-    transition: stroke 0.15s;
-  }
-  .cat-card.selected .cat-icon svg { stroke: rgba(255,255,255,0.7); }
-  .cat-name {
-    font-size: 11px; font-weight: 700; color: var(--text);
-    letter-spacing: 0.09em; text-transform: uppercase; line-height: 1;
-    transition: color 0.15s;
-  }
-  .cat-card.selected .cat-name { color: #fff; }
-  .cat-info-btn-wrap {
-    width: 32px; flex-shrink: 0; position: relative;
-    background: var(--line);
-    clip-path: polygon(0% 0%, calc(100% - 7px) 0%, 100% 7px, 100% 100%, 7px 100%, 0% calc(100% - 7px));
-    padding: 1px;
-    transition: background 0.15s;
-  }
-  .cat-info-btn-wrap:hover { background: var(--text-dim); }
-  .cat-info-btn {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--bg3);
-    clip-path: polygon(0% 0%, calc(100% - 6px) 0%, 100% 6px, 100% 100%, 6px 100%, 0% calc(100% - 6px));
-    cursor: pointer; outline: none; border: none;
-    transition: background 0.15s;
-    padding: 0 0 1px 0;
-  }
-  .cat-info-btn-wrap:hover .cat-info-btn { background: var(--bg2); }
-  .cat-info-btn svg {
-    width: 11px; height: 11px; stroke: var(--text-dim); fill: none;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .cat-tooltip-wrap {
-    display: none; position: absolute; right: 0; top: calc(100% + 6px);
-    z-index: 99; pointer-events: none;
-    background: var(--text-mid);
-    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
-    padding: 1px;
-  }
-  .cat-tooltip {
-    background: var(--bg3); color: var(--text);
-    font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em;
-    padding: 8px 12px; line-height: 1.8; white-space: nowrap;
-    min-width: 180px;
-    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
-  }
-  .cat-row.tip-open .cat-tooltip-wrap { display: block; }
-  @media (max-width: 600px) {
-    .cat-tooltip { right: auto; left: 0; }
-  }
+  .name-field-input:focus { border-color:var(--orange); background:var(--white); }
+  .name-field-input::placeholder { color:var(--text-dim); font-weight:400; }
 
   /* ─── DATE FIELD ─── */
   .date-group { display: flex; flex-direction: column; gap: 7px; margin-bottom: 26px; }
@@ -117,24 +45,49 @@
   }
   .panel-loader-overlay.show { display: flex; }
 
-  /* ─── RESULT BOX ─── */
+  /* ─── RESULT BLOCKS ─── */
+  .result-two-col { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--line-mid); }
+  .result-block { background:var(--bg2); padding:30px 36px; }
+  .result-block-label {
+    font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.18em;
+    text-transform:uppercase; color:var(--text-dim); margin-bottom:16px;
+    padding-bottom:8px; border-bottom:1px solid var(--line-mid);
+    display:flex; align-items:center; gap:8px;
+  }
+  .result-block-label::before { content:''; display:inline-block; width:6px; height:6px; background:var(--orange); flex-shrink:0; }
+
+  /* summary block */
+  .summary-type { font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--orange); margin-bottom:10px; }
+  .summary-status { font-family:var(--sans); font-size:14px; color:var(--text); line-height:1.7; margin-bottom:16px; }
+  .rec-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
+  .rec-item { display:flex; gap:10px; font-family:var(--mono); font-size:12px; color:var(--text-mid); line-height:1.65; }
+  .rec-item::before { content:'→'; color:var(--orange); flex-shrink:0; margin-top:1px; }
+  .rec-all-good { font-family:var(--mono); font-size:12px; color:var(--green); display:flex; align-items:center; gap:8px; }
+  .rec-all-good::before { content:'✓'; font-weight:700; }
+
+  /* table block */
+  .ind-result-table { width:100%; border-collapse:collapse; }
+  .ind-result-table thead th { font-family:var(--mono); font-size:9px; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--text-dim); padding:8px 12px; text-align:left; border-bottom:1px solid var(--line-mid);
+    background:var(--bg3); font-weight:700; white-space:nowrap; }
+  .ind-result-table thead th:first-child::before { content:'/ '; color:var(--orange); }
+  .ind-result-table tbody tr { border-bottom:1px solid var(--line); }
+  .ind-result-table tbody tr:last-child { border-bottom:none; }
+  .ind-result-table tbody td { padding:8px 12px; vertical-align:middle; font-family:var(--mono); font-size:12px; color:var(--text-mid); }
+  .ind-result-table .col-name { color:var(--text); font-weight:600; }
+  .ind-result-table .col-value { color:var(--text); }
+  .tag-high { color:var(--red); font-weight:700; font-size:11px; }
+  .tag-low  { color:var(--blue,#3b82f6); font-weight:700; font-size:11px; }
+  .tag-ok   { color:var(--green); font-weight:700; font-size:11px; }
+
+  /* ─── RESULT BOX (fallback) ─── */
   .result-box {
     background: var(--bg); border: 1px solid var(--line-mid);
-    padding: 26px; min-height: 360px;
+    padding: 26px; min-height: 200px;
     font-family: var(--mono); font-size: 13px; line-height: 1.85; color: var(--text-mid);
-    max-height: 500px; overflow-y: auto;
-    position: relative;
+    max-height: 420px; overflow-y: auto; position: relative;
   }
-  .result-box h3 { font-size: 11px; font-weight: 700; color: var(--text); letter-spacing: 0.16em; text-transform: uppercase; margin: 22px 0 11px; padding-bottom: 7px; border-bottom: 1px solid var(--line-mid); }
-  .result-box h3:first-child { margin-top: 0; }
-  .result-box p { margin-bottom: 11px; }
-  .result-box strong { color: var(--text); }
-  .result-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--text-dim); text-align: center; }
-  .result-empty-icon { width: 52px; height: 52px; position: relative; display: flex; align-items: center; justify-content: center; }
-  .result-empty-icon::before { content:''; position:absolute; inset:0; background:var(--line-mid); clip-path:polygon(8px 0%,100% 0%,100% calc(100% - 8px),calc(100% - 8px) 100%,0% 100%,0% 8px); }
-  .result-empty-icon::after  { content:''; position:absolute; inset:1px; background:var(--bg3); clip-path:polygon(7px 0%,100% 0%,100% calc(100% - 7px),calc(100% - 7px) 100%,0% 100%,0% 7px); }
-  .result-empty-icon svg { position:relative; z-index:1; width:22px; height:22px; stroke:var(--text-dim); fill:none; }
-  .result-empty-label { font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-dim); }
 
   /* ─── INDICATORS TABLE ─── */
   .ind-table-wrap { border:1px solid var(--line-mid); background:var(--bg); max-height:380px; overflow-y:auto; margin-bottom:18px; }
@@ -175,14 +128,14 @@
   /* ─── RESPONSIVE ─── */
   @media (max-width:960px) {
     .panels-grid { grid-template-columns:1fr; }
-    .cat-grid    { grid-template-columns:1fr 1fr; }
+    .result-two-col { grid-template-columns:1fr; }
     .panels-outer, .panels-grid { clip-path:none; }
     .page { padding:78px 28px 52px; }
   }
   @media (max-width:480px) {
-    .cat-grid { grid-template-columns:1fr; }
     .up-panel { padding:26px 20px; }
     .add-indicator-row { flex-wrap:wrap; }
+    .result-block { padding:20px; }
   }
 </style>
 </head>
@@ -273,136 +226,38 @@
           </div>
         </div>
 
-        <!-- Right: categories -->
+        <!-- Right: name field (replaces categories) -->
         <div class="up-panel">
-          <div class="panel-label">Тип анализа</div>
+          <div class="panel-label">Название анализа</div>
 
-          <div class="form-group">
-            <label>Тип анализа</label>
-            <div class="category-grid" id="categoryGrid">
+          <div class="name-field-group" style="margin-bottom:24px;">
+            <label for="analysisNameInput">Как называется этот анализ?</label>
+            <input
+              type="text"
+              id="analysisNameInput"
+              class="name-field-input"
+              placeholder="Например: Общий анализ крови"
+              autocomplete="off"
+            >
+          </div>
 
-              <div class="cat-row">
-                <button type="button" class="cat-card" data-value="Кровь">
-                  <div class="cat-icon">
-                    <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-                  </div>
-                  <div class="cat-name">Кровь</div>
-                </button>
-                <div class="cat-info-btn-wrap">
-                  <button type="button" class="cat-info-btn">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  </button>
-                </div>
-                <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Кровь</span><br>ОАК · биохимия · коагулограмма · онкомаркеры</div></div>
-              </div>
-
-              <div class="cat-row">
-                <button type="button" class="cat-card" data-value="Гормоны">
-                  <div class="cat-icon">
-                    <svg viewBox="0 0 24 24"><path d="M2 12c1.5-4 3-6 4.5-6S9 9 10.5 12s3 6 4.5 6 3-2 4.5-6" fill="none"/><circle cx="6.5" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="17.5" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg>
-                  </div>
-                  <div class="cat-name">Гормоны</div>
-                </button>
-                <div class="cat-info-btn-wrap">
-                  <button type="button" class="cat-info-btn">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  </button>
-                </div>
-                <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Гормоны</span><br>ТТГ · половые · надпочечники · инсулин</div></div>
-              </div>
-
-              <div class="cat-row">
-                <button type="button" class="cat-card" data-value="Инфекции">
-                  <div class="cat-icon">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
-                  </div>
-                  <div class="cat-name">Инфекции</div>
-                </button>
-                <div class="cat-info-btn-wrap">
-                  <button type="button" class="cat-info-btn">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  </button>
-                </div>
-                <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Инфекции</span><br>ПЦР · антитела · гепатиты · ЗППП</div></div>
-              </div>
-
-              <div class="cat-row">
-                <button type="button" class="cat-card" data-value="Биоматериалы">
-                  <div class="cat-icon">
-                    <svg viewBox="0 0 24 24"><path d="M9 3h6v11l3.5 4.5A1 1 0 0 1 17.7 20H6.3a1 1 0 0 1-.8-1.5L9 14V3z"/><line x1="9" y1="9" x2="15" y2="9"/></svg>
-                  </div>
-                  <div class="cat-name">Биоматериалы</div>
-                </button>
-                <div class="cat-info-btn-wrap">
-                  <button type="button" class="cat-info-btn">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  </button>
-                </div>
-                <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Биоматериалы</span><br>Моча · кал · спермограмма · мазки</div></div>
-              </div>
-
-              <div class="cat-row">
-                <button type="button" class="cat-card" data-value="Диагностика">
-                  <div class="cat-icon">
-                    <svg viewBox="0 0 24 24"><polyline points="2 12 6 12 8 5 11 19 14 9 16 14 18 12 22 12"/></svg>
-                  </div>
-                  <div class="cat-name">Диагностика</div>
-                </button>
-                <div class="cat-info-btn-wrap">
-                  <button type="button" class="cat-info-btn">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  </button>
-                </div>
-                <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Диагностика</span><br>ЭКГ · УЗИ · рентген · КТ · МРТ</div></div>
-              </div>
-
-              <div class="cat-row">
-                <button type="button" class="cat-card" data-value="Биохимия">
-                  <div class="cat-icon">
-                    <svg viewBox="0 0 24 24"><path d="M9 3v11l-3.5 4.5A1 1 0 0 0 6.3 20h11.4a1 1 0 0 0 .8-1.5L15 14V3"/><line x1="6" y1="8" x2="18" y2="8"/><circle cx="12" cy="13" r="1.5" fill="currentColor" stroke="none"/></svg>
-                  </div>
-                  <div class="cat-name">Биохимия</div>
-                </button>
-                <div class="cat-info-btn-wrap">
-                  <button type="button" class="cat-info-btn">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  </button>
-                </div>
-                <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Биохимия</span><br>Печень · почки · липиды · глюкоза</div></div>
-              </div>
-
-              <div class="cat-row">
-                <button type="button" class="cat-card" data-value="Иммунология">
-                  <div class="cat-icon">
-                    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  </div>
-                  <div class="cat-name">Иммунология</div>
-                </button>
-                <div class="cat-info-btn-wrap">
-                  <button type="button" class="cat-info-btn">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  </button>
-                </div>
-                <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Иммунология</span><br>Иммуноглобулины · аллергены · аутоантитела</div></div>
-              </div>
-
-              <div class="cat-row">
-                <button type="button" class="cat-card" data-value="Витамины">
-                  <div class="cat-icon">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                  </div>
-                  <div class="cat-name">Витамины</div>
-                </button>
-                <div class="cat-info-btn-wrap">
-                  <button type="button" class="cat-info-btn">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  </button>
-                </div>
-                <div class="cat-tooltip-wrap"><div class="cat-tooltip"><span style="color:var(--orange);font-weight:700;">Витамины</span><br>D · B12 · B9 · железо · цинк · магний</div></div>
-              </div>
-
+          <div style="background:var(--bg);padding:16px 18px;border-left:3px solid var(--bg3);margin-bottom:24px;">
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;">Подсказка</div>
+            <div style="font-family:var(--mono);font-size:12px;color:var(--text-mid);line-height:1.7;">
+              Название используется для поиска и группировки анализов в кабинете. ИИ автоматически определит тип анализа и интерпретирует показатели.
             </div>
-            <input type="hidden" id="analysisName">
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:24px;">
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-dim);">Частые варианты</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;" id="quickNames">
+              <button class="quick-name-btn" type="button">ОАК</button>
+              <button class="quick-name-btn" type="button">Биохимия</button>
+              <button class="quick-name-btn" type="button">Гормоны щитовидной</button>
+              <button class="quick-name-btn" type="button">Анализ мочи</button>
+              <button class="quick-name-btn" type="button">Липидный профиль</button>
+              <button class="quick-name-btn" type="button">Витамины</button>
+            </div>
           </div>
 
           <button id="extractBtn" disabled type="button" class="btn-primary btn-full" style="margin-top:14px;">
@@ -469,13 +324,25 @@
     <div class="panels-outer">
       <div class="panels-grid">
 
-        <!-- Left: result -->
-        <div class="up-panel">
-          <div class="panel-label">Результат анализа ИИ</div>
-          <div class="result-box" id="resultBox">
-            <div class="result-empty">
-              <div class="result-empty-icon"><svg viewBox="0 0 24 24" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-              <div class="result-empty-label">Ожидание</div>
+        <!-- Left: result (two sub-blocks) -->
+        <div class="up-panel" style="padding:0;">
+          <div class="result-two-col" id="resultTwoCol">
+            <!-- Block 1: summary + recommendations -->
+            <div class="result-block">
+              <div class="result-block-label">Состояние и рекомендации</div>
+              <div id="summaryBlock">
+                <div style="color:var(--text-dim);font-family:var(--mono);font-size:12px;">Ожидание результата...</div>
+              </div>
+            </div>
+            <!-- Block 2: table -->
+            <div class="result-block">
+              <div class="result-block-label">Показатели</div>
+              <div style="overflow-x:auto;">
+                <table class="ind-result-table" id="resultTable">
+                  <thead><tr><th>Показатель</th><th>Значение</th><th>Статус</th></tr></thead>
+                  <tbody id="resultTableBody"></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -485,7 +352,7 @@
           <div class="panel-label">Сохранение</div>
 
           <div style="background:var(--bg);padding:20px;border-left:3px solid var(--orange);">
-            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Анализ</div>
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Название</div>
             <div style="font-family:var(--sans);font-size:15px;font-weight:600;color:var(--text);" id="saveCategoryLabel">—</div>
           </div>
 
@@ -533,6 +400,16 @@
   <span>Анализ добавлен в кабинет</span>
 </div>
 
+<style>
+  /* quick name buttons */
+  .quick-name-btn {
+    padding:5px 12px; background:var(--bg); border:1px solid var(--line-mid);
+    font-family:var(--mono); font-size:11px; color:var(--text-mid); cursor:pointer;
+    transition:all 0.15s; clip-path:polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
+  }
+  .quick-name-btn:hover { background:var(--orange); color:#fff; border-color:var(--orange); }
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase.js"></script>
 <script>
@@ -548,13 +425,11 @@ const fileNameEl=document.getElementById('fileName');
 const fileSizeEl=document.getElementById('fileSize');
 const fileRemove=document.getElementById('fileRemove');
 const analysisDate=document.getElementById('analysisDate');
-const analysisName=document.getElementById('analysisName');
-// analysisNameDisplay removed
+const analysisNameInput=document.getElementById('analysisNameInput');
 const extractBtn=document.getElementById('extractBtn');
 const continueBtn=document.getElementById('continueBtn');
 const saveBtn=document.getElementById('saveBtn');
 const indicatorsBody=document.getElementById('indicatorsBody');
-const resultBox=document.getElementById('resultBox');
 const toast=document.getElementById('toast');
 const s1Loader=document.getElementById('step1Loader');
 const s2Loader=document.getElementById('step2Loader');
@@ -578,30 +453,13 @@ function handleFile(file){
 }
 fileRemove.addEventListener('click',()=>{selectedFile=null;fileInput.value='';filePreview.classList.remove('show');uploadZone.style.display='';hideError(1);checkStep1();});
 
-function checkStep1(){extractBtn.disabled=!(selectedFile&&analysisName.value.trim()&&analysisDate.value);}
+function checkStep1(){extractBtn.disabled=!(selectedFile&&analysisNameInput.value.trim()&&analysisDate.value);}
 analysisDate.addEventListener('change',checkStep1);
+analysisNameInput.addEventListener('input',checkStep1);
 
-document.querySelectorAll('.cat-card').forEach(card=>{
-  card.addEventListener('click',()=>{
-    document.querySelectorAll('.cat-card').forEach(c=>c.classList.remove('selected'));
-    card.classList.add('selected');
-    analysisName.value=card.dataset.value;
-    hideError(1);checkStep1();
-  });
-});
-
-// Tooltip toggle on info button
-document.querySelectorAll('.cat-info-btn').forEach(btn=>{
-  btn.addEventListener('click',e=>{
-    e.stopPropagation();
-    const row=btn.closest('.cat-row');
-    const isOpen=row.classList.contains('tip-open');
-    document.querySelectorAll('.cat-row').forEach(r=>r.classList.remove('tip-open'));
-    if(!isOpen)row.classList.add('tip-open');
-  });
-});
-document.addEventListener('click',()=>{
-  document.querySelectorAll('.cat-row').forEach(r=>r.classList.remove('tip-open'));
+// Quick name buttons
+document.querySelectorAll('.quick-name-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{analysisNameInput.value=btn.textContent;checkStep1();analysisNameInput.focus();});
 });
 
 function showError(panel,msg){
@@ -627,7 +485,7 @@ function setStep(n){
 // STEP 1 → 2
 extractBtn.addEventListener('click',async()=>{
   if(!selectedFile)return;
-  if(!analysisName.value.trim()){showError(1,'Выберите тип анализа.');return;}
+  if(!analysisNameInput.value.trim()){showError(1,'Введите название анализа.');return;}
   if(!analysisDate.value){showError(1,'Укажите дату сдачи анализа.');return;}
   const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
   hideError(1);s1Loader.classList.add('show');extractBtn.disabled=true;
@@ -680,8 +538,9 @@ continueBtn.addEventListener('click',async()=>{
     const fd=new FormData();fd.append('indicators',JSON.stringify(indicators));fd.append('age',age);fd.append('gender',gender);
     const resp=await fetch(`${API_BASE}/analyze-indicators`,{method:'POST',headers:{'Authorization':`Bearer ${session.access_token}`},body:fd});
     const data=await resp.json();if(resp.status===401){window.location.href='auth.html';return;}if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
-    analysisResult=data.analysis;resultBox.innerHTML=formatResult(analysisResult);
-    document.getElementById('saveCategoryLabel').textContent=analysisName.value||'—';
+    analysisResult=data.analysis;
+    renderResultBlocks(analysisResult);
+    document.getElementById('saveCategoryLabel').textContent=analysisNameInput.value.trim()||'—';
     document.getElementById('saveFileLabel').textContent=selectedFile?.name||'—';
     setStep(3);
   }catch(err){showError(2,err.message||'Не удалось подключиться к серверу');}
@@ -690,9 +549,72 @@ continueBtn.addEventListener('click',async()=>{
 
 document.getElementById('backToStep2Btn').addEventListener('click',()=>setStep(2));
 
-function formatResult(text){
-  let html=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/^#{1,3} (.+)$/gm,'<h3>$1</h3>').replace(/выше нормы/gi,'<span class="tag-high">↑ выше нормы</span>').replace(/ниже нормы/gi,'<span class="tag-low">↓ ниже нормы</span>').replace(/(?<![а-яёА-ЯЁ])норма(?![а-яёА-ЯЁ])/gi,'<span class="tag-normal">✓ норма</span>').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
-  return'<p>'+html+'</p>';
+// ─── Render result in two blocks ───
+function renderResultBlocks(text){
+  if(!text){return;}
+  const parsed=parseAnalysisText(text);
+
+  // Block 1: summary + recommendations
+  const sumEl=document.getElementById('summaryBlock');
+  let sumHtml='';
+  if(parsed.analysisType) sumHtml+=`<div class="summary-type">${escHtml(parsed.analysisType)}</div>`;
+  if(parsed.status) sumHtml+=`<div class="summary-status">${escHtml(parsed.status)}</div>`;
+  if(parsed.recommendations.length){
+    sumHtml+='<ul class="rec-list">';
+    parsed.recommendations.forEach(r=>{
+      if(r.toLowerCase().includes('все показатели в норме')){
+        sumHtml+=`<li class="rec-all-good">${escHtml(r)}</li>`;
+      } else {
+        sumHtml+=`<li class="rec-item">${escHtml(r)}</li>`;
+      }
+    });
+    sumHtml+='</ul>';
+  }
+  sumEl.innerHTML=sumHtml||'<div style="color:var(--text-dim);font-family:var(--mono);font-size:12px;">Нет данных</div>';
+
+  // Block 2: table
+  const tbody=document.getElementById('resultTableBody');
+  if(parsed.indicators.length){
+    tbody.innerHTML=parsed.indicators.map(ind=>{
+      const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':'tag-ok';
+      const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':'✓ норма';
+      return`<tr><td class="col-name">${escHtml(ind.name)}</td><td class="col-value">${escHtml(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;
+    }).join('');
+  } else {
+    tbody.innerHTML='<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text-dim);font-family:var(--mono);font-size:12px;">Таблица показателей не найдена</td></tr>';
+  }
+}
+
+// Parse structured AI response
+function parseAnalysisText(text){
+  const result={analysisType:'',status:'',recommendations:[],indicators:[]};
+  let section='';
+  for(const rawLine of text.split('\n')){
+    const line=rawLine.trim();
+    if(!line)continue;
+    const up=line.toUpperCase();
+    if(up.startsWith('ТИП АНАЛИЗА:')){result.analysisType=line.replace(/^ТИП АНАЛИЗА:\s*/i,'').trim();continue;}
+    if(up.startsWith('ОБЩЕЕ СОСТОЯНИЕ:')){result.status=line.replace(/^ОБЩЕЕ СОСТОЯНИЕ:\s*/i,'').trim();section='status';continue;}
+    if(up.startsWith('РЕКОМЕНДАЦИИ')){section='rec';continue;}
+    if(up.startsWith('ПОКАЗАТЕЛИ')){section='ind';continue;}
+
+    if(section==='status'&&!result.status){result.status=line;}
+    else if(section==='rec'){
+      const clean=line.replace(/^[-•→*]\s*/,'').trim();
+      if(clean.length>5)result.recommendations.push(clean);
+    }
+    else if(section==='ind'){
+      const parts=line.split(' - ');
+      if(parts.length>=3){
+        const name=parts[0].trim(),value=parts[1].trim(),statusRaw=parts[2].trim().toLowerCase();
+        let status='normal';
+        if(statusRaw.includes('выше'))status='above';
+        else if(statusRaw.includes('ниже'))status='below';
+        if(name.length>=2)result.indicators.push({name,value,status});
+      }
+    }
+  }
+  return result;
 }
 
 // SAVE
@@ -703,7 +625,7 @@ saveBtn.addEventListener('click',async()=>{
   saveBtn.disabled=true;hideError(3);
   const origHtml=saveBtn.innerHTML;saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><circle cx="12" cy="12" r="10"/></svg><span>Сохраняем...</span>';
   try{
-    const fd=new FormData();fd.append('file',selectedFile);fd.append('analysis',analysisResult);fd.append('analysis_name',analysisName.value.trim());fd.append('analysis_date',analysisDate.value||'');fd.append('age',age);fd.append('gender',gender);
+    const fd=new FormData();fd.append('file',selectedFile);fd.append('analysis',analysisResult);fd.append('analysis_name',analysisNameInput.value.trim());fd.append('analysis_date',analysisDate.value||'');fd.append('age',age);fd.append('gender',gender);
     const resp=await fetch(`${API_BASE}/save-analysis`,{method:'POST',headers:{'Authorization':`Bearer ${session.access_token}`},body:fd});
     const data=await resp.json();if(resp.status===401){window.location.href='auth.html';return;}if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
     saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><polyline points="20 6 9 17 4 12"/></svg><span>Сохранено!</span>';

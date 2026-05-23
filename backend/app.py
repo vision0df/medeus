@@ -61,6 +61,139 @@ ALLOWED_MIME_TYPES = {
 }
 
 # ========================
+# Нормализация названий показателей
+# ========================
+# Словарь: ключевые слова → каноническое название
+INDICATOR_ALIASES = {
+    # Лейкоциты
+    "лейкоцит": "Лейкоциты",
+    "wbc": "Лейкоциты",
+    "white blood": "Лейкоциты",
+    # Эритроциты
+    "эритроцит": "Эритроциты",
+    "rbc": "Эритроциты",
+    "red blood": "Эритроциты",
+    # Гемоглобин
+    "гемоглобин": "Гемоглобин",
+    "hgb": "Гемоглобин",
+    "hb ": "Гемоглобин",
+    # Тромбоциты
+    "тромбоцит": "Тромбоциты",
+    "plt": "Тромбоциты",
+    "platelet": "Тромбоциты",
+    # СОЭ
+    "соэ": "СОЭ",
+    "esr": "СОЭ",
+    "скорость оседания": "СОЭ",
+    # Гематокрит
+    "гематокрит": "Гематокрит",
+    "hct": "Гематокрит",
+    # Нейтрофилы
+    "нейтрофил": "Нейтрофилы",
+    "neu": "Нейтрофилы",
+    # Лимфоциты
+    "лимфоцит": "Лимфоциты",
+    "lym": "Лимфоциты",
+    # Моноциты
+    "моноцит": "Моноциты",
+    "mon": "Моноциты",
+    # Эозинофилы
+    "эозинофил": "Эозинофилы",
+    "eos": "Эозинофилы",
+    # Базофилы
+    "базофил": "Базофилы",
+    "bas": "Базофилы",
+    # Глюкоза
+    "глюкоз": "Глюкоза",
+    "glucose": "Глюкоза",
+    # Холестерин
+    "холестерин": "Холестерин общий",
+    "cholesterol": "Холестерин общий",
+    # ЛПНП
+    "лпнп": "ЛПНП (плохой холестерин)",
+    "ldl": "ЛПНП (плохой холестерин)",
+    # ЛПВП
+    "лпвп": "ЛПВП (хороший холестерин)",
+    "hdl": "ЛПВП (хороший холестерин)",
+    # Триглицериды
+    "триглицерид": "Триглицериды",
+    "tg ": "Триглицериды",
+    # АЛТ
+    "алт": "АЛТ",
+    "alt": "АЛТ",
+    "аланин": "АЛТ",
+    # АСТ
+    "аст": "АСТ",
+    "ast": "АСТ",
+    "аспартат": "АСТ",
+    # Билирубин
+    "билирубин общ": "Билирубин общий",
+    "bilirubin": "Билирубин общий",
+    # Креатинин
+    "креатинин": "Креатинин",
+    "creatinine": "Креатинин",
+    # Мочевина
+    "мочевин": "Мочевина",
+    "urea": "Мочевина",
+    # ТТГ
+    "ттг": "ТТГ",
+    "tsh": "ТТГ",
+    "тиреотропн": "ТТГ",
+    # Т3
+    "т3 своб": "Т3 свободный",
+    "ft3": "Т3 свободный",
+    # Т4
+    "т4 своб": "Т4 свободный",
+    "ft4": "Т4 свободный",
+    # Инсулин
+    "инсулин": "Инсулин",
+    "insulin": "Инсулин",
+    # Кортизол
+    "кортизол": "Кортизол",
+    "cortisol": "Кортизол",
+    # Витамин D
+    "витамин d": "Витамин D",
+    "vitamin d": "Витамин D",
+    "25-oh": "Витамин D",
+    # Витамин B12
+    "b12": "Витамин B12",
+    "кобаламин": "Витамин B12",
+    # Железо
+    "железо": "Железо",
+    "iron": "Железо",
+    "fe ": "Железо",
+    # Ферритин
+    "ферритин": "Ферритин",
+    "ferritin": "Ферритин",
+    # СРБ
+    "срб": "СРБ",
+    "crp": "СРБ",
+    "c-реактивн": "СРБ",
+    # HbA1c
+    "hba1c": "HbA1c",
+    "гликир": "HbA1c",
+}
+
+def normalize_indicator_name(raw_name: str) -> str:
+    """Нормализует название показателя к каноническому виду."""
+    lower = raw_name.lower().strip()
+    # убираем скобки с аббревиатурами типа "(BASO%)", "(WBC)"
+    import re
+    lower_clean = re.sub(r'\s*\([^)]*\)\s*', ' ', lower).strip()
+    
+    for key, canonical in INDICATOR_ALIASES.items():
+        if key in lower_clean or key in lower:
+            return canonical
+    
+    # Если не нашли в словаре — чистим форматирование: убираем лишние скобки и аббревиатуры
+    # "Базофилы, %" → "Базофилы %" ; "Базофилы (%) (BASO%)" → "Базофилы %"
+    cleaned = re.sub(r'\s*\([A-Z0-9%#]+\)\s*', '', raw_name).strip()
+    cleaned = re.sub(r',\s*', ' ', cleaned).strip()
+    # Нормализуем пробелы
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    return cleaned if cleaned else raw_name
+
+# ========================
 # Утилиты
 # ========================
 def get_mime_type(filename: str) -> str | None:
@@ -250,30 +383,30 @@ def analyze_verified_indicators(indicators_json: str, age: str, gender: str) -> 
 Пол: {gender}
 
 ПРАВИЛА:
-Для каждого показателя:
-   - Нормализуй название (общепринятое медицинское название на русском языке, для использования как ключи в базе данных.).
-   - Определи статус:
-     ("норма", "выше нормы", "ниже нормы")
-   - Оценка должна учитывать возраст и пол.
+1. Определи тип анализа (например: "Общий анализ крови", "Биохимический анализ крови", "Гормоны щитовидной железы", "Общий анализ мочи" и т.п.)
+2. Для каждого показателя нормализуй название (общепринятое медицинское на русском языке) и определи статус (норма / выше нормы / ниже нормы) с учётом возраста и пола.
+3. Дай краткое общее состояние (1-2 предложения) — укажи тип анализа и общую картину.
+4. Дай конкретные рекомендации только при наличии отклонений, без повторов.
 
-ФОРМАТ ОТВЕТА (строго соблюдать):
+ФОРМАТ ОТВЕТА (строго соблюдать, не добавлять ничего лишнего):
 
-Таблица показателей:
-Нормализованное название - значение с единицей - статус 
-...
+ТИП АНАЛИЗА: <название типа анализа>
 
-Общее состояние: <одно краткое предложение>
+ОБЩЕЕ СОСТОЯНИЕ: <1-2 предложения с общей оценкой>
 
-Рекомендации(только в случае если есть отклонения):
-- [рекомендация 1]
-- [рекомендация 2]
+РЕКОМЕНДАЦИИ:
+- <рекомендация 1>
+- <рекомендация 2>
+
+ПОКАЗАТЕЛИ:
+Нормализованное название - значение с единицей - статус
 ...
 
 ОГРАНИЧЕНИЯ:
-- Без вступлений
+- Без вступлений и заключений
 - Только факты из анализа
-- В разделе общее состояние если есть отклонения можешь предположить с чем они связаны
-- В рекомендации пиши как можно привести в норму показатели, не повторяйся, если можно совместить рекомендации то совмещай 
+- Если отклонений нет — в РЕКОМЕНДАЦИИ напиши: "Все показатели в норме. Продолжайте вести здоровый образ жизни."
+- НЕ добавляй никакого текста после таблицы ПОКАЗАТЕЛИ
 """
     response = gemini.models.generate_content(
         model="gemini-2.5-flash",
@@ -293,10 +426,23 @@ def parse_indicators(rows: list) -> list:
         row_date    = row.get("analysis_date") or ""
         source      = row.get("analysis_name", "")
 
+        in_table = False
         for line in result_text.splitlines():
             line = line.strip()
-            if not line or line.startswith(("—", "-")):
+            if not line:
                 continue
+
+            # Ищем начало секции ПОКАЗАТЕЛИ
+            if line.upper().startswith("ПОКАЗАТЕЛИ"):
+                in_table = True
+                continue
+
+            if not in_table:
+                continue
+
+            # Если встретили другую секцию — стоп
+            if line.upper().startswith(("ТИП АНАЛИЗА", "ОБЩЕЕ СОСТОЯНИЕ", "РЕКОМЕНДАЦИИ")):
+                break
 
             parts = [p.strip() for p in line.split(" - ")]
             if len(parts) < 3:
@@ -318,7 +464,9 @@ def parse_indicators(rows: list) -> list:
             else:
                 norm_status = "normal"
 
-            name_key = name.lower().strip()
+            # Нормализуем название для группировки
+            canonical_name = normalize_indicator_name(name)
+            name_key = canonical_name.lower().strip()
             existing = merged.get(name_key)
 
             if existing is None:
@@ -332,7 +480,7 @@ def parse_indicators(rows: list) -> list:
 
             if should_update:
                 merged[name_key] = {
-                    "name":   name,
+                    "name":   canonical_name,
                     "value":  value,
                     "status": norm_status,
                     "date":   row_date,
@@ -342,9 +490,58 @@ def parse_indicators(rows: list) -> list:
     return sorted(merged.values(), key=lambda x: x["name"])
 
 
+def parse_indicators_history(rows: list, indicator_name: str) -> list:
+    """Возвращает историю значений одного показателя по всем анализам."""
+    result = []
+    canonical_target = normalize_indicator_name(indicator_name).lower()
+
+    for row in sorted(rows, key=lambda r: r.get("analysis_date") or ""):
+        result_text = row.get("result", "") or ""
+        row_date    = row.get("analysis_date") or row.get("created_at", "")[:10]
+        source      = row.get("analysis_name", "")
+
+        in_table = False
+        for line in result_text.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if line.upper().startswith("ПОКАЗАТЕЛИ"):
+                in_table = True
+                continue
+            if not in_table:
+                continue
+            if line.upper().startswith(("ТИП АНАЛИЗА", "ОБЩЕЕ СОСТОЯНИЕ", "РЕКОМЕНДАЦИИ")):
+                break
+
+            parts = [p.strip() for p in line.split(" - ")]
+            if len(parts) < 3:
+                parts = [p.strip() for p in line.split(" — ")]
+            if len(parts) < 3:
+                continue
+
+            name, value, status = parts[0], parts[1], parts[2].lower()
+            canonical_name = normalize_indicator_name(name).lower()
+
+            if canonical_name == canonical_target:
+                if "выше" in status:
+                    norm_status = "above"
+                elif "ниже" in status:
+                    norm_status = "below"
+                else:
+                    norm_status = "normal"
+                result.append({
+                    "value":  value,
+                    "status": norm_status,
+                    "date":   row_date,
+                    "source": source,
+                })
+
+    return result
+
+
 def parse_recommendations(rows: list) -> list:
     REC_START  = {"рекоменда"}
-    REC_STOP   = {"вывод", "заключение"}
+    REC_STOP   = {"вывод", "заключение", "показатели", "тип анализа", "общее состояние"}
     seen: set  = set()
     recs: list = []
 
@@ -370,6 +567,9 @@ def parse_recommendations(rows: list) -> list:
             if in_rec and len(stripped) > 15:
                 clean = stripped.lstrip("•·–—-→* ").strip()
                 if len(clean) < 15:
+                    continue
+                # Пропускаем строки "Все показатели в норме" как рекомендации
+                if "все показатели в норме" in clean.lower():
                     continue
                 key = clean[:60].lower()
                 if key not in seen:
@@ -437,7 +637,6 @@ def check_duplicate():
 def extract():
     """Шаг 1: извлечь показатели из файла. Поддерживает авторизованный и публичный режим."""
     try:
-        # Авторизация опциональна — публичный режим не сохраняет данные
         user = try_get_current_user(request.headers.get("Authorization"))
 
         file_bytes, filename, _ = read_file_from_request()
@@ -623,6 +822,29 @@ def indicators():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/indicator-history", methods=["GET"])
+def indicator_history():
+    """История значений одного показателя по всем анализам."""
+    try:
+        user = get_current_user(request.headers.get("Authorization"))
+        name = request.args.get("name", "").strip()
+        if not name:
+            return jsonify({"error": "Параметр name обязателен"}), 400
+
+        rows = db_select(
+            "analyses",
+            select="result,analysis_date,analysis_name,created_at",
+            filters={"user_id": user["id"]},
+        )
+        history = parse_indicators_history(rows, name)
+        return jsonify({"name": normalize_indicator_name(name), "history": history})
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/recommendations", methods=["GET"])
 def recommendations():
     try:
@@ -648,7 +870,6 @@ if __name__ == "__main__":
 
 # ========================
 # Алиасы для обратной совместимости с фронтендом
-# (index.html вызывает эти URL без авторизации)
 # ========================
 app.add_url_rule("/extract-public",             view_func=extract,            methods=["POST"])
 app.add_url_rule("/analyze-indicators-public",  view_func=analyze_indicators, methods=["POST"])

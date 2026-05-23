@@ -67,6 +67,35 @@
   .result-body p { margin-bottom: 11px; }
   .result-body strong { color: var(--text); }
 
+  /* ─── RESULT TWO BLOCKS ─── */
+  .result-two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media(max-width:800px){ .result-two-col { grid-template-columns:1fr; } }
+  .result-block { background:var(--bg2); padding:24px; border:1px solid var(--line-mid); }
+  .result-block-label {
+    font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.18em;
+    text-transform:uppercase; color:var(--text-dim); margin-bottom:16px;
+    padding-bottom:8px; border-bottom:1px solid var(--line-mid);
+    display:flex; align-items:center; gap:8px;
+  }
+  .result-block-label::before { content:''; display:inline-block; width:6px; height:6px; background:var(--orange); flex-shrink:0; }
+  .summary-type { font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--orange); margin-bottom:10px; }
+  .summary-status { font-family:var(--sans); font-size:14px; color:var(--text); line-height:1.7; margin-bottom:16px; }
+  .rec-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
+  .rec-item { display:flex; gap:10px; font-family:var(--mono); font-size:12px; color:var(--text-mid); line-height:1.65; }
+  .rec-item::before { content:'→'; color:var(--orange); flex-shrink:0; margin-top:1px; }
+  .rec-all-good { font-family:var(--mono); font-size:12px; color:var(--green); display:flex; align-items:center; gap:8px; }
+  .rec-all-good::before { content:'✓'; font-weight:700; }
+  .ind-res-table { width:100%; border-collapse:collapse; }
+  .ind-res-table thead th { font-family:var(--mono); font-size:9px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-dim); padding:7px 10px; text-align:left; border-bottom:1px solid var(--line-mid); background:var(--bg3); font-weight:700; white-space:nowrap; }
+  .ind-res-table thead th:first-child::before { content:'/ '; color:var(--orange); }
+  .ind-res-table tbody tr { border-bottom:1px solid var(--line); }
+  .ind-res-table tbody tr:last-child { border-bottom:none; }
+  .ind-res-table tbody td { padding:7px 10px; vertical-align:middle; font-family:var(--mono); font-size:12px; color:var(--text-mid); }
+  .ind-res-table .col-name { color:var(--text); font-weight:600; }
+  .tag-high { color:var(--red); font-weight:700; font-size:11px; }
+  .tag-low  { color:#3b82f6; font-weight:700; font-size:11px; }
+  .tag-ok   { color:var(--green); font-weight:700; font-size:11px; }
+
   /* ─── DELETE CONFIRM ─── */
   .delete-confirm-overlay {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55);
@@ -244,7 +273,21 @@ function renderAnalysis(a){
           <div class="pill pill-green"><span class="pill-inner">Готово</span></div>
         </div>
         <div class="a-card-body">
-          <div class="result-body">${formatResultHtml(a.result)}</div>
+          <div class="result-two-col" id="resultTwoCol">
+            <div class="result-block">
+              <div class="result-block-label">Состояние и рекомендации</div>
+              <div id="summaryBlock"></div>
+            </div>
+            <div class="result-block">
+              <div class="result-block-label">Показатели</div>
+              <div style="overflow-x:auto;">
+                <table class="ind-res-table">
+                  <thead><tr><th>Показатель</th><th>Значение</th><th>Статус</th></tr></thead>
+                  <tbody id="resultTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -255,6 +298,8 @@ function renderAnalysis(a){
     </div>`;
 
   document.getElementById('deleteBtn').addEventListener('click',()=>{document.getElementById('deleteConfirm').classList.add('show');});
+  // Render two-block result
+  renderResultBlocks(a.result);
 }
 
 document.getElementById('cancelDelete').addEventListener('click',()=>{document.getElementById('deleteConfirm').classList.remove('show');});
@@ -273,6 +318,67 @@ function openLightbox(url){const img=document.getElementById('lightboxImg');if(i
 function closeLightbox(e){if(e.target===document.getElementById('lightbox'))closeLightboxBtn();}
 function closeLightboxBtn(){const lb=document.getElementById('lightbox');if(lb)lb.classList.remove('open');document.body.style.overflow='';}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightboxBtn();});
+
+function parseAnalysisText(text){
+  const result={analysisType:'',status:'',recommendations:[],indicators:[]};
+  if(!text)return result;
+  let section='';
+  for(const rawLine of text.split('\n')){
+    const line=rawLine.trim();
+    if(!line)continue;
+    const up=line.toUpperCase();
+    if(up.startsWith('ТИП АНАЛИЗА:')){result.analysisType=line.replace(/^ТИП АНАЛИЗА:\s*/i,'').trim();continue;}
+    if(up.startsWith('ОБЩЕЕ СОСТОЯНИЕ:')){result.status=line.replace(/^ОБЩЕЕ СОСТОЯНИЕ:\s*/i,'').trim();section='status';continue;}
+    if(up.startsWith('РЕКОМЕНДАЦИИ')){section='rec';continue;}
+    if(up.startsWith('ПОКАЗАТЕЛИ')){section='ind';continue;}
+    if(section==='status'&&!result.status){result.status=line;}
+    else if(section==='rec'){const clean=line.replace(/^[-•→*]\s*/,'').trim();if(clean.length>5)result.recommendations.push(clean);}
+    else if(section==='ind'){
+      const parts=line.split(' - ');
+      if(parts.length>=3){
+        const name=parts[0].trim(),value=parts[1].trim(),statusRaw=parts[2].trim().toLowerCase();
+        let status='normal';
+        if(statusRaw.includes('выше'))status='above';
+        else if(statusRaw.includes('ниже'))status='below';
+        if(name.length>=2)result.indicators.push({name,value,status});
+      }
+    }
+  }
+  return result;
+}
+
+function renderResultBlocks(text){
+  const parsed=parseAnalysisText(text);
+  const sumEl=document.getElementById('summaryBlock');
+  if(!sumEl)return;
+  let sumHtml='';
+  if(parsed.analysisType) sumHtml+=`<div class="summary-type">${escHtml(parsed.analysisType)}</div>`;
+  if(parsed.status) sumHtml+=`<div class="summary-status">${escHtml(parsed.status)}</div>`;
+  if(parsed.recommendations.length){
+    sumHtml+='<ul class="rec-list">';
+    parsed.recommendations.forEach(r=>{
+      if(r.toLowerCase().includes('все показатели в норме')){
+        sumHtml+=`<li class="rec-all-good">${escHtml(r)}</li>`;
+      } else {
+        sumHtml+=`<li class="rec-item">${escHtml(r)}</li>`;
+      }
+    });
+    sumHtml+='</ul>';
+  }
+  sumEl.innerHTML=sumHtml||'<div style="color:var(--text-dim);font-family:var(--mono);font-size:12px;">Данные не найдены</div>';
+  const tbody=document.getElementById('resultTableBody');
+  if(tbody){
+    if(parsed.indicators.length){
+      tbody.innerHTML=parsed.indicators.map(ind=>{
+        const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':'tag-ok';
+        const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':'✓ норма';
+        return`<tr><td class="col-name">${escHtml(ind.name)}</td><td>${escHtml(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;
+      }).join('');
+    } else {
+      tbody.innerHTML='<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text-dim);font-family:var(--mono);font-size:12px;">Таблица не найдена</td></tr>';
+    }
+  }
+}
 
 if(analysisId)loadAnalysis();
 else document.getElementById('mainContent').innerHTML='<div class="state-error">ID анализа не указан</div>';
