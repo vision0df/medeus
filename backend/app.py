@@ -81,6 +81,33 @@ def clean_name(raw_name: str) -> str:
     return (raw_name or "").strip()
 
 
+def merge_key(name: str) -> str:
+    """
+    Ключ для дедупликации при парсинге старых result-строк.
+    Приводит варианты одного показателя к одному ключу:
+      "Лимфоциты (абс.)" / "Лимфоциты абсолютные" / "Лимфоциты абс" → "лимфоциты абс"
+      "Базофилы (%)" / "Базофилы %" → "базофилы"
+    Не используется для новых анализов — там Gemini уже даёт чистое name.
+    """
+    import re as _re
+    s = (name or "").strip().lower()
+    # (абс.) / (абс) / (abs) → " абс"
+    s = _re.sub(r'\s*\(\s*аб[сc]\.?\s*\)\s*', ' абс', s)
+    s = _re.sub(r'\s*\(\s*abs\.?\s*\)\s*', ' абс', s)
+    # абсолютные / абсолютный в конце → абс
+    s = _re.sub(r'\s+абсолютн\w*$', ' абс', s)
+    # (%) / % в конце → убрать
+    s = _re.sub(r'\s*\(\s*%\s*\)\s*', ' ', s)
+    s = _re.sub(r'\s+%$', '', s)
+    # убрать скобки с аббревиатурами (wbc) и т.п.
+    s = _re.sub(r'\s*\([a-z][a-z0-9%#]{1,6}\)\s*', ' ', s)
+    # убрать скобки с кириллицей-дублёром
+    s = _re.sub(r'\s*\([а-яёa-z][а-яёa-z\s]{1,30}\)\s*', ' ', s)
+    # нормализуем пробелы
+    s = _re.sub(r'\s+', ' ', s).strip()
+    return s
+
+
 def get_mime_type(filename: str) -> str | None:
     ext = os.path.splitext(filename)[1].lower()
     return ALLOWED_MIME_TYPES.get(ext)
@@ -433,9 +460,9 @@ def parse_indicators(rows: list) -> list:
             if not parsed:
                 continue
 
-            # Используем нормализованное имя как ключ группировки
+            # Ключ группировки — с минимальной чисткой суффиксов для дедупликации
             canonical_name = clean_name(parsed["name"])
-            name_key = canonical_name.lower().strip()
+            name_key = merge_key(parsed["name"])
             existing = merged.get(name_key)
 
             if existing is None:
