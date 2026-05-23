@@ -478,12 +478,16 @@ def gemini_generate(models: list, contents: list) -> str:
             return response.text.strip()
         except Exception as e:
             err_str = str(e)
-            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
+            if (
+                "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower()
+                or "503" in err_str or "UNAVAILABLE" in err_str
+            ):
                 last_error = e
                 continue  # пробуем следующую модель
             raise  # любая другая ошибка — пробрасываем сразу
     raise Exception(
-        f"Все модели Gemini исчерпали лимит запросов. Попробуйте позже. "
+        f"Сервис временно недоступен: все модели Gemini либо исчерпали лимит запросов, "
+        f"либо перегружены. Попробуйте через несколько минут. "
         f"(последняя ошибка: {last_error})"
     )
 
