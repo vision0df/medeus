@@ -68,8 +68,7 @@
   .result-body strong { color: var(--text); }
 
   /* ─── RESULT TWO BLOCKS ─── */
-  .result-two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-  @media(max-width:800px){ .result-two-col { grid-template-columns:1fr; } }
+  .result-two-col { display:flex; flex-direction:column; gap:20px; }
   .result-block { background:var(--bg2); padding:24px; border:1px solid var(--line-mid); }
   .result-block-label {
     font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.18em;

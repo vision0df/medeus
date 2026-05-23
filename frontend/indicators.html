@@ -62,7 +62,21 @@
   .filter-btn.active-warn  { background:var(--yellow-pale); border-color:var(--yellow); color:var(--yellow); }
   .filter-btn.active-alert { background:var(--red-pale); border-color:var(--red); color:var(--red); }
 
-  /* ─── SEARCH ─── */
+  .filter-btn.active-cat  { background:var(--orange-pale); border-color:var(--orange); color:var(--orange); }
+
+  /* ─── CATEGORY FILTERS ─── */
+  .cat-filters { display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .cat-filter-label { font-family:var(--mono); font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-dim); margin-right:4px; white-space:nowrap; }
+  .cat-filter-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:5px 13px; background:transparent; color:var(--text-dim);
+    font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+    border:1px solid var(--line-mid); outline:none; cursor:pointer; transition:all 0.15s;
+    clip-path:polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
+  }
+  .cat-filter-btn:hover { background:var(--bg3); border-color:var(--text-mid); color:var(--text); }
+  .cat-filter-btn.active { background:var(--orange); border-color:var(--orange); color:#fff; }
+  .cat-filter-btn .cat-count { font-size:10px; opacity:0.7; }
   .search-wrap { position:relative; margin-bottom:22px; }
   .search-icon { position:absolute; left:16px; top:50%; transform:translateY(-50%); width:16px; height:16px; stroke:var(--text-dim); fill:none; pointer-events:none; }
   .search-input { width:100%; padding:14px 16px 14px 46px; height:50px; border:1px solid var(--line-mid); border-left:3px solid var(--bg3); background:var(--white); font-family:var(--mono); font-size:13px; color:var(--text); outline:none; transition:border-color 0.15s,border-left-color 0.15s; }
@@ -186,6 +200,20 @@
     </div>
   </div>
 
+  <!-- Category Filters -->
+  <div class="cat-filters" id="catFilters">
+    <span class="cat-filter-label">Группа:</span>
+    <button class="cat-filter-btn active" data-cat="">Все группы</button>
+    <button class="cat-filter-btn" data-cat="blood">Кровь</button>
+    <button class="cat-filter-btn" data-cat="hormones">Гормоны</button>
+    <button class="cat-filter-btn" data-cat="functional">Биохимия</button>
+    <button class="cat-filter-btn" data-cat="oncology">Онкомаркеры</button>
+    <button class="cat-filter-btn" data-cat="infections">Иммунитет</button>
+    <button class="cat-filter-btn" data-cat="biomaterials">Биоматериалы</button>
+    <button class="cat-filter-btn" data-cat="microbiome">Микрофлора</button>
+    <button class="cat-filter-btn" data-cat="genetics">Генетика</button>
+  </div>
+
   <!-- Filters -->
   <div class="filters">
     <span class="filter-label">Фильтр:</span>
@@ -236,30 +264,47 @@ async function apiFetch(path,session){const r=await fetch(`${API_BASE}${path}`,{
 
 document.getElementById('statusDate').textContent=new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
 
-// ─── Category filter from URL ───
+// ─── Category filter ───
 const urlParams=new URLSearchParams(location.search);
 const categoryParam=urlParams.get('category')||'';
 
-// Category → keyword mapping (matches cabinet.html groups)
 const CATEGORY_MAP={
   blood:    {label:'Анализы крови',    keys:['гемоглобин','лейкоцит','тромбоцит','соэ','эритроцит','нейтрофил','лимфоцит','моноцит','эозинофил','базофил','гематокрит','мчг','мцг','цветовой']},
   hormones: {label:'Гормоны',          keys:['ттг','т3','т4','кортизол','тестостерон','эстрадиол','пролактин','инсулин','лг','фсг','амг','дгэа','прогестерон']},
-  infections:{label:'Инфекции и иммунитет', keys:['антитела','иммуноглобулин','igm','igg','iga','igе','крп','срб','прокальцитонин','ферритин','вич','гепатит','pcr','пцр']},
-  biomaterials:{label:'Биоматериалы',  keys:['моча','белок суточн','микроальбумин','глюкоза в моч','эпителий','лейкоциты в мочe','эритроциты в моч','цилиндр']},
-  genetics: {label:'Генетика и ДНК',   keys:['brca','кариотип','генотип','аллель','мутация']},
+  infections:{label:'Иммунитет',       keys:['антитела','иммуноглобулин','igm','igg','iga','игм','игг','игэ','срб','прокальцитонин','ферритин','вич','гепатит','pcr','пцр']},
+  biomaterials:{label:'Биоматериалы',  keys:['моча','белок суточн','микроальбумин','эпителий','цилиндр','удельный вес']},
+  genetics: {label:'Генетика',         keys:['brca','кариотип','генотип','аллель','мутация']},
   microbiome:{label:'Микрофлора',      keys:['посев','микрофлора','дисбактер','lactobacillus','bifidobacterium','кандида']},
   oncology: {label:'Онкомаркеры',      keys:['пса','ca-125','ca 19','рэа','афп','he4','бета-хгч','хгч']},
-  functional:{label:'Функциональные',  keys:['глюкоза','hba1c','гликир','инсулин','с-пептид','мочевая кислота','мочевин','креатинин','алт','аст','билирубин','холестерин','лпнп','лпвп','триглицерид']},
+  functional:{label:'Биохимия',        keys:['глюкоза','hba1c','гликир','мочевая кислота','мочевин','креатинин','алт','аст','билирубин','холестерин','лпнп','лпвп','триглицерид','щелочная','амилаза','липаза']},
 };
 
-let categoryFilter=''; // names that match the category
-if(categoryParam && CATEGORY_MAP[categoryParam]){
-  const cat=CATEGORY_MAP[categoryParam];
-  document.getElementById('pageLabel').textContent='Показатели';
-  document.getElementById('pageTitle').innerHTML=cat.label+'<span class="cursor-blink"></span>';
-  document.getElementById('backLink').style.display='flex';
-  categoryFilter=categoryParam;
+let categoryFilter=categoryParam;
+
+function applyCategoryUI(cat){
+  document.querySelectorAll('.cat-filter-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.cat===cat);
+  });
+  if(cat&&CATEGORY_MAP[cat]){
+    document.getElementById('pageLabel').textContent='Показатели';
+    document.getElementById('pageTitle').innerHTML=CATEGORY_MAP[cat].label+'<span class="cursor-blink"></span>';
+    document.getElementById('backLink').style.display='flex';
+  } else {
+    document.getElementById('pageLabel').textContent='Личный кабинет';
+    document.getElementById('pageTitle').innerHTML='Все показатели<span class="cursor-blink"></span>';
+    document.getElementById('backLink').style.display='none';
+  }
 }
+applyCategoryUI(categoryFilter);
+
+document.querySelectorAll('.cat-filter-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    categoryFilter=btn.dataset.cat;
+    applyCategoryUI(categoryFilter);
+    renderStats(allIndicators);
+    renderTable();
+  });
+});
 
 let allIndicators=[],currentFilter='all',searchQuery='';
 
