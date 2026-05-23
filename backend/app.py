@@ -455,13 +455,24 @@ def analyze_verified_indicators(indicators_json: str, age: str, gender: str) -> 
 
 ПРАВИЛА:
 1. Определи тип анализа (например: "Общий анализ крови", "Биохимический анализ крови", "Гормоны щитовидной железы", "Общий анализ мочи" и т.п.)
-2. Для каждого показателя нормализуй название (общепринятое медицинское на русском языке) и определи статус (норма / выше нормы / ниже нормы) с учётом возраста и пола.
-3. Дай краткое общее состояние (1-2 предложения) — укажи тип анализа и общую картину.
-4. Дай конкретные рекомендации только при наличии отклонений, без повторов.
+2. Определи группу анализа — ОДНО значение из списка: blood | hormones | infections | biomaterials | genetics | microbiome | oncology | functional
+   - blood: общий анализ крови, биохимия, коагулограмма, глюкоза, холестерин, СРБ, СОЭ
+   - hormones: щитовидная железа, половые гормоны, кортизол, инсулин, пролактин
+   - infections: ВИЧ, гепатит, ПЦР, TORCH, антитела к инфекциям, хеликобактер
+   - biomaterials: анализ мочи, кал, копрограмма, ПАП-тест
+   - genetics: кариотип, BRCA, тромбофилия, ДНК-тесты
+   - microbiome: посев, дисбактериоз, антибиограмма, грибки
+   - oncology: онкомаркеры (ПСА, CA-125, РЭА, АФП и т.п.)
+   - functional: ГТТ, HbA1c, спирометрия, холтер, стресс-тест
+3. Для каждого показателя выведи: оригинальное название из документа | нормализованное название на русском | значение с единицей | статус
+4. Дай краткое общее состояние (1-2 предложения).
+5. Дай конкретные рекомендации только при наличии отклонений, без повторов.
 
 ФОРМАТ ОТВЕТА (строго соблюдать, не добавлять ничего лишнего):
 
 ТИП АНАЛИЗА: <название типа анализа>
+
+ГРУППА: <одно значение из: blood | hormones | infections | biomaterials | genetics | microbiome | oncology | functional>
 
 ОБЩЕЕ СОСТОЯНИЕ: <1-2 предложения с общей оценкой>
 
@@ -470,7 +481,7 @@ def analyze_verified_indicators(indicators_json: str, age: str, gender: str) -> 
 - <рекомендация 2>
 
 ПОКАЗАТЕЛИ:
-Нормализованное название - значение с единицей - статус
+оригинальное название | нормализованное название - значение с единицей - статус
 ...
 
 ОГРАНИЧЕНИЯ:
@@ -478,6 +489,7 @@ def analyze_verified_indicators(indicators_json: str, age: str, gender: str) -> 
 - Только факты из анализа
 - Если отклонений нет — в РЕКОМЕНДАЦИИ напиши: "Все показатели в норме. Продолжайте вести здоровый образ жизни."
 - НЕ добавляй никакого текста после таблицы ПОКАЗАТЕЛИ
+- В строке ПОКАЗАТЕЛИ: сначала оригинальное название из документа, потом символ |, потом нормализованное название, потом тире и значение, потом тире и статус
 """
     return gemini_generate(
         models=GEMINI_MODELS_ANALYZE,
@@ -488,12 +500,79 @@ def analyze_verified_indicators(indicators_json: str, age: str, gender: str) -> 
 # ========================
 # Парсинг результатов
 # ========================
+VALID_GROUP_KEYS = {"blood", "hormones", "infections", "biomaterials", "genetics", "microbiome", "oncology", "functional"}
+
+def parse_indicator_line(line: str) -> dict | None:
+    """
+    Парсит одну строку показателя в двух форматах:
+    Новый: "оригинал | нормализованное - значение - статус"
+    Старый: "нормализованное - значение - статус"
+    Возвращает dict с ключами: original_name, name, value, status  или None.
+    """
+    original_name = None
+
+    # Новый формат: есть разделитель |
+    if "|" in line:
+        pipe_parts = line.split("|", 1)
+        original_name = pipe_parts[0].strip()
+        rest = pipe_parts[1].strip()
+    else:
+        rest = line
+
+    # Разбиваем остаток по тире
+    parts = re.split(r'\s+[-—–]\s+', rest, maxsplit=2)
+    if len(parts) < 3:
+        return None
+
+    name, value, status = parts[0].strip(), parts[1].strip(), parts[2].strip().lower()
+
+    if not (2 <= len(name) <= 140):
+        return None
+    if not any(c.isdigit() for c in value) and value.lower() not in (
+        "отрицательно", "отрицательный", "отрицательная",
+        "положительно", "положительный", "положительная",
+        "neg", "negative", "pos", "positive", "не обнаружено",
+        "обнаружено", "норма", "не выявлено",
+    ):
+        return None
+
+    if "выше" in status:
+        norm_status = "above"
+    elif "ниже" in status:
+        norm_status = "below"
+    else:
+        norm_status = "normal"
+
+    # Если original_name не было — используем name как оригинал
+    if not original_name:
+        original_name = name
+
+    return {
+        "original_name": original_name,
+        "name":          name,
+        "value":         value,
+        "status":        norm_status,
+    }
+
+
+def parse_group_key(result_text: str) -> str:
+    """Извлекает group_key из строки 'ГРУППА: blood' и т.п."""
+    for line in result_text.splitlines():
+        stripped = line.strip()
+        if stripped.upper().startswith("ГРУППА:"):
+            val = stripped.split(":", 1)[1].strip().lower()
+            if val in VALID_GROUP_KEYS:
+                return val
+    return "blood"  # дефолт если не нашли
+
+
 def parse_indicators(rows: list) -> list:
     merged: dict = {}
     for row in rows:
         result_text = row.get("result", "") or ""
         row_date    = row.get("analysis_date") or ""
         source      = row.get("analysis_name", "")
+        group_key   = parse_group_key(result_text)
 
         in_table = False
         for line in result_text.splitlines():
@@ -501,7 +580,6 @@ def parse_indicators(rows: list) -> list:
             if not line:
                 continue
 
-            # Ищем начало секции ПОКАЗАТЕЛИ
             if line.upper().startswith("ПОКАЗАТЕЛИ"):
                 in_table = True
                 continue
@@ -509,38 +587,15 @@ def parse_indicators(rows: list) -> list:
             if not in_table:
                 continue
 
-            # Если встретили другую секцию — стоп
-            if line.upper().startswith(("ТИП АНАЛИЗА", "ОБЩЕЕ СОСТОЯНИЕ", "РЕКОМЕНДАЦИИ")):
+            if line.upper().startswith(("ТИП АНАЛИЗА", "ОБЩЕЕ СОСТОЯНИЕ", "РЕКОМЕНДАЦИИ", "ГРУППА")):
                 break
 
-            # Разбиваем по любому виду тире/дефиса с пробелами
-            parts = re.split(r'\s+[-—–]\s+', line, maxsplit=2)
-            if len(parts) < 3:
+            parsed = parse_indicator_line(line)
+            if not parsed:
                 continue
 
-            name, value, status = parts[0].strip(), parts[1].strip(), parts[2].strip().lower()
-
-            # Допустимая длина названия: от 2 до 140 символов
-            if not (2 <= len(name) <= 140):
-                continue
-            # Значение должно содержать цифру или быть текстовым результатом
-            if not any(c.isdigit() for c in value) and value.lower() not in (
-                "отрицательно", "отрицательный", "отрицательная",
-                "положительно", "положительный", "положительная",
-                "neg", "negative", "pos", "positive", "не обнаружено",
-                "обнаружено", "норма", "не выявлено",
-            ):
-                continue
-
-            if "выше" in status:
-                norm_status = "above"
-            elif "ниже" in status:
-                norm_status = "below"
-            else:
-                norm_status = "normal"
-
-            # Нормализуем название для группировки
-            canonical_name = normalize_indicator_name(name)
+            # Используем нормализованное имя как ключ группировки
+            canonical_name = normalize_indicator_name(parsed["name"])
             name_key = canonical_name.lower().strip()
             existing = merged.get(name_key)
 
@@ -555,11 +610,13 @@ def parse_indicators(rows: list) -> list:
 
             if should_update:
                 merged[name_key] = {
-                    "name":   canonical_name,
-                    "value":  value,
-                    "status": norm_status,
-                    "date":   row_date,
-                    "source": source,
+                    "name":          canonical_name,
+                    "original_name": parsed["original_name"],
+                    "value":         parsed["value"],
+                    "status":        parsed["status"],
+                    "date":          row_date,
+                    "source":        source,
+                    "group_key":     group_key,
                 }
 
     return sorted(merged.values(), key=lambda x: x["name"])
@@ -585,32 +642,23 @@ def parse_indicators_history(rows: list, indicator_name: str) -> list:
                 continue
             if not in_table:
                 continue
-            if line.upper().startswith(("ТИП АНАЛИЗА", "ОБЩЕЕ СОСТОЯНИЕ", "РЕКОМЕНДАЦИИ")):
+            if line.upper().startswith(("ТИП АНАЛИЗА", "ОБЩЕЕ СОСТОЯНИЕ", "РЕКОМЕНДАЦИИ", "ГРУППА")):
                 break
 
-            parts = re.split(r'\s+[-—–]\s+', line, maxsplit=2)
-            if len(parts) < 3:
+            parsed = parse_indicator_line(line)
+            if not parsed:
                 continue
 
-            name, value, status = parts[0].strip(), parts[1].strip(), parts[2].strip().lower()
+            canonical_name = normalize_indicator_name(parsed["name"]).lower()
+            original_canonical = normalize_indicator_name(parsed["original_name"]).lower()
 
-            if not (2 <= len(name) <= 140):
-                continue
-
-            canonical_name = normalize_indicator_name(name).lower()
-
-            if canonical_name == canonical_target:
-                if "выше" in status:
-                    norm_status = "above"
-                elif "ниже" in status:
-                    norm_status = "below"
-                else:
-                    norm_status = "normal"
+            if canonical_name == canonical_target or original_canonical == canonical_target:
                 result.append({
-                    "value":  value,
-                    "status": norm_status,
-                    "date":   row_date,
-                    "source": source,
+                    "value":         parsed["value"],
+                    "status":        parsed["status"],
+                    "date":          row_date,
+                    "source":        source,
+                    "original_name": parsed["original_name"],
                 })
 
     return result
@@ -687,6 +735,217 @@ def read_file_from_request() -> tuple[bytes, str, str]:
     if not file_bytes:
         raise ValueError("Файл пустой")
     return file_bytes, file.filename, mime_type
+
+
+# ========================
+# Supabase: доп. запросы
+# ========================
+def db_select_filter(table: str, select: str, col: str, val: str) -> list:
+    """Выборка с фильтром по одной колонке."""
+    resp = httpx.get(
+        f"{SUPABASE_URL}/rest/v1/{table}",
+        headers=supa_headers(),
+        params={"select": select, col: f"eq.{val}"},
+        timeout=10,
+    )
+    if resp.status_code != 200:
+        raise Exception(f"DB select error {resp.status_code}: {resp.text}")
+    return resp.json()
+
+
+def db_upsert(table: str, data: dict, on_conflict: str):
+    """INSERT ... ON CONFLICT (on_conflict) DO NOTHING, возвращает строку или None."""
+    headers = supa_headers()
+    headers["Prefer"] = "resolution=ignore-duplicates,return=representation"
+    resp = httpx.post(
+        f"{SUPABASE_URL}/rest/v1/{table}?on_conflict={on_conflict}",
+        headers=headers,
+        json=data,
+        timeout=10,
+    )
+    if resp.status_code not in (200, 201):
+        raise Exception(f"DB upsert error {resp.status_code}: {resp.text}")
+    rows = resp.json()
+    return rows[0] if rows else None
+
+
+# ========================
+# Пакетный resolve показателей
+# ========================
+def parse_gemini_json_obj(raw: str) -> object:
+    clean = raw.strip()
+    if clean.startswith("```"):
+        parts = clean.split("```")
+        clean = parts[1] if len(parts) > 1 else clean
+        if clean.startswith("json"):
+            clean = clean[4:]
+        clean = clean.strip()
+    try:
+        return json.loads(clean)
+    except Exception:
+        return None
+
+
+def resolve_indicators_batch(indicators: list) -> dict:
+    """
+    indicators: [{"original_name": ..., "name": ..., "group_key": ...}, ...]
+    Возвращает dict: canonical_lower -> indicator_id
+    """
+    all_indicators = db_select("indicators", "id,name,group_key", {})
+    known_by_name: dict = {r["name"].lower(): r for r in all_indicators}
+
+    all_names_rows = db_select("indicator_names", "name,indicator_id", {})
+    known_names: dict = {r["name"].lower(): r["indicator_id"] for r in all_names_rows}
+
+    result_map: dict = {}
+    unknown: list = []
+
+    for ind in indicators:
+        canonical = normalize_indicator_name(ind["name"])
+        original  = ind.get("original_name", canonical)
+        group_key = ind.get("group_key", "blood")
+        c_lower   = canonical.lower()
+        o_lower   = normalize_indicator_name(original).lower()
+
+        ind_id = known_names.get(c_lower) or known_names.get(o_lower)
+        if not ind_id:
+            match = known_by_name.get(c_lower)
+            if match:
+                ind_id = match["id"]
+
+        if ind_id:
+            result_map[c_lower] = ind_id
+            if o_lower not in known_names and o_lower != c_lower:
+                try:
+                    db_upsert("indicator_names", {"indicator_id": ind_id, "name": original}, "name")
+                    known_names[o_lower] = ind_id
+                except Exception as e:
+                    log.warning("Синоним не добавлен %s: %s", original, e)
+        else:
+            unknown.append({"canonical": canonical, "original": original,
+                            "group_key": group_key, "c_lower": c_lower})
+
+    if not unknown:
+        return result_map
+
+    known_names_list = [r["name"] for r in all_indicators]
+    unknown_list_str = json.dumps(
+        [{"id": i, "name": u["canonical"], "original": u["original"]}
+         for i, u in enumerate(unknown)],
+        ensure_ascii=False,
+    )
+
+    prompt = f"""Ты — классификатор медицинских показателей.
+
+Список уже известных показателей в системе:
+{json.dumps(known_names_list, ensure_ascii=False)}
+
+Новые показатели из анализа (id, нормализованное name, оригинальное original):
+{unknown_list_str}
+
+Для КАЖДОГО реши:
+- Синоним существующего → action="alias", match=точное название из известных
+- Новый показатель → action="new"
+
+Верни ТОЛЬКО JSON-массив без пояснений и markdown:
+[{{"id": 0, "action": "alias", "match": "Гемоглобин"}}, {{"id": 1, "action": "new"}}]
+"""
+
+    try:
+        raw = gemini_generate(GEMINI_MODELS_EXTRACT, [prompt])
+        decisions = parse_gemini_json_obj(raw)
+        if not isinstance(decisions, list):
+            raise ValueError("не массив")
+    except Exception as e:
+        log.error("resolve_indicators_batch Gemini error: %s", e)
+        decisions = [{"id": i, "action": "new"} for i in range(len(unknown))]
+
+    for decision in decisions:
+        idx = decision.get("id")
+        if idx is None or idx >= len(unknown):
+            continue
+        u = unknown[idx]
+        try:
+            if decision.get("action") == "alias":
+                match_name = decision.get("match", "")
+                matched = next(
+                    (r for r in all_indicators if r["name"].lower() == match_name.lower()), None
+                )
+                if matched:
+                    ind_id = matched["id"]
+                    for alias in set([u["canonical"], u["original"]]):
+                        if alias.lower() not in known_names:
+                            try:
+                                db_upsert("indicator_names", {"indicator_id": ind_id, "name": alias}, "name")
+                                known_names[alias.lower()] = ind_id
+                            except Exception:
+                                pass
+                    result_map[u["c_lower"]] = ind_id
+                    log.info("resolve: '%s' → alias '%s'", u["canonical"], match_name)
+                    continue
+
+            # new (или alias без match)
+            new_ind = db_upsert("indicators", {"name": u["canonical"], "group_key": u["group_key"]}, "name")
+            if new_ind:
+                ind_id = new_ind["id"]
+            else:
+                rows = db_select_filter("indicators", "id,name,group_key", "name", u["canonical"])
+                if not rows:
+                    continue
+                ind_id = rows[0]["id"]
+
+            for alias in set([u["canonical"], u["original"]]):
+                if alias.lower() not in known_names:
+                    try:
+                        db_upsert("indicator_names", {"indicator_id": ind_id, "name": alias}, "name")
+                        known_names[alias.lower()] = ind_id
+                    except Exception:
+                        pass
+
+            result_map[u["c_lower"]] = ind_id
+            known_by_name[u["c_lower"]] = {"id": ind_id, "name": u["canonical"], "group_key": u["group_key"]}
+            log.info("resolve: '%s' → new indicator", u["canonical"])
+
+        except Exception as e:
+            log.error("resolve error '%s': %s", u["canonical"], e)
+
+    return result_map
+
+
+def save_user_indicators(
+    user_id: str, analysis_id: str, parsed_indicators: list, group_key: str, measured_at: str | None
+):
+    """Сохраняет значения показателей пользователя после resolve."""
+    if not parsed_indicators:
+        return
+    to_resolve = [
+        {"original_name": ind.get("original_name", ind["name"]),
+         "name": ind["name"], "group_key": group_key}
+        for ind in parsed_indicators
+    ]
+    try:
+        id_map = resolve_indicators_batch(to_resolve)
+    except Exception as e:
+        log.error("save_user_indicators resolve failed: %s", e)
+        return
+
+    for ind in parsed_indicators:
+        canonical = normalize_indicator_name(ind["name"])
+        ind_id = id_map.get(canonical.lower())
+        if not ind_id:
+            log.warning("нет indicator_id для '%s'", canonical)
+            continue
+        try:
+            row = {
+                "user_id": user_id, "indicator_id": ind_id,
+                "analysis_id": analysis_id, "value": ind["value"], "status": ind["status"],
+            }
+            if measured_at:
+                row["measured_at"] = measured_at
+            db_insert("user_indicators", row)
+        except Exception as e:
+            log.error("user_indicators insert error '%s': %s", canonical, e)
+
 
 
 # ========================
@@ -787,11 +1046,33 @@ def save_analysis():
             row["analysis_date"] = analysis_date
 
         try:
-            db_insert("analyses", row)
+            inserted = db_insert("analyses", row)
         except Exception as db_err:
             log.error("DB insert failed, cleaning storage: %s", db_err)
             delete_file_from_storage(file_url)
             raise
+
+        # Сохраняем показатели в user_indicators (фоново, не блокируем ответ при ошибке)
+        try:
+            analysis_id = inserted[0]["id"] if inserted else None
+            if analysis_id:
+                group_key = parse_group_key(analysis)
+                # Парсим показатели из результата анализа для одной строки
+                fake_row = {
+                    "result": analysis,
+                    "analysis_date": analysis_date or "",
+                    "analysis_name": analysis_name,
+                }
+                parsed = parse_indicators([fake_row])
+                save_user_indicators(
+                    user_id=user["id"],
+                    analysis_id=analysis_id,
+                    parsed_indicators=parsed,
+                    group_key=group_key,
+                    measured_at=analysis_date or None,
+                )
+        except Exception as ind_err:
+            log.error("save_user_indicators error (non-fatal): %s", ind_err)
 
         return jsonify({"ok": True})
     except ValueError as e:
