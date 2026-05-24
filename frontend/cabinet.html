@@ -171,8 +171,6 @@
     display: grid;
     grid-template-columns: 1fr 240px 1fr;
     gap: 0;
-    height: auto;
-    align-items: stretch;
   }
 
   /* LEFT — сводка отклонений */
@@ -180,7 +178,7 @@
     display: flex;
     flex-direction: column;
     border-right: 1px solid var(--line);
-    height: 100%;
+    overflow: hidden;
   }
   .overview-col-label {
     font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
@@ -706,7 +704,7 @@ function renderIndicators(indicators){
   const dev=indicators.filter(i=>i.status!=='normal').length;
   if(badge){badge.textContent=dev?dev+' '+plural(dev,'отклонение','отклонения','отклонений'):'всё в норме';badge.className='card-badge '+(dev?'badge-warn':'badge-ok');}
   const abnormal=indicators.filter(i=>i.status!=='normal'&&i.status!=='ok');
-  const shown=abnormal.slice(0,8);
+  const shown=abnormal.slice(0,9);
   const warnCount=indicators.filter(i=>i.status==='warning'||i.status==='warn').length;
   const alertCount=indicators.filter(i=>i.status==='alert'||i.status==='critical').length;
   if(badge) badge.textContent=alertCount?`${alertCount} критич.`:warnCount?`${warnCount} отклон.`:`в норме`;
@@ -749,6 +747,20 @@ function renderHealthScore(indicators){
 }
 
 document.getElementById('logoutBtn')?.addEventListener('click',async e=>{e.preventDefault();await signOut();});
+
+function syncOverviewHeight(){
+  const menu=document.querySelector('.anatomy-menu');
+  const summary=document.querySelector('.overview-summary');
+  const block=document.querySelector('.overview-block');
+  if(!menu||!summary||!block) return;
+  const h=menu.offsetHeight;
+  if(h>0){
+    block.style.height=h+'px';
+    summary.style.height=h+'px';
+  }
+}
+window.addEventListener('load', syncOverviewHeight);
+window.addEventListener('resize', syncOverviewHeight);
 
 const CACHE_KEY='medeus_dashboard_cache',CACHE_TTL=5*60*1000;
 function saveCache(uid,data){try{localStorage.setItem(CACHE_KEY,JSON.stringify({userId:uid,data,ts:Date.now()}));}catch(e){}}
