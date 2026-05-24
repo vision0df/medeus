@@ -888,6 +888,23 @@ def save_user_indicators(
             log.error("user_indicators insert error '%s': %s", canonical, e)
 
 
+def save_recommendations(user_id: str, analysis_id: str, result_text: str):
+    """Парсит рекомендации из текста анализа и сохраняет в таблицу recommendations."""
+    fake_row = {"result": result_text, "analysis_date": "", "analysis_name": ""}
+    recs = parse_recommendations([fake_row])
+    for rec in recs:
+        text = rec.get("text", "").strip()
+        if not text:
+            continue
+        try:
+            db_insert("recommendations", {
+                "user_id":     user_id,
+                "analysis_id": analysis_id,
+                "text":        text,
+            })
+        except Exception as e:
+            log.error("recommendations insert error: %s", e)
+
 
 # ========================
 # API Routes
@@ -993,12 +1010,11 @@ def save_analysis():
             delete_file_from_storage(file_url)
             raise
 
-        # Сохраняем показатели в user_indicators (фоново, не блокируем ответ при ошибке)
+        # Сохраняем показатели и рекомендации (не блокируем ответ при ошибке)
         try:
             analysis_id = inserted[0]["id"] if inserted else None
             if analysis_id:
                 group_key = parse_group_key(analysis)
-                # Парсим показатели из результата анализа для одной строки
                 fake_row = {
                     "result": analysis,
                     "analysis_date": analysis_date or "",
@@ -1012,8 +1028,13 @@ def save_analysis():
                     group_key=group_key,
                     measured_at=analysis_date or None,
                 )
+                save_recommendations(
+                    user_id=user["id"],
+                    analysis_id=analysis_id,
+                    result_text=analysis,
+                )
         except Exception as ind_err:
-            log.error("save_user_indicators error (non-fatal): %s", ind_err)
+            log.error("save_user_indicators/recommendations error (non-fatal): %s", ind_err)
 
         return jsonify({"ok": True})
     except ValueError as e:
@@ -1087,15 +1108,92 @@ def dashboard():
     """Один запрос: history + indicators + recommendations для личного кабинета."""
     try:
         user = get_current_user(request.headers.get("Authorization"))
+        uid = user["id"]
+
+        # history — всегда из analyses (нужны все поля для отображения карточек)
         rows = db_select(
             "analyses",
             select="id,filename,analysis_name,age,gender,result,file_url,analysis_date,created_at",
-            filters={"user_id": user["id"]},
+            filters={"user_id": uid},
         )
+
+        # indicators — быстрый путь из user_indicators
+        parsed_indicators = None
+        try:
+            resp = httpx.get(
+                f"{SUPABASE_URL}/rest/v1/user_indicators",
+                headers=supa_headers(),
+                params={
+                    "select":  "value,status,measured_at,indicators(id,name,group_key),analyses(analysis_name,analysis_date)",
+                    "user_id": f"eq.{uid}",
+                    "order":   "measured_at.desc.nullslast",
+                },
+                timeout=10,
+            )
+            if resp.status_code == 200:
+                merged: dict = {}
+                for row in resp.json():
+                    ind = row.get("indicators") or {}
+                    if not ind:
+                        continue
+                    an        = row.get("analyses") or {}
+                    name      = ind.get("name", "")
+                    group_key = ind.get("group_key", "blood")
+                    name_key  = merge_key(name)
+                    date      = row.get("measured_at") or an.get("analysis_date") or ""
+                    existing  = merged.get(name_key)
+                    if existing is None or (date and (not existing["date"] or date > existing["date"])):
+                        merged[name_key] = {
+                            "name": name, "original_name": name,
+                            "value": row.get("value", ""), "status": row.get("status", "normal"),
+                            "date": date, "source": an.get("analysis_name", ""),
+                            "group_key": group_key,
+                        }
+                parsed_indicators = sorted(merged.values(), key=lambda x: x["name"])
+        except Exception as e:
+            log.warning("dashboard indicators fast path failed: %s", e)
+
+        if parsed_indicators is None:
+            log.info("dashboard indicators fallback to regex parse for user %s", uid)
+            parsed_indicators = parse_indicators(rows)
+
+        # recommendations — быстрый путь из таблицы recommendations
+        parsed_recs = None
+        try:
+            resp = httpx.get(
+                f"{SUPABASE_URL}/rest/v1/recommendations",
+                headers=supa_headers(),
+                params={
+                    "select":  "text,analyses(analysis_name)",
+                    "user_id": f"eq.{uid}",
+                    "order":   "created_at.desc",
+                },
+                timeout=10,
+            )
+            if resp.status_code == 200:
+                seen: set = set()
+                recs: list = []
+                for row in resp.json():
+                    text = (row.get("text") or "").strip()
+                    if not text or "все показатели в норме" in text.lower():
+                        continue
+                    key = text[:60].lower()
+                    if key not in seen:
+                        seen.add(key)
+                        an = row.get("analyses") or {}
+                        recs.append({"text": text, "source": an.get("analysis_name", "")})
+                parsed_recs = recs[:20]
+        except Exception as e:
+            log.warning("dashboard recommendations fast path failed: %s", e)
+
+        if parsed_recs is None:
+            log.info("dashboard recommendations fallback to regex parse for user %s", uid)
+            parsed_recs = parse_recommendations(rows)
+
         return jsonify({
             "history":         rows,
-            "indicators":      parse_indicators(rows),
-            "recommendations": parse_recommendations(rows),
+            "indicators":      parsed_indicators,
+            "recommendations": parsed_recs,
         })
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
@@ -1108,6 +1206,60 @@ def dashboard():
 def indicators():
     try:
         user = get_current_user(request.headers.get("Authorization"))
+
+        # Быстрый путь: читаем из user_indicators JOIN indicators JOIN analyses
+        try:
+            resp = httpx.get(
+                f"{SUPABASE_URL}/rest/v1/user_indicators",
+                headers=supa_headers(),
+                params={
+                    "select":  "value,status,measured_at,indicators(id,name,group_key),analyses(analysis_name,analysis_date)",
+                    "user_id": f"eq.{user['id']}",
+                    "order":   "measured_at.desc.nullslast",
+                },
+                timeout=10,
+            )
+            if resp.status_code == 200:
+                raw_rows = resp.json()
+                # Дедупликация: для каждого показателя берём самое свежее значение
+                merged: dict = {}
+                for row in raw_rows:
+                    ind = row.get("indicators") or {}
+                    if not ind:
+                        continue
+                    an  = row.get("analyses") or {}
+                    name      = ind.get("name", "")
+                    group_key = ind.get("group_key", "blood")
+                    name_key  = merge_key(name)
+                    date = row.get("measured_at") or an.get("analysis_date") or ""
+
+                    existing = merged.get(name_key)
+                    if existing is None:
+                        should_update = True
+                    elif date and not existing["date"]:
+                        should_update = True
+                    elif date and existing["date"]:
+                        should_update = date > existing["date"]
+                    else:
+                        should_update = False
+
+                    if should_update:
+                        merged[name_key] = {
+                            "name":          name,
+                            "original_name": name,
+                            "value":         row.get("value", ""),
+                            "status":        row.get("status", "normal"),
+                            "date":          date,
+                            "source":        an.get("analysis_name", ""),
+                            "group_key":     group_key,
+                        }
+                result = sorted(merged.values(), key=lambda x: x["name"])
+                return jsonify({"indicators": result})
+        except Exception as e:
+            log.warning("indicators fast path failed: %s", e)
+
+        # Фолбэк: старый парсинг
+        log.info("indicators fallback to regex parse for user %s", user["id"])
         rows = db_select(
             "analyses",
             select="result,analysis_date,analysis_name",
@@ -1201,6 +1353,39 @@ def indicator_history():
 def recommendations():
     try:
         user = get_current_user(request.headers.get("Authorization"))
+
+        # Быстрый путь: читаем из таблицы recommendations
+        try:
+            resp = httpx.get(
+                f"{SUPABASE_URL}/rest/v1/recommendations",
+                headers=supa_headers(),
+                params={
+                    "select":  "text,analyses(analysis_name,analysis_date)",
+                    "user_id": f"eq.{user['id']}",
+                    "order":   "created_at.desc",
+                },
+                timeout=10,
+            )
+            if resp.status_code == 200:
+                rows = resp.json()
+                # Дедупликация по первым 60 символам (как в parse_recommendations)
+                seen: set = set()
+                recs: list = []
+                for row in rows:
+                    text = (row.get("text") or "").strip()
+                    if not text or "все показатели в норме" in text.lower():
+                        continue
+                    key = text[:60].lower()
+                    if key not in seen:
+                        seen.add(key)
+                        an = row.get("analyses") or {}
+                        recs.append({"text": text, "source": an.get("analysis_name", "")})
+                return jsonify({"recommendations": recs[:20]})
+        except Exception as e:
+            log.warning("recommendations fast path failed: %s", e)
+
+        # Фолбэк: старый парсинг (для анализов до введения таблицы)
+        log.info("recommendations fallback to regex parse for user %s", user["id"])
         rows = db_select(
             "analyses",
             select="result,analysis_date,analysis_name",
