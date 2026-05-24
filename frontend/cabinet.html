@@ -706,7 +706,7 @@ function renderIndicators(indicators){
   const dev=indicators.filter(i=>i.status!=='normal').length;
   if(badge){badge.textContent=dev?dev+' '+plural(dev,'отклонение','отклонения','отклонений'):'всё в норме';badge.className='card-badge '+(dev?'badge-warn':'badge-ok');}
   const abnormal=indicators.filter(i=>i.status!=='normal'&&i.status!=='ok');
-  const shown=abnormal.slice(0,10);
+  const shown=abnormal.slice(0,8);
   const warnCount=indicators.filter(i=>i.status==='warning'||i.status==='warn').length;
   const alertCount=indicators.filter(i=>i.status==='alert'||i.status==='critical').length;
   if(badge) badge.textContent=alertCount?`${alertCount} критич.`:warnCount?`${warnCount} отклон.`:`в норме`;
