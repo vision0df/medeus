@@ -572,7 +572,7 @@ function renderResultBlocks(text){
   }
 }
 
-// Parse structured AI response
+// Parse structured AI response (поддержка формата: "оригинал | нормализованное - значение - статус")
 function parseAnalysisText(text){
   const result={analysisType:'',status:'',recommendations:[],indicators:[]};
   let section='';
@@ -581,6 +581,7 @@ function parseAnalysisText(text){
     if(!line)continue;
     const up=line.toUpperCase();
     if(up.startsWith('ТИП АНАЛИЗА:')){result.analysisType=line.replace(/^ТИП АНАЛИЗА:\s*/i,'').trim();continue;}
+    if(up.startsWith('ГРУППА:')){continue;}
     if(up.startsWith('ОБЩЕЕ СОСТОЯНИЕ:')){result.status=line.replace(/^ОБЩЕЕ СОСТОЯНИЕ:\s*/i,'').trim();section='status';continue;}
     if(up.startsWith('РЕКОМЕНДАЦИИ')){section='rec';continue;}
     if(up.startsWith('ПОКАЗАТЕЛИ')){section='ind';continue;}
@@ -591,9 +592,15 @@ function parseAnalysisText(text){
       if(clean.length>5)result.recommendations.push(clean);
     }
     else if(section==='ind'){
-      const parts=line.split(' - ');
+      // Новый формат: "оригинал | нормализованное - значение - статус"
+      // Старый формат: "название - значение - статус"
+      let rest=line;
+      if(line.includes('|')){rest=line.split('|')[1].trim();}
+      const parts=rest.split(/\s+-\s+/);
       if(parts.length>=3){
-        const name=parts[0].trim(),value=parts[1].trim(),statusRaw=parts[2].trim().toLowerCase();
+        const name=parts[0].trim();
+        const value=parts[1].trim();
+        const statusRaw=parts.slice(2).join(' - ').trim().toLowerCase();
         let status='normal';
         if(statusRaw.includes('выше'))status='above';
         else if(statusRaw.includes('ниже'))status='below';
