@@ -690,6 +690,27 @@ function renderUpMetaBlock(){
   }
 }
 
+// SAVE
+saveBtn.addEventListener('click',async()=>{
+  if(!analysisResult||!selectedFile)return;
+  const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
+  const age=calcAge(userProfile?.birth_date)||'0',gender=userProfile?.gender||'не указан';
+  saveBtn.disabled=true;hideError(3);
+  const origHtml=saveBtn.innerHTML;saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><circle cx="12" cy="12" r="10"/></svg><span>Сохраняем...</span>';
+  try{
+    const fd=new FormData();fd.append('file',selectedFile);fd.append('analysis',analysisResult);fd.append('analysis_name',analysisNameInput.value.trim());fd.append('analysis_date',analysisDate.value||'');fd.append('age',age);fd.append('gender',gender);
+    const resp=await fetch(`${API_BASE}/save-analysis`,{method:'POST',headers:{'Authorization':`Bearer ${session.access_token}`},body:fd});
+    const data=await resp.json();if(resp.status===401){window.location.href='auth.html';return;}if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
+    saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><polyline points="20 6 9 17 4 12"/></svg><span>Сохранено!</span>';
+    saveBtn.style.color='var(--green)';saveBtn.style.borderColor='var(--green)';
+    toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3000);
+    setTimeout(()=>{try{localStorage.removeItem('medeus_dashboard_cache');}catch(e){}window.location.href='cabinet.html';},2000);
+  }catch(err){
+    saveBtn.disabled=false;saveBtn.innerHTML=origHtml;
+    showError(3,err.message||'Не удалось сохранить');
+  }
+});
+
 analysisDate.value=new Date().toISOString().split('T')[0];
 checkStep1();setStep(1);
 </script>
