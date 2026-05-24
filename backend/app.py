@@ -1123,20 +1123,73 @@ def indicators():
 
 @app.route("/indicator-history", methods=["GET"])
 def indicator_history():
-    """История значений одного показателя по всем анализам."""
+    """
+    История значений одного показателя по всем анализам.
+
+    Быстрый путь: читает из user_indicators JOIN indicators JOIN analyses —
+    один запрос к БД вместо загрузки всех result и regex-парсинга.
+
+    Фолбэк: если в user_indicators нет данных (старые анализы до введения
+    таблицы), падает на медленный парсинг analyses.result.
+    """
     try:
         user = get_current_user(request.headers.get("Authorization"))
         name = request.args.get("name", "").strip()
         if not name:
             return jsonify({"error": "Параметр name обязателен"}), 400
 
-        rows = db_select(
-            "analyses",
-            select="result,analysis_date,analysis_name,created_at",
-            filters={"user_id": user["id"]},
-        )
-        history = parse_indicators_history(rows, name)
-        return jsonify({"name": clean_name(name), "history": history})
+        canonical = clean_name(name)
+
+        # ── Быстрый путь через user_indicators ──────────────────────────────
+        # PostgREST: user_indicators?select=...&indicators(name)=eq.X&order=...
+        # Используем вложенный select для JOIN с indicators и analyses
+        try:
+            resp = httpx.get(
+                f"{SUPABASE_URL}/rest/v1/user_indicators",
+                headers=supa_headers(),
+                params={
+                    "select":       "value,status,measured_at,indicators(name),analyses(analysis_name,analysis_date,created_at)",
+                    "user_id":      f"eq.{user['id']}",
+                    "indicators.name": f"eq.{canonical}",
+                    "order":        "measured_at.asc.nullslast",
+                },
+                timeout=10,
+            )
+            fast_rows = resp.json() if resp.status_code == 200 else []
+        except Exception as e:
+            log.warning("indicator-history fast path failed: %s", e)
+            fast_rows = []
+
+        # Фильтруем: PostgREST не фильтрует по joined таблице в params так же,
+        # как по основной, поэтому доделываем фильтр на Python (данных мало)
+        history = []
+        for row in fast_rows:
+            ind = row.get("indicators") or {}
+            if not ind or ind.get("name", "").lower() != canonical.lower():
+                continue
+            an = row.get("analyses") or {}
+            date = row.get("measured_at") or an.get("analysis_date") or (
+                an.get("created_at", "")[:10] if an.get("created_at") else ""
+            )
+            history.append({
+                "value":         row.get("value", ""),
+                "status":        row.get("status", "normal"),
+                "date":          date,
+                "source":        an.get("analysis_name", ""),
+                "original_name": canonical,
+            })
+
+        # ── Фолбэк: старый медленный парсинг ────────────────────────────────
+        if not history:
+            log.info("indicator-history fallback to regex parse for '%s'", canonical)
+            rows = db_select(
+                "analyses",
+                select="result,analysis_date,analysis_name,created_at",
+                filters={"user_id": user["id"]},
+            )
+            history = parse_indicators_history(rows, name)
+
+        return jsonify({"name": canonical, "history": history})
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
     except Exception as e:
