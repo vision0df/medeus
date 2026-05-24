@@ -599,6 +599,37 @@ continueBtn.addEventListener('click',async()=>{
 
 document.getElementById('backToStep2Btn').addEventListener('click',()=>setStep(2));
 
+// ─── Parse structured AI response ───
+function parseAnalysisText(text){
+  const result={analysisType:'',status:'',recommendations:[],indicators:[]};
+  let section='';
+  for(const rawLine of text.split('\n')){
+    const line=rawLine.trim();
+    if(!line)continue;
+    const up=line.toUpperCase();
+    if(up.startsWith('ТИП АНАЛИЗА:')){result.analysisType=line.replace(/^ТИП АНАЛИЗА:\s*/i,'').trim();continue;}
+    if(up.startsWith('ГРУППА:')){continue;}
+    if(up.startsWith('ОБЩЕЕ СОСТОЯНИЕ:')){result.status=line.replace(/^ОБЩЕЕ СОСТОЯНИЕ:\s*/i,'').trim();section='status';continue;}
+    if(up.startsWith('РЕКОМЕНДАЦИИ')){section='rec';continue;}
+    if(up.startsWith('ПОКАЗАТЕЛИ')){section='ind';continue;}
+    if(section==='status'&&!result.status){result.status=line;}
+    else if(section==='rec'){const clean=line.replace(/^[-•→*]\s*/,'').trim();if(clean.length>5)result.recommendations.push(clean);}
+    else if(section==='ind'){
+      let rest=line;
+      if(line.includes('|')){rest=line.split('|')[1].trim();}
+      const parts=rest.split(/\s+-\s+/);
+      if(parts.length>=3){
+        const name=parts[0].trim(),value=parts[1].trim(),statusRaw=parts.slice(2).join(' - ').trim().toLowerCase();
+        let status='normal';
+        if(statusRaw.includes('выше'))status='above';
+        else if(statusRaw.includes('ниже'))status='below';
+        if(name.length>=2)result.indicators.push({name,value,status});
+      }
+    }
+  }
+  return result;
+}
+
 // ─── Render result in two blocks ───
 function renderResultBlocks(text){
   if(!text){return;}
