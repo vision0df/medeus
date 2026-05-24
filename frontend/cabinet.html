@@ -712,7 +712,8 @@ function renderIndicators(indicators){
   if(shown.length===0){
     grid.innerHTML='<div class="ov-empty"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Все показатели<br>в норме</div>';
   } else {
-    grid.innerHTML=shown.map(ind=>{const cls=statusClass(ind.status);return`<a href="indicator.html?name=${encodeURIComponent(ind.name)}" class="ov-ind-item ${cls}" style="text-decoration:none;cursor:pointer;display:block;"><div class="ov-ind-item-name">${escHtml(ind.name)}</div><div class="ov-ind-item-val">${escHtml(ind.value)}</div><div class="ov-ind-item-status ${cls}">${statusLabel(ind.status)}</div></a>`;}).join('');
+    grid.innerHTML=shown.map(ind=>{const cls=statusClass(ind.status);return`<a href="indicator.html?name=${encodeURIComponent(ind.name)}" class="ov-ind-item ${cls}"><div class="ov-ind-item-name">${escHtml(ind.name)}</div><div class="ov-ind-item-val">${escHtml(ind.value)}</div><div class="ov-ind-item-status ${cls}">${statusLabel(ind.status)}</div></a>`;}).join('');
+    syncOverviewHeight();
   }
 
   if(footer&&indicators.length){const last=indicators.reduce((a,b)=>(a.date||'')>(b.date||'')?a:b);footer.textContent=`Последний: ${escHtml(last.source)} · ${fmtDate(last.date)}`;}
@@ -752,12 +753,14 @@ function syncOverviewHeight(){
   const menu=document.querySelector('.anatomy-menu');
   const summary=document.querySelector('.overview-summary');
   const block=document.querySelector('.overview-block');
-  if(!menu||!summary||!block) return;
-  const h=menu.offsetHeight;
-  if(h>0){
-    block.style.height=h+'px';
-    summary.style.height=h+'px';
-  }
+  const items=document.querySelectorAll('.ov-ind-item');
+  if(!menu||!summary||!block||!items.length) return;
+  const menuH=menu.offsetHeight;
+  if(menuH<=0) return;
+  block.style.height=menuH+'px';
+  summary.style.height=menuH+'px';
+  const itemH=Math.floor(menuH/items.length);
+  items.forEach(el=>{el.style.height=itemH+'px';el.style.flex='none';});
 }
 window.addEventListener('load', syncOverviewHeight);
 window.addEventListener('resize', syncOverviewHeight);
