@@ -194,13 +194,14 @@
     display: flex;
     flex-direction: column;
     padding: 0;
-    overflow-y: auto;
+    overflow: hidden;
   }
   .ov-ind-item {
     display: flex; align-items: center; gap: 12px;
     padding: 8px 18px;
     border-bottom: 1px solid var(--line);
     border-left: 3px solid transparent;
+    flex: 1;
   }
   a.ov-ind-item { color: inherit; text-decoration: none; transition: background 0.12s; }
   a.ov-ind-item:hover { background: var(--bg3); }
