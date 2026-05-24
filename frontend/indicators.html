@@ -326,7 +326,7 @@ function renderTable(){
   if(!filtered.length){body.innerHTML=`<div class="empty-state"><strong>${allIndicators.length?'Ничего не найдено':'Нет данных'}</strong>${allIndicators.length?'Попробуйте изменить фильтр':'Загрузите анализы, чтобы увидеть показатели'}</div>`;if(countEl){countEl.textContent='';countEl.classList.add('hidden');}return;}
   body.innerHTML=filtered.map((ind,idx)=>{
     const{cls,label}=statusMeta(ind.status);
-    return`<div class="table-row" style="animation-delay:${Math.min(idx*0.02,0.4)}s;cursor:pointer;" onclick="openIndicator('${encodeURIComponent(ind.name)}')">
+    return`<div class="table-row" style="animation-delay:${Math.min(idx*0.02,0.4)}s;cursor:pointer;" data-ind-name="${escHtml(ind.name)}">
       <div class="col-name">${escHtml(ind.name)}</div>
       <div class="col-value">${escHtml(ind.value)}</div>
       <div class="col-status ${cls}"><span class="status-dot"></span>${label}</div>
@@ -354,9 +354,10 @@ function setFilter(f){
   renderTable();
 }
 
-function openIndicator(encodedName){
-  window.location.href='indicator.html?name='+encodedName;
-}
+document.getElementById('tableBody').addEventListener('click',e=>{
+  const row=e.target.closest('[data-ind-name]');
+  if(row) window.location.href='indicator.html?name='+encodeURIComponent(row.dataset.indName);
+});
 
 document.getElementById('searchInput').addEventListener('input',e=>{searchQuery=e.target.value.trim();renderTable();});
 document.getElementById('logoutBtn')?.addEventListener('click',async e=>{e.preventDefault();await signOut();});

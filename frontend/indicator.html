@@ -108,7 +108,7 @@ function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt
 function fmtDate(s){if(!s)return'—';const d=new Date(s);return isNaN(d)?s:d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});}
 
 const params=new URLSearchParams(location.search);
-const indicatorName=decodeURIComponent(params.get('name')||'');
+const _rawName=params.get('name')||'';let indicatorName='';try{indicatorName=decodeURIComponent(_rawName);}catch(e){indicatorName=_rawName;}
 
 document.getElementById('logoutBtn')?.addEventListener('click',async e=>{e.preventDefault();await signOut();});
 
