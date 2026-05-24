@@ -599,41 +599,16 @@ continueBtn.addEventListener('click',async()=>{
 
 document.getElementById('backToStep2Btn').addEventListener('click',()=>setStep(2));
 
-// ─── Parse structured AI response ───
-function parseAnalysisText(text){
-  const result={analysisType:'',status:'',recommendations:[],indicators:[]};
-  let section='';
-  for(const rawLine of text.split('\n')){
-    const line=rawLine.trim();
-    if(!line)continue;
-    const up=line.toUpperCase();
-    if(up.startsWith('ТИП АНАЛИЗА:')){result.analysisType=line.replace(/^ТИП АНАЛИЗА:\s*/i,'').trim();continue;}
-    if(up.startsWith('ГРУППА:')){continue;}
-    if(up.startsWith('ОБЩЕЕ СОСТОЯНИЕ:')){result.status=line.replace(/^ОБЩЕЕ СОСТОЯНИЕ:\s*/i,'').trim();section='status';continue;}
-    if(up.startsWith('РЕКОМЕНДАЦИИ')){section='rec';continue;}
-    if(up.startsWith('ПОКАЗАТЕЛИ')){section='ind';continue;}
-    if(section==='status'&&!result.status){result.status=line;}
-    else if(section==='rec'){const clean=line.replace(/^[-•→*]\s*/,'').trim();if(clean.length>5)result.recommendations.push(clean);}
-    else if(section==='ind'){
-      let rest=line;
-      if(line.includes('|')){rest=line.split('|')[1].trim();}
-      const parts=rest.split(/\s+-\s+/);
-      if(parts.length>=3){
-        const name=parts[0].trim(),value=parts[1].trim(),statusRaw=parts.slice(2).join(' - ').trim().toLowerCase();
-        let status='normal';
-        if(statusRaw.includes('выше'))status='above';
-        else if(statusRaw.includes('ниже'))status='below';
-        if(name.length>=2)result.indicators.push({name,value,status});
-      }
-    }
-  }
-  return result;
-}
-
 // ─── Render result in two blocks ───
-function renderResultBlocks(text){
-  if(!text){return;}
-  const parsed=parseAnalysisText(text);
+// analysis — объект {analysis_type, group_key, summary, recommendations, indicators}
+function renderResultBlocks(analysis){
+  if(!analysis){return;}
+  const parsed={
+    analysisType: analysis.analysis_type||'',
+    status:       analysis.summary||'',
+    recommendations: analysis.recommendations||[],
+    indicators:   analysis.indicators||[],
+  };
 
   // Set type in meta card
   const typeEl=document.getElementById('r3MetaType');
@@ -698,7 +673,7 @@ saveBtn.addEventListener('click',async()=>{
   saveBtn.disabled=true;hideError(3);
   const origHtml=saveBtn.innerHTML;saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><circle cx="12" cy="12" r="10"/></svg><span>Сохраняем...</span>';
   try{
-    const fd=new FormData();fd.append('file',selectedFile);fd.append('analysis',analysisResult);fd.append('analysis_name',analysisNameInput.value.trim());fd.append('analysis_date',analysisDate.value||'');fd.append('age',age);fd.append('gender',gender);
+    const fd=new FormData();fd.append('file',selectedFile);fd.append('analysis',JSON.stringify(analysisResult));fd.append('analysis_name',analysisNameInput.value.trim());fd.append('analysis_date',analysisDate.value||'');fd.append('age',age);fd.append('gender',gender);
     const resp=await fetch(`${API_BASE}/save-analysis`,{method:'POST',headers:{'Authorization':`Bearer ${session.access_token}`},body:fd});
     const data=await resp.json();if(resp.status===401){window.location.href='auth.html';return;}if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
     saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><polyline points="20 6 9 17 4 12"/></svg><span>Сохранено!</span>';
