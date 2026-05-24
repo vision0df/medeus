@@ -199,7 +199,10 @@
     padding: 8px 18px;
     border-bottom: 1px solid var(--line);
     border-left: 3px solid transparent;
+    color: inherit;
+    transition: background 0.12s;
   }
+  a.ov-ind-item:hover { background: var(--bg3); }
   .ov-ind-item.warn  { border-left-color: var(--yellow); }
   .ov-ind-item.alert { border-left-color: var(--red); }
   .ov-ind-item-name {
@@ -709,7 +712,7 @@ function renderIndicators(indicators){
   if(shown.length===0){
     grid.innerHTML='<div class="ov-empty"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Все показатели<br>в норме</div>';
   } else {
-    grid.innerHTML=shown.map(ind=>{const cls=statusClass(ind.status);return`<div class="ov-ind-item ${cls}"><div class="ov-ind-item-name">${escHtml(ind.name)}</div><div class="ov-ind-item-val">${escHtml(ind.value)}</div><div class="ov-ind-item-status ${cls}">${statusLabel(ind.status)}</div></div>`;}).join('');
+    grid.innerHTML=shown.map(ind=>{const cls=statusClass(ind.status);return`<a href="indicator.html?name=${encodeURIComponent(ind.name)}" class="ov-ind-item ${cls}" style="text-decoration:none;cursor:pointer;display:block;"><div class="ov-ind-item-name">${escHtml(ind.name)}</div><div class="ov-ind-item-val">${escHtml(ind.value)}</div><div class="ov-ind-item-status ${cls}">${statusLabel(ind.status)}</div></a>`;}).join('');
   }
 
   if(footer&&indicators.length){const last=indicators.reduce((a,b)=>(a.date||'')>(b.date||'')?a:b);footer.textContent=`Последний: ${escHtml(last.source)} · ${fmtDate(last.date)}`;}

@@ -142,8 +142,19 @@
   .result-content.show { display: block; }
 
   /* ─── RESULT TWO BLOCKS ─── */
-  .result-two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
-  @media(max-width:700px){ .result-two-col { grid-template-columns:1fr; } }
+  /* ─── META BLOCK (step 3) ─── */
+  .res-meta-block { background:var(--bg2); border:1px solid var(--line-mid); margin-bottom:16px; }
+  .res-meta-header { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; border-bottom:1px solid var(--line-mid); background:var(--bg3); }
+  .res-meta-header-label { font-family:var(--mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-dim); display:flex; align-items:center; gap:6px; }
+  .res-meta-header-label::before { content:'/'; color:var(--orange); font-weight:700; }
+  .res-meta-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:0; }
+  .res-meta-item { padding:10px 16px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .res-meta-item:last-child { border-right:none; }
+  .res-meta-key { font-family:var(--mono); font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-dim); margin-bottom:4px; }
+  .res-meta-val { font-family:var(--mono); font-size:12px; color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* ─────────────────────────── */
+  .result-two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:700px){ .result-two-col { grid-template-columns:1fr; } .res-meta-grid { grid-template-columns:1fr 1fr; } }
   .result-block { background:var(--bg2); padding:20px; border:1px solid var(--line-mid); }
   .result-block-label {
     font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.18em;
@@ -421,10 +432,17 @@
     <div class="card-wrap">
       <div class="card-inner" style="min-height:auto;">
         <div class="panel-label">Результат анализа</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-          <div style="font-family:var(--sans);font-size:15px;font-weight:600;color:var(--text);">Расшифровка и рекомендации</div>
-          <div class="pill pill-green"><span class="pill-inner">Готово</span></div>
+
+        <!-- Block 1: Meta info -->
+        <div class="res-meta-block" id="resMetaBlock" style="display:none;">
+          <div class="res-meta-header">
+            <div class="res-meta-header-label">Информация</div>
+            <div class="pill pill-green"><span class="pill-inner">Готово</span></div>
+          </div>
+          <div class="res-meta-grid" id="resMetaGrid"></div>
         </div>
+
+        <!-- Block 2: Result two-col -->
         <div class="result-two-col">
           <div class="result-block">
             <div class="result-block-label">Состояние и рекомендации</div>
@@ -668,6 +686,7 @@ document.getElementById('continueBtn').addEventListener('click', async () => {
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Ошибка сервера: ' + resp.status);
     renderResultBlocks3(data.analysis);
+    renderResMetaBlock3();
     setStep(3);
   } catch (err) {
     showError(2, err.message || 'Не удалось подключиться к серверу');
@@ -751,6 +770,24 @@ function renderResultBlocks3(text){
   } else {
     tbody.innerHTML='<tr><td colspan="3" style="text-align:center;padding:16px;color:var(--text-dim);font-family:var(--mono);font-size:11px;">Нет данных</td></tr>';
   }
+}
+
+function renderResMetaBlock3(){
+  const block=document.getElementById('resMetaBlock');
+  const grid=document.getElementById('resMetaGrid');
+  if(!block||!grid)return;
+  const fname=selectedFile?selectedFile.name:'—';
+  const age=ageInput?ageInput.value:'—';
+  const gender=genderInput?genderInput.options[genderInput.selectedIndex]?.text||genderInput.value:'—';
+  const today=new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const items=[
+    {key:'Файл',val:fname},
+    {key:'Возраст',val:age?age+' лет':'—'},
+    {key:'Пол',val:gender||'—'},
+    {key:'Дата',val:today},
+  ];
+  grid.innerHTML=items.map(i=>`<div class="res-meta-item"><div class="res-meta-key">${i.key}</div><div class="res-meta-val" title="${escHtml3(i.val)}">${escHtml3(i.val)}</div></div>`).join('');
+  block.style.display='';
 }
 
 checkForm(); setStep(1);

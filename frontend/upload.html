@@ -316,6 +316,15 @@
     <div class="panels-outer">
       <div class="panels-grid">
 
+        <!-- Meta info: full-width top row -->
+        <div class="up-panel panel-full" id="upMetaPanel" style="padding:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-bottom:1px solid var(--line-mid);background:var(--bg3);">
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-dim);display:flex;align-items:center;gap:6px;"><span style="color:var(--orange);font-weight:700;">/</span>Информация об анализе</div>
+            <div class="pill pill-green"><span class="pill-inner">Готово</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));" id="upMetaGrid"></div>
+        </div>
+
         <!-- Left: result (two sub-blocks) -->
         <div class="up-panel" style="padding:0;">
           <div class="result-two-col" id="resultTwoCol">
@@ -527,6 +536,7 @@ continueBtn.addEventListener('click',async()=>{
     const data=await resp.json();if(resp.status===401){window.location.href='auth.html';return;}if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
     analysisResult=data.analysis;
     renderResultBlocks(analysisResult);
+    renderUpMetaBlock();
     document.getElementById('saveCategoryLabel').textContent=analysisNameInput.value.trim()||'—';
     document.getElementById('saveFileLabel').textContent=selectedFile?.name||'—';
     setStep(3);
@@ -631,6 +641,21 @@ saveBtn.addEventListener('click',async()=>{
     showError(3,err.message||'Не удалось сохранить');
   }
 });
+
+function renderUpMetaBlock(){
+  const grid=document.getElementById('upMetaGrid');
+  if(!grid)return;
+  const escH=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const name=analysisNameInput?analysisNameInput.value.trim():'—';
+  const fname=selectedFile?selectedFile.name:'—';
+  const adate=analysisDate?analysisDate.value:'';
+  const dateFmt=adate?new Date(adate).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}):new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const style='padding:10px 16px;border-right:1px solid var(--line);font-family:var(--mono);';
+  const keyStyle='font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px;';
+  const valStyle='font-size:12px;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+  const items=[{k:'Название',v:name},{k:'Файл',v:fname},{k:'Дата сдачи',v:dateFmt}];
+  grid.innerHTML=items.map(i=>`<div style="${style}"><div style="${keyStyle}">${i.k}</div><div style="${valStyle}" title="${escH(i.v)}">${escH(i.v)}</div></div>`).join('');
+}
 
 analysisDate.value=new Date().toISOString().split('T')[0];
 checkStep1();setStep(1);
