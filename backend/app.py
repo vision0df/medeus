@@ -1246,35 +1246,17 @@ def indicators():
 
 @app.route("/indicator-history", methods=["GET"])
 def indicator_history():
-    """История значений одного показателя по всем анализам."""
+    """История значений одного показателя по всем анализам (один RPC-запрос)."""
     try:
         user = get_current_user(request.headers.get("Authorization"))
         name = request.args.get("name", "").strip()
         if not name:
             return jsonify({"error": "Параметр name обязателен"}), 400
 
-        # Находим indicator_id по имени через indicator_names
-        name_rows = db_select_filter("indicator_names", "indicator_id", "name", name)
-        if not name_rows:
-            # Попробуем по canonical name в indicators
-            name_rows = db_select_filter("indicators", "id", "name", name)
-            if name_rows:
-                indicator_id = name_rows[0]["id"]
-            else:
-                return jsonify({"name": name, "history": []})
-        else:
-            indicator_id = name_rows[0]["indicator_id"]
-
-        # Тянем всю историю из user_indicators
-        resp = httpx.get(
-            f"{SUPABASE_URL}/rest/v1/user_indicators",
+        resp = httpx.post(
+            f"{SUPABASE_URL}/rest/v1/rpc/get_indicator_history",
             headers=supa_headers(),
-            params={
-                "select":       "value,status,measured_at,analyses(analysis_name)",
-                "user_id":      f"eq.{user['id']}",
-                "indicator_id": f"eq.{indicator_id}",
-                "order":        "measured_at.asc",
-            },
+            json={"p_user_id": user["id"], "p_name": name},
             timeout=10,
         )
         if resp.status_code != 200:
@@ -1286,7 +1268,7 @@ def indicator_history():
                 "value":  r.get("value", ""),
                 "status": r.get("status", "normal"),
                 "date":   r.get("measured_at", ""),
-                "source": (r.get("analyses") or {}).get("analysis_name", ""),
+                "source": r.get("analysis_name", ""),
             }
             for r in rows
         ]
