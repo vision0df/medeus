@@ -141,28 +141,28 @@
   .result-content { display: none; animation: fadeUp 0.3s ease both; }
   .result-content.show { display: block; }
 
-  /* ─── RESULT TWO BLOCKS ─── */
-  /* ─── META BLOCK (step 3) ─── */
-  .res-meta-block { background:var(--bg2); border:1px solid var(--line-mid); margin-bottom:16px; }
-  .res-meta-header { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; border-bottom:1px solid var(--line-mid); background:var(--bg3); }
-  .res-meta-header-label { font-family:var(--mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-dim); display:flex; align-items:center; gap:6px; }
-  .res-meta-header-label::before { content:'/'; color:var(--orange); font-weight:700; }
-  .res-meta-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:0; }
-  .res-meta-item { padding:10px 16px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
-  .res-meta-item:last-child { border-right:none; }
-  .res-meta-key { font-family:var(--mono); font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-dim); margin-bottom:4px; }
-  .res-meta-val { font-family:var(--mono); font-size:12px; color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  /* ─────────────────────────── */
-  .result-two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  @media(max-width:700px){ .result-two-col { grid-template-columns:1fr; } .res-meta-grid { grid-template-columns:1fr 1fr; } }
-  .result-block { background:var(--bg2); padding:20px; border:1px solid var(--line-mid); }
-  .result-block-label {
-    font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.18em;
-    text-transform:uppercase; color:var(--text-dim); margin-bottom:14px;
-    padding-bottom:7px; border-bottom:1px solid var(--line-mid);
-    display:flex; align-items:center; gap:8px;
-  }
-  .result-block-label::before { content:''; display:inline-block; width:5px; height:5px; background:var(--orange); flex-shrink:0; }
+  /* ─── STEP 3 RESULT — mirrors analysis.html layout ─── */
+  .r3-card-wrap { background:var(--text); clip-path:polygon(20px 0%,100% 0%,100% calc(100% - 20px),calc(100% - 20px) 100%,0% 100%,0% 20px); padding:2px; margin-bottom:20px; animation:fadeUp 0.35s ease both; }
+  .r3-card-wrap:nth-child(2){animation-delay:.07s}
+  .r3-card { background:var(--white); clip-path:polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px); }
+  .r3-card-header { display:flex; align-items:center; justify-content:space-between; padding:14px 22px 12px; border-bottom:1px solid var(--line); background:var(--bg2); }
+  .r3-card-label { font-family:var(--mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-dim); display:flex; align-items:center; gap:7px; }
+  .r3-card-label::before { content:'/'; color:var(--orange); font-weight:700; font-size:13px; }
+  .r3-info-grid { display:grid; grid-template-columns:200px 1fr; }
+  .r3-thumb-wrap { border-right:1px solid var(--line); padding:22px; display:flex; align-items:flex-start; justify-content:center; }
+  .r3-thumb-pdf { width:160px; height:160px; background:var(--bg3); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:var(--text-dim); }
+  .r3-thumb-pdf svg { width:44px; height:44px; stroke:var(--text-dim); fill:none; }
+  .r3-thumb-pdf span { font-family:var(--mono); font-size:10px; text-align:center; letter-spacing:0.05em; word-break:break-all; padding:0 8px; }
+  .r3-thumb-img { width:160px; height:160px; object-fit:cover; display:block; }
+  .r3-meta-panel { padding:18px 20px; display:flex; flex-direction:column; }
+  .r3-meta-item { padding:9px 0; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:14px; }
+  .r3-meta-item:last-child { border-bottom:none; }
+  .r3-meta-key { font-family:var(--mono); font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-dim); min-width:100px; flex-shrink:0; }
+  .r3-meta-val { font-family:var(--mono); font-size:13px; color:var(--text); font-weight:500; }
+  .r3-result-body { padding:22px; display:flex; flex-direction:column; gap:18px; }
+  .r3-block { background:var(--bg2); padding:20px; border:1px solid var(--line-mid); }
+  .r3-block-label { font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-dim); margin-bottom:14px; padding-bottom:7px; border-bottom:1px solid var(--line-mid); display:flex; align-items:center; gap:8px; }
+  .r3-block-label::before { content:''; display:inline-block; width:5px; height:5px; background:var(--orange); flex-shrink:0; }
   .summary-type { font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--orange); margin-bottom:8px; }
   .summary-status { font-family:var(--sans); font-size:13px; color:var(--text); line-height:1.65; margin-bottom:14px; }
   .rec-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:7px; }
@@ -179,6 +179,7 @@
   .tag-high { color:var(--red); font-weight:700; }
   .tag-low  { color:#3b82f6; font-weight:700; }
   .tag-ok   { color:var(--green); font-weight:700; }
+  @media(max-width:680px){ .r3-info-grid { grid-template-columns:1fr; } .r3-thumb-wrap { border-right:none; border-bottom:1px solid var(--line); } }
 
   /* ─── HOW IT WORKS ─── */
   .steps-section {
@@ -429,27 +430,45 @@
 
   <!-- ═══ STEP 3 ═══ -->
   <div id="step3Panel" style="display:none;">
-    <div class="card-wrap">
-      <div class="card-inner" style="min-height:auto;">
-        <div class="panel-label">Результат анализа</div>
 
-        <!-- Block 1: Meta info -->
-        <div class="res-meta-block" id="resMetaBlock" style="display:none;">
-          <div class="res-meta-header">
-            <div class="res-meta-header-label">Информация</div>
-            <div class="pill pill-green"><span class="pill-inner">Готово</span></div>
-          </div>
-          <div class="res-meta-grid" id="resMetaGrid"></div>
+    <!-- Card 1: file preview + meta info -->
+    <div class="r3-card-wrap">
+      <div class="r3-card">
+        <div class="r3-card-header">
+          <div class="r3-card-label">Информация и файл</div>
         </div>
+        <div class="r3-info-grid">
+          <div class="r3-thumb-wrap" id="r3ThumbWrap">
+            <div class="r3-thumb-pdf">
+              <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span id="r3ThumbName">—</span>
+            </div>
+          </div>
+          <div class="r3-meta-panel" id="r3MetaPanel">
+            <div class="r3-meta-item"><div class="r3-meta-key">Файл</div><div class="r3-meta-val" id="r3MetaFile">—</div></div>
+            <div class="r3-meta-item"><div class="r3-meta-key">Тип анализа</div><div class="r3-meta-val" id="r3MetaType">—</div></div>
+            <div class="r3-meta-item"><div class="r3-meta-key">Возраст</div><div class="r3-meta-val" id="r3MetaAge">—</div></div>
+            <div class="r3-meta-item"><div class="r3-meta-key">Пол</div><div class="r3-meta-val" id="r3MetaGender">—</div></div>
+            <div class="r3-meta-item"><div class="r3-meta-key">Дата</div><div class="r3-meta-val" id="r3MetaDate">—</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <!-- Block 2: Result two-col -->
-        <div class="result-two-col">
-          <div class="result-block">
-            <div class="result-block-label">Состояние и рекомендации</div>
+    <!-- Card 2: AI result (summary + table vertical) -->
+    <div class="r3-card-wrap">
+      <div class="r3-card">
+        <div class="r3-card-header">
+          <div class="r3-card-label">Результат анализа ИИ</div>
+          <div class="pill pill-green"><span class="pill-inner">Готово</span></div>
+        </div>
+        <div class="r3-result-body">
+          <div class="r3-block">
+            <div class="r3-block-label">Общее состояние и рекомендации</div>
             <div id="summaryBlock3"></div>
           </div>
-          <div class="result-block">
-            <div class="result-block-label">Показатели</div>
+          <div class="r3-block">
+            <div class="r3-block-label">Показатели</div>
             <div style="overflow-x:auto;">
               <table class="ind-res-table">
                 <thead><tr><th>Показатель</th><th>Значение</th><th>Статус</th></tr></thead>
@@ -458,22 +477,24 @@
             </div>
           </div>
         </div>
-        <div class="btn-row" style="margin-top:20px;">
-          <button class="btn-secondary" id="backToStep2Btn" type="button">
-            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-            Назад
-          </button>
-          <button class="btn-primary" id="startOverBtn" type="button" style="flex:1;">
-            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-            Новый анализ
-          </button>
-          <a href="auth.html" class="btn-primary" style="flex:1;background:var(--orange);text-decoration:none;">
-            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
-            Войти и сохранить
-          </a>
-        </div>
       </div>
     </div>
+
+    <div class="btn-row" style="margin-top:4px;">
+      <button class="btn-secondary" id="backToStep2Btn" type="button">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Назад
+      </button>
+      <button class="btn-primary" id="startOverBtn" type="button" style="flex:1;">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        Новый анализ
+      </button>
+      <a href="auth.html" class="btn-primary" style="flex:1;background:var(--orange);text-decoration:none;">
+        <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+        Войти и сохранить
+      </a>
+    </div>
+
   </div>
 </section>
 
@@ -747,9 +768,12 @@ function parseAnalysisText(text){
 
 function renderResultBlocks3(text){
   const parsed=parseAnalysisText(text);
+  // Populate meta: type from AI result
+  const typeEl=document.getElementById('r3MetaType');
+  if(typeEl) typeEl.textContent=parsed.analysisType||'Анализ крови';
+  // Summary block
   const sumEl=document.getElementById('summaryBlock3');
   let sumHtml='';
-  if(parsed.analysisType) sumHtml+=`<div class="summary-type">${escHtml3(parsed.analysisType)}</div>`;
   if(parsed.status) sumHtml+=`<div class="summary-status">${escHtml3(parsed.status)}</div>`;
   if(parsed.recommendations.length){
     sumHtml+='<ul class="rec-list">';
@@ -759,37 +783,44 @@ function renderResultBlocks3(text){
     });
     sumHtml+='</ul>';
   }
-  sumEl.innerHTML=sumHtml||'<div style="color:var(--text-dim);font-family:var(--mono);font-size:11px;">Нет данных</div>';
+  if(sumEl) sumEl.innerHTML=sumHtml||'<div style="color:var(--text-dim);font-family:var(--mono);font-size:11px;">Нет данных</div>';
   const tbody=document.getElementById('resultTableBody3');
-  if(parsed.indicators.length){
-    tbody.innerHTML=parsed.indicators.map(ind=>{
-      const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':'tag-ok';
-      const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':'✓ норма';
-      return`<tr><td class="col-name">${escHtml3(ind.name)}</td><td>${escHtml3(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;
-    }).join('');
-  } else {
-    tbody.innerHTML='<tr><td colspan="3" style="text-align:center;padding:16px;color:var(--text-dim);font-family:var(--mono);font-size:11px;">Нет данных</td></tr>';
+  if(tbody){
+    if(parsed.indicators.length){
+      tbody.innerHTML=parsed.indicators.map(ind=>{
+        const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':'tag-ok';
+        const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':'✓ норма';
+        return`<tr><td class="col-name">${escHtml3(ind.name)}</td><td>${escHtml3(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;
+      }).join('');
+    } else {
+      tbody.innerHTML='<tr><td colspan="3" style="text-align:center;padding:16px;color:var(--text-dim);font-family:var(--mono);font-size:11px;">Нет данных</td></tr>';
+    }
   }
 }
 
 function renderResMetaBlock3(){
-  const block=document.getElementById('resMetaBlock');
-  const grid=document.getElementById('resMetaGrid');
-  if(!block||!grid)return;
+  const isPdf=f=>f&&f.toLowerCase().endsWith('.pdf');
   const fname=selectedFile?selectedFile.name:'—';
   const age=ageInput?ageInput.value:'—';
   const gender=genderInput?genderInput.options[genderInput.selectedIndex]?.text||genderInput.value:'—';
   const today=new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const items=[
-    {key:'Файл',val:fname},
-    {key:'Возраст',val:age?age+' лет':'—'},
-    {key:'Пол',val:gender||'—'},
-    {key:'Дата',val:today},
-  ];
-  grid.innerHTML=items.map(i=>`<div class="res-meta-item"><div class="res-meta-key">${i.key}</div><div class="res-meta-val" title="${escHtml3(i.val)}">${escHtml3(i.val)}</div></div>`).join('');
-  block.style.display='';
+  // Meta fields
+  const setMeta=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  setMeta('r3MetaFile',fname);
+  setMeta('r3MetaAge',age?age+' лет':'—');
+  setMeta('r3MetaGender',gender||'—');
+  setMeta('r3MetaDate',today);
+  // Thumb: if image show preview, else pdf icon with filename
+  const thumbWrap=document.getElementById('r3ThumbWrap');
+  if(thumbWrap&&selectedFile){
+    const nameEl=document.getElementById('r3ThumbName');
+    if(nameEl)nameEl.textContent=fname;
+    if(!isPdf(fname)){
+      const url=URL.createObjectURL(selectedFile);
+      thumbWrap.innerHTML=`<img class="r3-thumb-img" src="${url}" alt="${escHtml3(fname)}">`;
+    }
+  }
 }
-
 checkForm(); setStep(1);
 </script>
 </body>

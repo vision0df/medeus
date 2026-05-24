@@ -162,6 +162,47 @@
     .add-indicator-row { flex-wrap:wrap; }
     .result-block { padding:20px; }
   }
+  /* ─── STEP 3 RESULT CARDS — mirrors analysis.html ─── */
+  .r3-card-wrap { background:var(--text); clip-path:polygon(20px 0%,100% 0%,100% calc(100% - 20px),calc(100% - 20px) 100%,0% 100%,0% 20px); padding:2px; margin-bottom:20px; animation:fadeUp 0.35s ease both; }
+  .r3-card-wrap:nth-child(2){animation-delay:.07s}
+  .r3-card { background:var(--white); clip-path:polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px); }
+  .r3-card-header { display:flex; align-items:center; justify-content:space-between; padding:14px 22px 12px; border-bottom:1px solid var(--line); background:var(--bg2); }
+  .r3-card-label { font-family:var(--mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-dim); display:flex; align-items:center; gap:7px; }
+  .r3-card-label::before { content:'/'; color:var(--orange); font-weight:700; font-size:13px; }
+  .r3-info-grid { display:grid; grid-template-columns:200px 1fr; }
+  .r3-thumb-wrap { border-right:1px solid var(--line); padding:22px; display:flex; align-items:flex-start; justify-content:center; }
+  .r3-thumb-pdf { width:160px; height:160px; background:var(--bg3); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:var(--text-dim); }
+  .r3-thumb-pdf svg { width:44px; height:44px; stroke:var(--text-dim); fill:none; }
+  .r3-thumb-pdf span { font-family:var(--mono); font-size:10px; text-align:center; letter-spacing:0.05em; word-break:break-all; padding:0 8px; }
+  .r3-thumb-img { width:160px; height:160px; object-fit:cover; display:block; }
+  .r3-meta-panel { padding:18px 20px; display:flex; flex-direction:column; }
+  .r3-meta-item { padding:9px 0; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:14px; }
+  .r3-meta-item:last-child { border-bottom:none; }
+  .r3-meta-key { font-family:var(--mono); font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-dim); min-width:100px; flex-shrink:0; }
+  .r3-meta-val { font-family:var(--mono); font-size:13px; color:var(--text); font-weight:500; }
+  .r3-result-body { padding:22px; display:flex; flex-direction:column; gap:18px; }
+  .r3-block { background:var(--bg2); padding:20px; border:1px solid var(--line-mid); }
+  .r3-block-label { font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-dim); margin-bottom:14px; padding-bottom:7px; border-bottom:1px solid var(--line-mid); display:flex; align-items:center; gap:8px; }
+  .r3-block-label::before { content:''; display:inline-block; width:5px; height:5px; background:var(--orange); flex-shrink:0; }
+  .summary-type { font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--orange); margin-bottom:8px; }
+  .summary-status { font-family:var(--sans); font-size:13px; color:var(--text); line-height:1.65; margin-bottom:14px; }
+  .rec-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:7px; }
+  .rec-item { display:flex; gap:8px; font-family:var(--mono); font-size:11px; color:var(--text-mid); line-height:1.6; }
+  .rec-item::before { content:'→'; color:var(--orange); flex-shrink:0; }
+  .rec-all-good { font-family:var(--mono); font-size:11px; color:var(--green); display:flex; align-items:center; gap:8px; }
+  .rec-all-good::before { content:'✓'; font-weight:700; }
+  .ind-res-table { width:100%; border-collapse:collapse; }
+  .ind-res-table thead th { font-family:var(--mono); font-size:9px; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim); padding:6px 10px; text-align:left; border-bottom:1px solid var(--line-mid); background:var(--bg3); font-weight:700; }
+  .ind-res-table thead th:first-child::before { content:'/ '; color:var(--orange); }
+  .ind-res-table tbody tr { border-bottom:1px solid var(--line); }
+  .ind-res-table tbody tr:last-child { border-bottom:none; }
+  .ind-res-table tbody td { padding:7px 10px; font-family:var(--mono); font-size:12px; color:var(--text-mid); }
+  .ind-res-table .col-name { color:var(--text); font-weight:600; }
+  .ind-res-table .col-value { color:var(--text); }
+  .tag-high { color:var(--red); font-weight:700; }
+  .tag-low  { color:#3b82f6; font-weight:700; }
+  .tag-ok   { color:var(--green); font-weight:700; }
+  @media(max-width:680px){ .r3-info-grid { grid-template-columns:1fr; } .r3-thumb-wrap { border-right:none; border-bottom:1px solid var(--line); } }
 </style>
 </head>
 <body>
@@ -313,66 +354,78 @@
 
   <!-- ═══════════ STEP 3 ═══════════ -->
   <div id="step3Panel" style="display:none;">
-    <div class="panels-outer">
-      <div class="panels-grid">
 
-        <!-- Meta info: full-width top row -->
-        <div class="up-panel panel-full" id="upMetaPanel" style="padding:0;">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-bottom:1px solid var(--line-mid);background:var(--bg3);">
-            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-dim);display:flex;align-items:center;gap:6px;"><span style="color:var(--orange);font-weight:700;">/</span>Информация об анализе</div>
-            <div class="pill pill-green"><span class="pill-inner">Готово</span></div>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));" id="upMetaGrid"></div>
+    <!-- Card 1: file preview + meta info -->
+    <div class="r3-card-wrap">
+      <div class="r3-card">
+        <div class="r3-card-header">
+          <div class="r3-card-label">Информация и файл</div>
         </div>
-
-        <!-- Left: result (two sub-blocks) -->
-        <div class="up-panel" style="padding:0;">
-          <div class="result-two-col" id="resultTwoCol">
-            <!-- Block 1: summary + recommendations -->
-            <div class="result-block">
-              <div class="result-block-label">Состояние и рекомендации</div>
-              <div id="summaryBlock">
-                <div style="color:var(--text-dim);font-family:var(--mono);font-size:12px;">Ожидание результата...</div>
-              </div>
-            </div>
-            <!-- Block 2: table -->
-            <div class="result-block">
-              <div class="result-block-label">Показатели</div>
-              <div style="overflow-x:auto;">
-                <table class="ind-result-table" id="resultTable">
-                  <thead><tr><th>Показатель</th><th>Значение</th><th>Статус</th></tr></thead>
-                  <tbody id="resultTableBody"></tbody>
-                </table>
-              </div>
+        <div class="r3-info-grid">
+          <div class="r3-thumb-wrap" id="r3ThumbWrap">
+            <div class="r3-thumb-pdf">
+              <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span id="r3ThumbName">—</span>
             </div>
           </div>
+          <div class="r3-meta-panel">
+            <div class="r3-meta-item"><div class="r3-meta-key">Название</div><div class="r3-meta-val" id="r3MetaName">—</div></div>
+            <div class="r3-meta-item"><div class="r3-meta-key">Тип анализа</div><div class="r3-meta-val" id="r3MetaType">—</div></div>
+            <div class="r3-meta-item"><div class="r3-meta-key">Дата сдачи</div><div class="r3-meta-val" id="r3MetaDate">—</div></div>
+            <div class="r3-meta-item"><div class="r3-meta-key">Файл</div><div class="r3-meta-val" id="r3MetaFile">—</div></div>
+          </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Right: save + info -->
-        <div class="up-panel" style="display:flex;flex-direction:column;gap:20px;">
+    <!-- Card 2: AI result (summary + table vertical) + save panel -->
+    <div class="r3-card-wrap">
+      <div class="r3-card">
+        <div class="r3-card-header">
+          <div class="r3-card-label">Результат анализа ИИ</div>
+          <div class="pill pill-green"><span class="pill-inner">Готово</span></div>
+        </div>
+        <div class="r3-result-body">
+          <div class="r3-block">
+            <div class="r3-block-label">Общее состояние и рекомендации</div>
+            <div id="summaryBlock"></div>
+          </div>
+          <div class="r3-block">
+            <div class="r3-block-label">Показатели</div>
+            <div style="overflow-x:auto;">
+              <table class="ind-res-table">
+                <thead><tr><th>Показатель</th><th>Значение</th><th>Статус</th></tr></thead>
+                <tbody id="resultTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save panel -->
+    <div class="panels-outer" style="margin-bottom:20px;">
+      <div class="panels-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="up-panel" style="display:flex;flex-direction:column;gap:16px;">
           <div class="panel-label">Сохранение</div>
-
           <div style="background:var(--bg);padding:20px;border-left:3px solid var(--orange);">
             <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Название</div>
             <div style="font-family:var(--sans);font-size:15px;font-weight:600;color:var(--text);" id="saveCategoryLabel">—</div>
           </div>
-
           <div style="background:var(--bg);padding:20px;border-left:3px solid var(--bg3);">
             <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Файл</div>
             <div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="saveFileLabel">—</div>
           </div>
-
           <div style="background:var(--green-pale);padding:18px;border:1px solid var(--green-border);">
             <div style="font-family:var(--mono);font-size:11px;color:var(--green);line-height:1.7;">Анализ будет сохранён в ваш личный кабинет. Показатели войдут в общую сводку состояния здоровья.</div>
           </div>
-
+        </div>
+        <div class="up-panel" style="display:flex;flex-direction:column;gap:16px;">
           <div style="flex:1;"></div>
-
           <div id="saveErrBanner" class="err-banner">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <span id="saveErrText"></span>
           </div>
-
           <div style="display:flex;gap:10px;">
             <button class="btn-secondary" id="backToStep2Btn" type="button">
               <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
@@ -384,9 +437,9 @@
             </button>
           </div>
         </div>
-
       </div>
     </div>
+
   </div>
 </main>
 
@@ -551,10 +604,13 @@ function renderResultBlocks(text){
   if(!text){return;}
   const parsed=parseAnalysisText(text);
 
-  // Block 1: summary + recommendations
+  // Set type in meta card
+  const typeEl=document.getElementById('r3MetaType');
+  if(typeEl) typeEl.textContent=parsed.analysisType||'Анализ';
+
+  // Summary block
   const sumEl=document.getElementById('summaryBlock');
   let sumHtml='';
-  if(parsed.analysisType) sumHtml+=`<div class="summary-type">${escHtml(parsed.analysisType)}</div>`;
   if(parsed.status) sumHtml+=`<div class="summary-status">${escHtml(parsed.status)}</div>`;
   if(parsed.recommendations.length){
     sumHtml+='<ul class="rec-list">';
@@ -567,94 +623,40 @@ function renderResultBlocks(text){
     });
     sumHtml+='</ul>';
   }
-  sumEl.innerHTML=sumHtml||'<div style="color:var(--text-dim);font-family:var(--mono);font-size:12px;">Нет данных</div>';
+  if(sumEl) sumEl.innerHTML=sumHtml||'<div style="color:var(--text-dim);font-family:var(--mono);font-size:12px;">Нет данных</div>';
 
-  // Block 2: table
+  // Table
   const tbody=document.getElementById('resultTableBody');
-  if(parsed.indicators.length){
-    tbody.innerHTML=parsed.indicators.map(ind=>{
-      const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':'tag-ok';
-      const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':'✓ норма';
-      return`<tr><td class="col-name">${escHtml(ind.name)}</td><td class="col-value">${escHtml(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;
-    }).join('');
-  } else {
-    tbody.innerHTML='<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text-dim);font-family:var(--mono);font-size:12px;">Таблица показателей не найдена</td></tr>';
-  }
-}
-
-// Parse structured AI response (поддержка формата: "оригинал | нормализованное - значение - статус")
-function parseAnalysisText(text){
-  const result={analysisType:'',status:'',recommendations:[],indicators:[]};
-  let section='';
-  for(const rawLine of text.split('\n')){
-    const line=rawLine.trim();
-    if(!line)continue;
-    const up=line.toUpperCase();
-    if(up.startsWith('ТИП АНАЛИЗА:')){result.analysisType=line.replace(/^ТИП АНАЛИЗА:\s*/i,'').trim();continue;}
-    if(up.startsWith('ГРУППА:')){continue;}
-    if(up.startsWith('ОБЩЕЕ СОСТОЯНИЕ:')){result.status=line.replace(/^ОБЩЕЕ СОСТОЯНИЕ:\s*/i,'').trim();section='status';continue;}
-    if(up.startsWith('РЕКОМЕНДАЦИИ')){section='rec';continue;}
-    if(up.startsWith('ПОКАЗАТЕЛИ')){section='ind';continue;}
-
-    if(section==='status'&&!result.status){result.status=line;}
-    else if(section==='rec'){
-      const clean=line.replace(/^[-•→*]\s*/,'').trim();
-      if(clean.length>5)result.recommendations.push(clean);
-    }
-    else if(section==='ind'){
-      // Новый формат: "оригинал | нормализованное - значение - статус"
-      // Старый формат: "название - значение - статус"
-      let rest=line;
-      if(line.includes('|')){rest=line.split('|')[1].trim();}
-      const parts=rest.split(/\s+-\s+/);
-      if(parts.length>=3){
-        const name=parts[0].trim();
-        const value=parts[1].trim();
-        const statusRaw=parts.slice(2).join(' - ').trim().toLowerCase();
-        let status='normal';
-        if(statusRaw.includes('выше'))status='above';
-        else if(statusRaw.includes('ниже'))status='below';
-        if(name.length>=2)result.indicators.push({name,value,status});
-      }
+  if(tbody){
+    if(parsed.indicators.length){
+      tbody.innerHTML=parsed.indicators.map(ind=>{
+        const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':'tag-ok';
+        const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':'✓ норма';
+        return`<tr><td class="col-name">${escHtml(ind.name)}</td><td class="col-value">${escHtml(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;
+      }).join('');
+    } else {
+      tbody.innerHTML='<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text-dim);font-family:var(--mono);font-size:12px;">Таблица показателей не найдена</td></tr>';
     }
   }
-  return result;
 }
-
-// SAVE
-saveBtn.addEventListener('click',async()=>{
-  if(!analysisResult||!selectedFile)return;
-  const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
-  const age=calcAge(userProfile?.birth_date)||'0',gender=userProfile?.gender||'не указан';
-  saveBtn.disabled=true;hideError(3);
-  const origHtml=saveBtn.innerHTML;saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><circle cx="12" cy="12" r="10"/></svg><span>Сохраняем...</span>';
-  try{
-    const fd=new FormData();fd.append('file',selectedFile);fd.append('analysis',analysisResult);fd.append('analysis_name',analysisNameInput.value.trim());fd.append('analysis_date',analysisDate.value||'');fd.append('age',age);fd.append('gender',gender);
-    const resp=await fetch(`${API_BASE}/save-analysis`,{method:'POST',headers:{'Authorization':`Bearer ${session.access_token}`},body:fd});
-    const data=await resp.json();if(resp.status===401){window.location.href='auth.html';return;}if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
-    saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><polyline points="20 6 9 17 4 12"/></svg><span>Сохранено!</span>';
-    saveBtn.style.color='var(--green)';saveBtn.style.borderColor='var(--green)';
-    toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3000);
-    setTimeout(()=>{try{localStorage.removeItem('medeus_dashboard_cache');}catch(e){}window.location.href='cabinet.html';},2000);
-  }catch(err){
-    saveBtn.disabled=false;saveBtn.innerHTML=origHtml;
-    showError(3,err.message||'Не удалось сохранить');
-  }
-});
 
 function renderUpMetaBlock(){
-  const grid=document.getElementById('upMetaGrid');
-  if(!grid)return;
-  const escH=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  const name=analysisNameInput?analysisNameInput.value.trim():'—';
+  const isPdf=f=>f&&f.toLowerCase().endsWith('.pdf');
   const fname=selectedFile?selectedFile.name:'—';
   const adate=analysisDate?analysisDate.value:'';
-  const dateFmt=adate?new Date(adate).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}):new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const style='padding:10px 16px;border-right:1px solid var(--line);font-family:var(--mono);';
-  const keyStyle='font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px;';
-  const valStyle='font-size:12px;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
-  const items=[{k:'Название',v:name},{k:'Файл',v:fname},{k:'Дата сдачи',v:dateFmt}];
-  grid.innerHTML=items.map(i=>`<div style="${style}"><div style="${keyStyle}">${i.k}</div><div style="${valStyle}" title="${escH(i.v)}">${escH(i.v)}</div></div>`).join('');
+  const dateFmt=adate?new Date(adate+'T12:00:00').toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}):new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const setEl=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  setEl('r3MetaName',analysisNameInput?analysisNameInput.value.trim()||'—':'—');
+  setEl('r3MetaDate',dateFmt);
+  setEl('r3MetaFile',fname);
+  // Thumb
+  const thumbWrap=document.getElementById('r3ThumbWrap');
+  const nameSpan=document.getElementById('r3ThumbName');
+  if(nameSpan)nameSpan.textContent=fname;
+  if(thumbWrap&&selectedFile&&!isPdf(fname)){
+    const url=URL.createObjectURL(selectedFile);
+    thumbWrap.innerHTML=`<img class="r3-thumb-img" src="${url}" alt="${escHtml(fname)}">`;
+  }
 }
 
 analysisDate.value=new Date().toISOString().split('T')[0];
