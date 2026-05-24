@@ -5,8 +5,10 @@ import uuid
 import hashlib
 import logging
 import traceback
+from threading import Lock
 
 import httpx
+from cachetools import TTLCache
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from google import genai
@@ -73,6 +75,22 @@ ALLOWED_MIME_TYPES = {
     ".jpeg": "image/jpeg",
 }
 
+# ========================
+# Кэши
+# ========================
+# Кэш JWT-токенов: token_hash → user dict, TTL 60 сек (токены Supabase живут 1 час)
+_user_cache: TTLCache = TTLCache(maxsize=500, ttl=60)
+_user_cache_lock = Lock()
+
+# Кэш таблиц indicators + indicator_names: TTL 300 сек (5 минут)
+# Эти таблицы меняются редко (только при добавлении новых показателей)
+_indicators_cache: TTLCache = TTLCache(maxsize=4, ttl=300)
+_indicators_cache_lock = Lock()
+
+# Заголовки Supabase — константа, не пересоздаём каждый раз
+# Инициализируется лениво в _get_supa_headers() после загрузки env
+_SUPA_HEADERS: dict | None = None
+
 
 
 
@@ -89,22 +107,21 @@ def merge_key(name: str) -> str:
       "Базофилы (%)" / "Базофилы %" → "базофилы"
     Не используется для новых анализов — там Gemini уже даёт чистое name.
     """
-    import re as _re
     s = (name or "").strip().lower()
     # (абс.) / (абс) / (abs) → " абс"
-    s = _re.sub(r'\s*\(\s*аб[сc]\.?\s*\)\s*', ' абс', s)
-    s = _re.sub(r'\s*\(\s*abs\.?\s*\)\s*', ' абс', s)
+    s = re.sub(r'\s*\(\s*аб[сc]\.?\s*\)\s*', ' абс', s)
+    s = re.sub(r'\s*\(\s*abs\.?\s*\)\s*', ' абс', s)
     # абсолютные / абсолютный в конце → абс
-    s = _re.sub(r'\s+абсолютн\w*$', ' абс', s)
+    s = re.sub(r'\s+абсолютн\w*$', ' абс', s)
     # (%) / % в конце → убрать
-    s = _re.sub(r'\s*\(\s*%\s*\)\s*', ' ', s)
-    s = _re.sub(r'\s+%$', '', s)
+    s = re.sub(r'\s*\(\s*%\s*\)\s*', ' ', s)
+    s = re.sub(r'\s+%$', '', s)
     # убрать скобки с аббревиатурами (wbc) и т.п.
-    s = _re.sub(r'\s*\([a-z][a-z0-9%#]{1,6}\)\s*', ' ', s)
+    s = re.sub(r'\s*\([a-z][a-z0-9%#]{1,6}\)\s*', ' ', s)
     # убрать скобки с кириллицей-дублёром
-    s = _re.sub(r'\s*\([а-яёa-z][а-яёa-z\s]{1,30}\)\s*', ' ', s)
+    s = re.sub(r'\s*\([а-яёa-z][а-яёa-z\s]{1,30}\)\s*', ' ', s)
     # нормализуем пробелы
-    s = _re.sub(r'\s+', ' ', s).strip()
+    s = re.sub(r'\s+', ' ', s).strip()
     return s
 
 
@@ -114,12 +131,16 @@ def get_mime_type(filename: str) -> str | None:
 
 
 def supa_headers() -> dict:
-    return {
-        "apikey":        SUPABASE_KEY,
-        "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type":  "application/json",
-        "Prefer":        "return=representation",
-    }
+    """Возвращает заголовки Supabase. Создаёт константу при первом вызове."""
+    global _SUPA_HEADERS
+    if _SUPA_HEADERS is None:
+        _SUPA_HEADERS = {
+            "apikey":        SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type":  "application/json",
+            "Prefer":        "return=representation",
+        }
+    return _SUPA_HEADERS
 
 
 def parse_gemini_json(raw: str) -> list:
@@ -232,6 +253,14 @@ def get_current_user(auth_header: str | None) -> dict:
     if not auth_header or not auth_header.startswith("Bearer "):
         raise ValueError("Требуется авторизация")
     token = auth_header.removeprefix("Bearer ").strip()
+
+    # Кэшируем по хэшу токена, чтобы не хранить сам токен в памяти
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    with _user_cache_lock:
+        cached = _user_cache.get(token_hash)
+    if cached is not None:
+        return cached
+
     resp = httpx.get(
         f"{SUPABASE_URL}/auth/v1/user",
         headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {token}"},
@@ -239,7 +268,11 @@ def get_current_user(auth_header: str | None) -> dict:
     )
     if resp.status_code != 200:
         raise ValueError("Недействительный токен")
-    return resp.json()
+    user = resp.json()
+
+    with _user_cache_lock:
+        _user_cache[token_hash] = user
+    return user
 
 
 def try_get_current_user(auth_header: str | None) -> dict | None:
@@ -621,8 +654,7 @@ def db_select_filter(table: str, select: str, col: str, val: str) -> list:
 
 def db_upsert(table: str, data: dict, on_conflict: str):
     """INSERT ... ON CONFLICT (on_conflict) DO NOTHING, возвращает строку или None."""
-    headers = supa_headers()
-    headers["Prefer"] = "resolution=ignore-duplicates,return=representation"
+    headers = {**supa_headers(), "Prefer": "resolution=ignore-duplicates,return=representation"}
     resp = httpx.post(
         f"{SUPABASE_URL}/rest/v1/{table}?on_conflict={on_conflict}",
         headers=headers,
@@ -652,19 +684,53 @@ def parse_gemini_json_obj(raw: str) -> object:
         return None
 
 
+def _load_indicators_cache() -> tuple[list, dict, dict]:
+    """
+    Загружает таблицы indicators и indicator_names из кэша или из БД.
+    Возвращает (all_indicators, known_by_name, known_names).
+    TTL кэша — 5 минут (см. _indicators_cache).
+    """
+    with _indicators_cache_lock:
+        cached = _indicators_cache.get("data")
+        if cached is not None:
+            return cached
+
+        all_indicators = db_select("indicators", "id,name,group_key", {})
+        known_by_name: dict = {r["name"].lower(): r for r in all_indicators}
+
+        all_names_rows = db_select("indicator_names", "name,indicator_id", {})
+        known_names: dict = {r["name"].lower(): r["indicator_id"] for r in all_names_rows}
+
+        result = (all_indicators, known_by_name, known_names)
+        _indicators_cache["data"] = result
+        log.info(
+            "indicators cache loaded: %d indicators, %d names",
+            len(all_indicators), len(all_names_rows),
+        )
+        return result
+
+
+def _invalidate_indicators_cache():
+    """Сбрасывает кэш indicators/indicator_names — вызывается после записи новых данных."""
+    with _indicators_cache_lock:
+        _indicators_cache.clear()
+
+
 def resolve_indicators_batch(indicators: list) -> dict:
     """
     indicators: [{"original_name": ..., "name": ..., "group_key": ...}, ...]
     Возвращает dict: canonical_lower -> indicator_id
     """
-    all_indicators = db_select("indicators", "id,name,group_key", {})
-    known_by_name: dict = {r["name"].lower(): r for r in all_indicators}
+    all_indicators, known_by_name, known_names = _load_indicators_cache()
 
-    all_names_rows = db_select("indicator_names", "name,indicator_id", {})
-    known_names: dict = {r["name"].lower(): r["indicator_id"] for r in all_names_rows}
+    # Работаем с локальными копиями, чтобы обновления в рамках одного вызова
+    # были видны внутри функции, но не гонялись с другими потоками
+    known_by_name = dict(known_by_name)
+    known_names   = dict(known_names)
 
     result_map: dict = {}
     unknown: list = []
+    cache_dirty = False  # флаг: нужно ли инвалидировать кэш после завершения
 
     for ind in indicators:
         canonical = clean_name(ind["name"])
@@ -685,6 +751,7 @@ def resolve_indicators_batch(indicators: list) -> dict:
                 try:
                     db_upsert("indicator_names", {"indicator_id": ind_id, "name": original}, "name")
                     known_names[o_lower] = ind_id
+                    cache_dirty = True
                 except Exception as e:
                     log.warning("Синоним не добавлен %s: %s", original, e)
         else:
@@ -692,6 +759,8 @@ def resolve_indicators_batch(indicators: list) -> dict:
                             "group_key": group_key, "c_lower": c_lower})
 
     if not unknown:
+        if cache_dirty:
+            _invalidate_indicators_cache()
         return result_map
 
     known_names_list = [r["name"] for r in all_indicators]
@@ -744,6 +813,7 @@ def resolve_indicators_batch(indicators: list) -> dict:
                             try:
                                 db_upsert("indicator_names", {"indicator_id": ind_id, "name": alias}, "name")
                                 known_names[alias.lower()] = ind_id
+                                cache_dirty = True
                             except Exception:
                                 pass
                     result_map[u["c_lower"]] = ind_id
@@ -770,10 +840,15 @@ def resolve_indicators_batch(indicators: list) -> dict:
 
             result_map[u["c_lower"]] = ind_id
             known_by_name[u["c_lower"]] = {"id": ind_id, "name": u["canonical"], "group_key": u["group_key"]}
+            cache_dirty = True
             log.info("resolve: '%s' → new indicator", u["canonical"])
 
         except Exception as e:
             log.error("resolve error '%s': %s", u["canonical"], e)
+
+    # Инвалидируем кэш если были записи в БД
+    if cache_dirty:
+        _invalidate_indicators_cache()
 
     return result_map
 

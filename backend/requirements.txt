@@ -4,3 +4,4 @@ google-genai
 httpx
 python-dotenv
 gunicorn
+cachetools
