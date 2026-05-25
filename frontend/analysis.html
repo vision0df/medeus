@@ -336,10 +336,10 @@ function parseAnalysisText(text){
       if(Array.isArray(data.recommendations))result.recommendations=data.recommendations;
       if(Array.isArray(data.indicators)){
         result.indicators=data.indicators.map(ind=>{
-          const s=(ind.status||'').toLowerCase();
+          const s=(ind.status||'').toLowerCase().trim();
           let status='normal';
-          if(s.includes('выше'))status='above';
-          else if(s.includes('ниже')||s.includes('отклонение'))status='below';
+          if(s==='above'||s.includes('выше'))status='above';
+          else if(s==='below'||s==='deviation'||s.includes('ниже')||s.includes('отклонение'))status='below';
           return{name:ind.name||ind.original_name||'',value:ind.value||'',status};
         });
       }
