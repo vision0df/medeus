@@ -382,9 +382,9 @@ def parse_analysis_result(raw: str) -> dict:
     # Нормализуем статусы показателей
     indicators = []
     for ind in (data.get("indicators") or []):
-        status = str(ind.get("status", "normal")).strip().lower()
-        if status not in ("normal", "above", "below"):
-            status = "normal"
+        status = str(ind.get("status", "норма")).strip().lower()
+        if status not in ("норма", "выше нормы", "ниже нормы"):
+            status = "норма"
         indicators.append({
             "original_name": str(ind.get("original_name", "") or ind.get("name", "")),
             "name":          str(ind.get("name", "")),
@@ -492,7 +492,7 @@ def resolve_indicators_batch(indicators: list) -> dict:
          for i, u in enumerate(unknown)],
         ensure_ascii=False,
     )
-
+    groups_str = ", ".join(sorted(unknown_group_keys))
     prompt = f"""Ты — классификатор медицинских показателей.
 
 Группа анализа: {groups_str}
