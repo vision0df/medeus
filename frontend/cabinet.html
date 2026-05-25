@@ -701,14 +701,13 @@ function renderIndicators(indicators){
     grid.innerHTML='<div class="analyses-empty" style="grid-column:1/-1;padding:26px 0;">Показатели появятся после загрузки анализов</div>';
     if(badge){badge.textContent='нет данных';}return;
   }
-  const dev=indicators.filter(i=>i.status!=='normal').length;
-  if(badge){badge.textContent=dev?dev+' '+plural(dev,'отклонение','отклонения','отклонений'):'всё в норме';badge.className='card-badge '+(dev?'badge-warn':'badge-ok');}
-  const abnormal=indicators.filter(i=>i.status!=='normal'&&i.status!=='ok');
+  const abnormal=indicators.filter(i=>i.status==='above'||i.status==='below'||i.status==='deviation');
   const shown=abnormal.slice(0,9);
-  const warnCount=indicators.filter(i=>i.status==='warning'||i.status==='warn').length;
-  const alertCount=indicators.filter(i=>i.status==='alert'||i.status==='critical').length;
-  if(badge) badge.textContent=alertCount?`${alertCount} критич.`:warnCount?`${warnCount} отклон.`:`в норме`;
-  if(badge) badge.className='card-badge '+(alertCount?'badge-red':warnCount?'badge-yellow':'badge-green');
+  const aboveCount=indicators.filter(i=>i.status==='above').length;
+  const belowCount=indicators.filter(i=>i.status==='below'||i.status==='deviation').length;
+  const devCount=aboveCount+belowCount;
+  if(badge) badge.textContent=devCount?devCount+' '+plural(devCount,'отклонение','отклонения','отклонений'):'всё в норме';
+  if(badge) badge.className='card-badge '+(devCount?'badge-warn':'badge-ok');
   if(shown.length===0){
     grid.innerHTML='<div class="ov-empty"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Все показатели<br>в норме</div>';
   } else {

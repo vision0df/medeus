@@ -306,9 +306,10 @@ def extract_indicators_from_file(file_bytes: bytes, filename: str) -> str:
 3. name — оригинальное название показателя из документа
 4. value — значение показателя: числовое ("5.4") ИЛИ текстовое 
 5. unit — единица измерения, если указана. Если не указана — пустая строка ""
-6. Если значение "-" или пусто — всё равно включай показатель со значением "-"
-7. Если в документе нет медицинских показателей — верни пустой массив: []
-8. НЕ интерпретируй, НЕ добавляй статус, НЕ пиши ничего кроме JSON.
+6. Извлекай ВСЕ строки таблицы с показателями, даже если значение текстовое или "-"
+7. Если значение "-" или пусто — всё равно включай показатель со значением "-"
+8. Если в документе нет медицинских показателей — верни пустой массив: []
+9. НЕ интерпретируй, НЕ добавляй статус, НЕ пиши ничего кроме JSON.
 """
     return gemini_generate(
         models=GEMINI_MODELS_EXTRACT,
@@ -382,18 +383,27 @@ def parse_analysis_result(raw: str) -> dict:
         group_key = "blood"
 
     # Нормализуем статусы показателей
-    STATUS_MAP = {
-        "норма":       "normal",
-        "выше нормы":  "above",
-        "ниже нормы":  "below",
-        "отклонение":  "deviation",
-    }
+    def normalize_status(raw: str) -> str:
+        s = str(raw or "").strip().lower()
+        # Точное совпадение
+        exact = {"норма": "normal", "выше нормы": "above", "ниже нормы": "below", "отклонение": "deviation"}
+        if s in exact:
+            return exact[s]
+        # Уже английский код
+        if s in ("normal", "above", "below", "deviation"):
+            return s
+        # Нечёткое совпадение по ключевым словам
+        if "выше" in s or "high" in s or "повышен" in s:
+            return "above"
+        if "ниже" in s or "low" in s or "понижен" in s:
+            return "below"
+        if "откл" in s or "abnormal" in s or "патол" in s:
+            return "deviation"
+        return "normal"
+
     indicators = []
     for ind in (data.get("indicators") or []):
-        status_raw = str(ind.get("status", "норма")).strip().lower()
-        if status_raw not in STATUS_MAP:
-            status_raw = "норма"
-        status = STATUS_MAP[status_raw]
+        status = normalize_status(ind.get("status", "норма"))
         indicators.append({
             "original_name": str(ind.get("original_name", "") or ind.get("name", "")),
             "name":          str(ind.get("name", "")),
