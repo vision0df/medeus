@@ -325,43 +325,28 @@ def analyze_verified_indicators(indicators_json: str, age: str, gender: str) -> 
     prompt = f"""
 Ты — медицинский ассистент, анализирующий лабораторные показатели.
 
-ВХОДНЫЕ ДАННЫЕ:
+Возраст: {age}, Пол: {gender}
+
+Показатели:
 {indicators_json}
 
-Возраст: {age}
-Пол: {gender}
-
-ПРАВИЛА:
-1. Определи тип анализа (например: "Общий анализ крови", "Биохимический анализ крови", "Гормоны щитовидной железы", "Общий анализ мочи" и т.п.)
-2. Определи группу анализа — ОДНО значение из списка: blood | hormones | infections | biomaterials | genetics | microbiome | oncology | functional
-   - blood: общий анализ крови, биохимия, коагулограмма, глюкоза, холестерин, СРБ, СОЭ
-   - hormones: щитовидная железа, половые гормоны, кортизол, инсулин, пролактин
-   - infections: ВИЧ, гепатит, ПЦР, TORCH, антитела к инфекциям, хеликобактер
-   - biomaterials: анализ мочи, кал, копрограмма, ПАП-тест
-   - genetics: кариотип, BRCA, тромбофилия, ДНК-тесты
-   - microbiome: посев, дисбактериоз, антибиограмма, грибки
-   - oncology: онкомаркеры (ПСА, CA-125, РЭА, АФП и т.п.)
-   - functional: ГТТ, HbA1c, спирометрия, холтер, стресс-тест
-3. Для каждого показателя определи нормализованное название на русском и статус: "normal", "above" или "below".
-4. Дай краткое общее состояние (1-2 предложения).
-5. Дай конкретные рекомендации только при наличии отклонений, без повторов. Если отклонений нет — одна строка: "Все показатели в норме. Продолжайте вести здоровый образ жизни."
-
-ФОРМАТ ОТВЕТА — ТОЛЬКО валидный JSON, без markdown-блоков, без пояснений:
-
+Верни JSON строго в этом формате:
 {{
-  "analysis_type": "<название типа анализа>",
-  "group_key": "<одно из: blood|hormones|infections|biomaterials|genetics|microbiome|oncology|functional>",
-  "summary": "<1-2 предложения с общей оценкой>",
-  "recommendations": ["<рекомендация 1>", "<рекомендация 2>"],
+  "analysis_type": "...",        // например: "Общий анализ крови", "Гормоны щитовидной железы"
+  "group_key": "...",            // определи к какой группе анализов это относится, только: blood | hormones | infections | biomaterials | genetics | microbiome | oncology | functional
+  "summary": "...",              // 1-2 предложения с общей оценкой
+  "recommendations": ["..."],    // только при отклонениях, иначе: ["Все показатели в норме."]
   "indicators": [
     {{
-      "original_name": "<оригинальное название из документа>",
-      "name": "<нормализованное название на русском>",
-      "value": "<значение с единицей измерения>",
-      "status": "<normal|above|below>"
+      "original_name": "...",    // название из документа
+      "name": "...",             // нормализованное название на русском
+      "value": "...",            // значение с единицей, например "110 г/л"
+      "status": "..."            // определяй исходя из возраста и пола, только: норма | выше нормы | ниже нормы
     }}
   ]
 }}
+
+ТОЛЬКО JSON, без текста до и после.
 """
     return gemini_generate(
         models=GEMINI_MODELS_ANALYZE,
@@ -493,7 +478,15 @@ def resolve_indicators_batch(indicators: list) -> dict:
     if not unknown:
         return result_map
 
-    known_names_list = [r["name"] for r in all_indicators]
+    # Собираем group_key всех unknown показателей
+    unknown_group_keys = {u["group_key"] for u in unknown}
+
+    # Фильтруем известные показатели по тем же группам
+    filtered_indicators = [
+    r for r in all_indicators 
+    if r["group_key"] in unknown_group_keys
+    ]
+    known_names_list = [r["name"] for r in filtered_indicators]
     unknown_list_str = json.dumps(
         [{"id": i, "name": u["canonical"], "original": u["original"]}
          for i, u in enumerate(unknown)],
@@ -502,18 +495,25 @@ def resolve_indicators_batch(indicators: list) -> dict:
 
     prompt = f"""Ты — классификатор медицинских показателей.
 
-Список уже известных показателей в системе:
+Группа анализа: {groups_str}
+
+Известные показатели в системе (только из этой группы):
 {json.dumps(known_names_list, ensure_ascii=False)}
 
-Новые показатели из анализа — каждый имеет id, название из документа (original) и название которое дал ИИ-анализатор (name):
+Новые показатели (нужно классифицировать каждый):
 {unknown_list_str}
 
-Для КАЖДОГО реши одно из двух:
-- Это тот же показатель что уже есть в системе (синоним/другое написание) → action="alias", match=точное название из списка известных
-- Это новый показатель которого нет в системе → action="new"
+Для каждого показателя реши:
+- Синоним/другое написание уже существующего → action="alias", match="..." (скопируй название ДОСЛОВНО из списка выше)
+- Новый показатель которого нет в системе → action="new"
 
-Верни ТОЛЬКО JSON-массив без пояснений и markdown:
-[{{"id": 0, "action": "alias", "match": "Гемоглобин"}}, {{"id": 1, "action": "new"}}]
+Верни ровно {len(unknown)} элементов в формате:
+[
+  {{"id": 0, "action": "alias", "match": "Лейкоциты"}},  // WBC = Лейкоциты
+  {{"id": 1, "action": "new"}}
+]
+
+ТОЛЬКО JSON, без текста до и после.
 """
 
     try:
