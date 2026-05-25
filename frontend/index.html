@@ -641,7 +641,7 @@ extractBtn.addEventListener('click', async () => {
   try {
     const fd = new FormData();
     fd.append('file', selectedFile);
-    const resp = await fetch(API_BASE + '/extract-public', { method: 'POST', body: fd });
+    const resp = await fetch(API_BASE + '/extract', { method: 'POST', body: fd });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Ошибка сервера: ' + resp.status);
     indicators = data.indicators || [];
@@ -703,7 +703,7 @@ document.getElementById('continueBtn').addEventListener('click', async () => {
     fd.append('indicators', JSON.stringify(indicators));
     fd.append('age', ageInput.value);
     fd.append('gender', genderInput.value);
-    const resp = await fetch(API_BASE + '/analyze-indicators-public', { method: 'POST', body: fd });
+    const resp = await fetch(API_BASE + '/analyze-indicators', { method: 'POST', body: fd });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Ошибка сервера: ' + resp.status);
     renderResultBlocks3(data.analysis);
