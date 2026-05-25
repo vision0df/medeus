@@ -321,6 +321,33 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightboxBtn();}
 function parseAnalysisText(text){
   const result={analysisType:'',status:'',recommendations:[],indicators:[]};
   if(!text)return result;
+
+  // Пробуем распарсить как JSON (новый формат бэкенда)
+  try{
+    let data=text;
+    if(typeof text==='string'){
+      // Убираем возможные markdown-блоки ```json ... ```
+      const cleaned=text.replace(/^```json\s*/,'').replace(/\s*```$/,'').trim();
+      data=JSON.parse(cleaned);
+    }
+    if(data&&typeof data==='object'){
+      result.analysisType=data.analysis_type||'';
+      result.status=data.summary||'';
+      if(Array.isArray(data.recommendations))result.recommendations=data.recommendations;
+      if(Array.isArray(data.indicators)){
+        result.indicators=data.indicators.map(ind=>{
+          const s=(ind.status||'').toLowerCase();
+          let status='normal';
+          if(s.includes('выше'))status='above';
+          else if(s.includes('ниже')||s.includes('отклонение'))status='below';
+          return{name:ind.name||ind.original_name||'',value:ind.value||'',status};
+        });
+      }
+      return result;
+    }
+  }catch(e){/* не JSON — fallback на текстовый парсинг */}
+
+  // Fallback: текстовый формат (старый)
   let section='';
   for(const rawLine of text.split('\n')){
     const line=rawLine.trim();
