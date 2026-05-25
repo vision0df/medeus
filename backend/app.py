@@ -324,25 +324,31 @@ def extract_indicators_from_file(file_bytes: bytes, filename: str) -> str:
 
 
 def analyze_indicators(indicators_json: str, age: str, gender: str) -> str:
+    groups_desc = (
+        "blood=анализы крови, hormones=гормоны, infections=инфекции и иммунитет, "
+        "biomaterials=биоматериалы (моча/кал/слюна), genetics=генетика, "
+        "microbiome=микрофлора, oncology=онкомаркеры, functional=функциональные тесты"
+    )
     prompt = (
         f"Ты — медицинский ассистент. Анализируй лабораторные показатели.\n\n"
         f"Возраст: {age}, Пол: {gender}\n\n"
         f"Показатели:\n{indicators_json}\n\n"
         "Верни JSON строго в этом формате:\n"
         "{\n"
-        "  \"analysis_type\": \"...\",\n"
-        "  \"group_key\": \"blood|hormones|infections|biomaterials|genetics|microbiome|oncology|functional\",\n"
+        "  \"analysis_type\": \"...\" ,\n"
+        "  \"group_key\": \"одно значение из: blood|hormones|infections|biomaterials|genetics|microbiome|oncology|functional\",\n"
         "  \"summary\": \"1-2 предложения с общей оценкой\",\n"
         "  \"recommendations\": [\"...\"],\n"
         "  \"indicators\": [\n"
         "    {\n"
         "      \"original_name\": \"оригинальное название\",\n"
-        "      \"name\": \"нормализованное на русском\",\n"
+        "      \"name\": \"нормализованное название на русском\",\n"
         "      \"value\": \"значение с единицей измерения\",\n"
         "      \"status\": \"норма|выше нормы|ниже нормы|отклонение\"\n"
         "    }\n"
         "  ]\n"
         "}\n\n"
+        f"Группы: {groups_desc}\n\n"
         "ТОЛЬКО JSON, без текста до и после."
     )
     return _gemini_call(MODELS_ANALYZE, [prompt])
@@ -546,10 +552,14 @@ def _save_user_indicators(
     if not indicators:
         return
 
+    # Каждый показатель несёт свой group_key (из поля ind["group_key"]).
+    # Если его нет — используем group_key всего анализа как fallback.
     to_resolve = [
-        {"original_name": ind.get("original_name", ind["name"]),
-         "name": ind["name"],
-         "group_key": group_key}
+        {
+            "original_name": ind.get("original_name", ind["name"]),
+            "name":          ind["name"],
+            "group_key":     group_key,
+        }
         for ind in indicators
     ]
     try:
