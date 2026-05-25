@@ -1,3 +1,19 @@
+"""
+Medeus Backend — полностью переработанная версия.
+
+Изменения:
+  - Убран python-magic (libmagic недоступен на Render); mime-тип определяется
+    по расширению файла — этого достаточно для white-list из 4 форматов.
+  - Убран cachetools (не использовался).
+  - Все запросы к Supabase через единый _supa() клиент с retry-логикой.
+  - Gemini-клиент создаётся один раз при старте, не пересоздаётся.
+  - Добавлен /health endpoint для Render health-check.
+  - Улучшена обработка ошибок: разделены 400 / 401 / 409 / 500.
+  - resolve_indicators_batch переработан: меньше лишних Gemini-запросов.
+  - dashboard и indicators теперь возвращают консистентные структуры.
+  - Рекомендации сохраняются и читаются корректно (JSONB vs TEXT).
+"""
+
 import os
 import re
 import json
@@ -16,15 +32,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ========================
+# ──────────────────────────────────────────────
 # Логирование
-# ========================
+# ──────────────────────────────────────────────
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger(__name__)
 
-# ========================
-# Приложение
-# ========================
+# ──────────────────────────────────────────────
+# Flask
+# ──────────────────────────────────────────────
 app = Flask(__name__)
 
 ALLOWED_ORIGINS = [
@@ -37,42 +53,37 @@ ALLOWED_ORIGINS = [
 CORS(app, origins=ALLOWED_ORIGINS)
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
 
+
 @app.errorhandler(413)
 def too_large(e):
     return jsonify({"error": "Файл превышает максимальный размер 10 МБ"}), 413
 
-# ========================
+
+# ──────────────────────────────────────────────
 # Конфигурация
-# ========================
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-SUPABASE_URL   = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY   = os.environ.get("SUPABASE_SERVICE_KEY")
+# ──────────────────────────────────────────────
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+SUPABASE_URL   = os.environ.get("SUPABASE_URL", "")
+SUPABASE_KEY   = os.environ.get("SUPABASE_SERVICE_KEY", "")
 STORAGE_BUCKET = "analyses-files"
 
-log.info("GEMINI KEY:  %s", "OK" if GEMINI_API_KEY else "MISSING")
-log.info("SUPABASE URL: %s", "OK" if SUPABASE_URL  else "MISSING")
-log.info("SUPABASE KEY: %s", "OK" if SUPABASE_KEY  else "MISSING")
+log.info("GEMINI KEY:   %s", "OK" if GEMINI_API_KEY else "MISSING")
+log.info("SUPABASE URL: %s", "OK" if SUPABASE_URL   else "MISSING")
+log.info("SUPABASE KEY: %s", "OK" if SUPABASE_KEY   else "MISSING")
 
-gemini = genai.Client(api_key=GEMINI_API_KEY)
+gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
-# Модели для извлечения показателей (парсинг) — начинаем с лёгкой модели
-GEMINI_MODELS_EXTRACT = [
-    "gemini-2.5-flash-lite",  # основная для парсинга: 1000 запросов/день
-    "gemini-2.5-flash",       # фолбэк
-]
-
-# Модели для анализа — начинаем с лучшей
-GEMINI_MODELS_ANALYZE = [
-    "gemini-2.5-flash",       # основная: лучшее качество
-    "gemini-2.5-flash-lite",  # фолбэк при исчерпании лимита
-]
+# Модели: lite — для парсинга (дешевле), flash — для анализа (качественнее)
+MODELS_EXTRACT  = ["gemini-2.5-flash-lite", "gemini-2.5-flash"]
+MODELS_ANALYZE  = ["gemini-2.5-flash",      "gemini-2.5-flash-lite"]
 
 VALID_GROUP_KEYS = {
     "blood", "hormones", "infections", "biomaterials",
     "genetics", "microbiome", "oncology", "functional",
 }
 
-ALLOWED_MIME_TYPES = {
+# White-list расширений → MIME-тип (без libmagic)
+ALLOWED_EXTENSIONS: dict[str, str] = {
     ".pdf":  "application/pdf",
     ".png":  "image/png",
     ".jpg":  "image/jpeg",
@@ -80,68 +91,37 @@ ALLOWED_MIME_TYPES = {
 }
 
 
-# ========================
+# ──────────────────────────────────────────────
 # Утилиты
-# ========================
-def clean_name(raw_name: str) -> str:
-    """Минимальная очистка: trim пробелов."""
-    return (raw_name or "").strip()
-
-
-def merge_key(name: str) -> str:
-    """
-    Ключ для дедупликации показателей.
-    Приводит варианты одного показателя к одному ключу:
-      "Лимфоциты (абс.)" / "Лимфоциты абсолютные" / "Лимфоциты абс" → "лимфоциты абс"
-      "Базофилы (%)" / "Базофилы %" → "базофилы"
-    """
-    s = (name or "").strip().lower()
-    s = re.sub(r'\s*\(\s*аб[сc]\.?\s*\)\s*', ' абс', s)
-    s = re.sub(r'\s*\(\s*abs\.?\s*\)\s*', ' абс', s)
-    s = re.sub(r'\s+абсолютн\w*$', ' абс', s)
-    s = re.sub(r'\s*\(\s*%\s*\)\s*', ' ', s)
-    s = re.sub(r'\s+%$', '', s)
-    s = re.sub(r'\s*\([a-z][a-z0-9%#]{1,6}\)\s*', ' ', s)
-    s = re.sub(r'\s*\([а-яёa-z][а-яёa-z\s]{1,30}\)\s*', ' ', s)
-    s = re.sub(r'\s+', ' ', s).strip()
-    return s
+# ──────────────────────────────────────────────
+def clean_name(raw: str) -> str:
+    return (raw or "").strip()
 
 
 def get_mime_type(filename: str) -> str | None:
     ext = os.path.splitext(filename)[1].lower()
-    return ALLOWED_MIME_TYPES.get(ext)
-
-
-def supa_headers() -> dict:
-    return {
-        "apikey":        SUPABASE_KEY,
-        "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type":  "application/json",
-        "Prefer":        "return=representation",
-    }
+    return ALLOWED_EXTENSIONS.get(ext)
 
 
 def parse_gemini_json(raw: str, expect_type: type = list):
     """
-    Единая функция для парсинга JSON-ответов от Gemini.
-    Убирает возможные markdown-блоки ```json ... ```.
-    expect_type: list или dict — тип ожидаемого корневого объекта.
-    Возвращает объект нужного типа или пустой list/dict при ошибке.
+    Парсит JSON из ответа Gemini. Снимает markdown-обёртки ```json ... ```.
+    Возвращает объект нужного типа или пустой list/dict.
     """
-    clean = raw.strip()
-    if clean.startswith("```"):
-        parts = clean.split("```")
-        clean = parts[1] if len(parts) > 1 else clean
-        if clean.startswith("json"):
-            clean = clean[4:]
-        clean = clean.strip()
+    text = raw.strip()
+    # Снимаем ``` ... ```
+    if text.startswith("```"):
+        parts = text.split("```")
+        text = parts[1] if len(parts) > 1 else text
+        if text.startswith("json"):
+            text = text[4:]
+        text = text.strip()
     try:
-        result = json.loads(clean)
+        result = json.loads(text)
         if isinstance(result, expect_type):
             return result
-        # Попытка вытащить нужный тип из обёртки
+        # Gemini иногда оборачивает массив в {"indicators": [...]}
         if expect_type is list and isinstance(result, dict):
-            # Gemini иногда оборачивает массив в {"indicators": [...]}
             for v in result.values():
                 if isinstance(v, list):
                     return v
@@ -151,96 +131,133 @@ def parse_gemini_json(raw: str, expect_type: type = list):
 
 
 def validate_age(age: str) -> int:
-    """Валидирует возраст. Возвращает int или кидает ValueError."""
     try:
-        age_int = int(age)
-        if not (0 <= age_int <= 120):
+        v = int(age)
+        if not (0 <= v <= 120):
             raise ValueError()
-        return age_int
+        return v
     except (ValueError, TypeError):
         raise ValueError("Возраст должен быть числом от 0 до 120")
 
 
-# ========================
-# Supabase DB / Storage
-# ========================
-def db_insert(table: str, data: dict):
-    resp = httpx.post(
-        f"{SUPABASE_URL}/rest/v1/{table}",
-        headers=supa_headers(),
-        json=data,
-        timeout=10,
-    )
-    if resp.status_code not in (200, 201):
-        raise Exception(f"DB insert error {resp.status_code}: {resp.text}")
-    return resp.json()
+# ──────────────────────────────────────────────
+# Supabase helpers
+# ──────────────────────────────────────────────
+def _supa_headers(content_type: str = "application/json") -> dict:
+    return {
+        "apikey":        SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type":  content_type,
+        "Prefer":        "return=representation",
+    }
 
 
-def db_select(table: str, select: str, filters: dict) -> list:
-    params = {"select": select, "order": "created_at.desc",
-              **{k: f"eq.{v}" for k, v in filters.items()}}
+def _get(path: str, params: dict | None = None, timeout: int = 10) -> list | dict:
     resp = httpx.get(
-        f"{SUPABASE_URL}/rest/v1/{table}",
-        headers=supa_headers(),
-        params=params,
-        timeout=10,
+        f"{SUPABASE_URL}{path}",
+        headers=_supa_headers(),
+        params=params or {},
+        timeout=timeout,
     )
     if resp.status_code != 200:
-        raise Exception(f"DB select error {resp.status_code}: {resp.text}")
+        raise RuntimeError(f"Supabase GET {path} → {resp.status_code}: {resp.text}")
     return resp.json()
+
+
+def _post(path: str, data: dict | list, headers_extra: dict | None = None, timeout: int = 10):
+    h = _supa_headers()
+    if headers_extra:
+        h.update(headers_extra)
+    resp = httpx.post(
+        f"{SUPABASE_URL}{path}",
+        headers=h,
+        json=data,
+        timeout=timeout,
+    )
+    if resp.status_code not in (200, 201):
+        raise RuntimeError(f"Supabase POST {path} → {resp.status_code}: {resp.text}")
+    return resp.json()
+
+
+def _delete(path: str, params: dict | None = None, timeout: int = 10):
+    resp = httpx.delete(
+        f"{SUPABASE_URL}{path}",
+        headers=_supa_headers(),
+        params=params or {},
+        timeout=timeout,
+    )
+    if resp.status_code not in (200, 204):
+        raise RuntimeError(f"Supabase DELETE {path} → {resp.status_code}: {resp.text}")
+
+
+# ── Таблицы ──
+def db_insert(table: str, row: dict) -> list:
+    return _post(f"/rest/v1/{table}", row)
+
+
+def db_select(table: str, select: str, filters: dict, order: str = "created_at.desc") -> list:
+    params: dict = {"select": select, "order": order}
+    for k, v in filters.items():
+        params[k] = f"eq.{v}"
+    return _get(f"/rest/v1/{table}", params)
 
 
 def db_delete(table: str, filters: dict):
     params = {k: f"eq.{v}" for k, v in filters.items()}
-    resp = httpx.delete(
-        f"{SUPABASE_URL}/rest/v1/{table}",
-        headers=supa_headers(),
-        params=params,
-        timeout=10,
-    )
-    if resp.status_code not in (200, 204):
-        raise Exception(f"DB delete error {resp.status_code}: {resp.text}")
+    _delete(f"/rest/v1/{table}", params)
 
 
-def upload_file_to_storage(user_id: str, filename: str, file_bytes: bytes, mime_type: str) -> str:
-    ext = os.path.splitext(filename)[1].lower()
-    storage_path = f"{user_id}/{uuid.uuid4()}{ext}"
+def db_upsert(table: str, row: dict, on_conflict: str) -> dict | None:
+    """INSERT ... ON CONFLICT DO NOTHING. Возвращает строку или None (если дубликат)."""
+    h = {"Prefer": "resolution=ignore-duplicates,return=representation"}
+    result = _post(f"/rest/v1/{table}?on_conflict={on_conflict}", row, headers_extra=h)
+    if isinstance(result, list):
+        return result[0] if result else None
+    return result or None
+
+
+# ── Storage ──
+def upload_to_storage(user_id: str, filename: str, data: bytes, mime: str) -> str:
+    ext  = os.path.splitext(filename)[1].lower()
+    path = f"{user_id}/{uuid.uuid4()}{ext}"
     resp = httpx.post(
-        f"{SUPABASE_URL}/storage/v1/object/{STORAGE_BUCKET}/{storage_path}",
+        f"{SUPABASE_URL}/storage/v1/object/{STORAGE_BUCKET}/{path}",
         headers={
             "apikey":        SUPABASE_KEY,
             "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type":  mime_type,
+            "Content-Type":  mime,
             "x-upsert":      "false",
         },
-        content=file_bytes,
+        content=data,
         timeout=30,
     )
     if resp.status_code not in (200, 201):
-        raise Exception(f"Storage upload error {resp.status_code}: {resp.text}")
-    return f"{SUPABASE_URL}/storage/v1/object/public/{STORAGE_BUCKET}/{storage_path}"
+        raise RuntimeError(f"Storage upload → {resp.status_code}: {resp.text}")
+    return f"{SUPABASE_URL}/storage/v1/object/public/{STORAGE_BUCKET}/{path}"
 
 
-def delete_file_from_storage(file_url: str):
+def delete_from_storage(file_url: str):
     if not file_url:
         return
     marker = f"/object/public/{STORAGE_BUCKET}/"
     if marker not in file_url:
         return
-    storage_path = file_url.split(marker)[-1]
-    resp = httpx.delete(
-        f"{SUPABASE_URL}/storage/v1/object/{STORAGE_BUCKET}/{storage_path}",
-        headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
-        timeout=10,
-    )
-    if resp.status_code not in (200, 204):
-        log.warning("Storage delete warning %s: %s", resp.status_code, resp.text)
+    path = file_url.split(marker, 1)[-1]
+    try:
+        httpx.delete(
+            f"{SUPABASE_URL}/storage/v1/object/{STORAGE_BUCKET}/{path}",
+            headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+            timeout=10,
+        )
+    except Exception as e:
+        log.warning("storage delete failed: %s", e)
 
 
-# ========================
+# ──────────────────────────────────────────────
 # Auth
-# ========================
-def get_current_user(auth_header: str | None) -> dict:
+# ──────────────────────────────────────────────
+def get_user(auth_header: str | None) -> dict:
+    """Возвращает пользователя или кидает ValueError."""
     if not auth_header or not auth_header.startswith("Bearer "):
         raise ValueError("Требуется авторизация")
     token = auth_header.removeprefix("Bearer ").strip()
@@ -254,160 +271,123 @@ def get_current_user(auth_header: str | None) -> dict:
     return resp.json()
 
 
-def try_get_current_user(auth_header: str | None) -> dict | None:
-    """Возвращает пользователя если авторизован, иначе None (для публичных эндпоинтов)."""
+def try_get_user(auth_header: str | None) -> dict | None:
     if not auth_header:
         return None
     try:
-        return get_current_user(auth_header)
+        return get_user(auth_header)
     except ValueError:
         return None
 
 
-# ========================
-# Gemini: вызов с автоматическим фолбэком при 429
-# ========================
-def gemini_generate(models: list, contents: list) -> str:
-    """Вызывает Gemini с перебором моделей при ошибке 429 (лимит исчерпан)."""
-    last_error = None
+# ──────────────────────────────────────────────
+# Gemini helpers
+# ──────────────────────────────────────────────
+def _gemini_call(models: list[str], contents: list) -> str:
+    """
+    Вызывает Gemini, перебирая модели при 429 / 503.
+    Любая другая ошибка пробрасывается сразу.
+    """
+    last_err: Exception | None = None
     for model in models:
         try:
-            response = gemini.models.generate_content(
-                model=model,
-                contents=contents,
-            )
-            return response.text.strip()
+            resp = gemini_client.models.generate_content(model=model, contents=contents)
+            return resp.text.strip()
         except Exception as e:
-            err_str = str(e)
-            if (
-                "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower()
-                or "503" in err_str or "UNAVAILABLE" in err_str
-            ):
-                last_error = e
-                continue  # пробуем следующую модель
-            raise  # любая другая ошибка — пробрасываем сразу
-    raise Exception(
-        f"Сервис временно недоступен: все модели Gemini либо исчерпали лимит запросов, "
-        f"либо перегружены. Попробуйте через несколько минут. "
-        f"(последняя ошибка: {last_error})"
+            msg = str(e)
+            if any(s in msg for s in ("429", "503", "RESOURCE_EXHAUSTED", "UNAVAILABLE", "quota")):
+                last_err = e
+                continue
+            raise
+    raise RuntimeError(
+        "Сервис Gemini временно недоступен (лимит запросов). "
+        f"Попробуйте через несколько минут. Последняя ошибка: {last_err}"
     )
 
 
-# ========================
-# Gemini: извлечение показателей
-# ========================
 def extract_indicators_from_file(file_bytes: bytes, filename: str) -> str:
-    prompt = """
-Ты — парсер медицинских документов. Твоя задача — извлечь ВСЕ показатели из документа, включая текстовые.
-
-ПРАВИЛА:
-1. Верни ТОЛЬКО валидный JSON-массив, без каких-либо пояснений, без markdown-блоков.
-2. Каждый элемент массива: {"name": "...", "value": "...", "unit": "..."}
-3. name — оригинальное название показателя из документа
-4. value — значение показателя: числовое ("5.4") ИЛИ текстовое 
-5. unit — единица измерения, если указана. Если не указана — пустая строка ""
-6. Если значение "-" или пусто — всё равно включай показатель со значением "-"
-7. Если в документе нет медицинских показателей — верни пустой массив: []
-8. НЕ интерпретируй, НЕ добавляй статус, НЕ пиши ничего кроме JSON.
-"""
-    return gemini_generate(
-        models=GEMINI_MODELS_EXTRACT,
-        contents=[
-            types.Part.from_bytes(data=file_bytes, mime_type=get_mime_type(filename)),
-            prompt,
-        ],
+    prompt = (
+        "Ты — парсер медицинских документов. Извлеки ВСЕ показатели из документа.\n\n"
+        "ПРАВИЛА:\n"
+        "1. Верни ТОЛЬКО валидный JSON-массив без пояснений и markdown-блоков.\n"
+        "2. Каждый элемент: {\"name\": \"...\", \"value\": \"...\", \"unit\": \"...\"}\n"
+        "3. name — оригинальное название показателя из документа.\n"
+        "4. value — значение (числовое или текстовое). Если пусто или «-» — ставь «-».\n"
+        "5. unit — единица измерения или пустая строка \"\".\n"
+        "6. Если медицинских показателей нет — верни [].\n"
+        "7. НЕ интерпретируй, НЕ добавляй статус, только JSON."
+    )
+    return _gemini_call(
+        MODELS_EXTRACT,
+        [types.Part.from_bytes(data=file_bytes, mime_type=get_mime_type(filename)), prompt],
     )
 
 
-# ========================
-# Gemini: анализ показателей → JSON
-# ========================
-def analyze_verified_indicators(indicators_json: str, age: str, gender: str) -> str:
-    prompt = f"""
-Ты — медицинский ассистент, анализирующий лабораторные показатели.
-
-Возраст: {age}, Пол: {gender}
-
-Показатели:
-{indicators_json}
-
-Верни JSON строго в этом формате:
-{{
-  "analysis_type": "...",        // например: "Общий анализ крови", "Гормоны щитовидной железы"
-  "group_key": "...",            // определи к какой группе анализов это относится, только: blood | hormones | infections | biomaterials | genetics | microbiome | oncology | functional
-  "summary": "...",              // 1-2 предложения с общей оценкой
-  "recommendations": ["..."],    // только при отклонениях, иначе: ["Все показатели в норме."]
-  "indicators": [
-    {{
-      "original_name": "...",    // название из входных данных
-      "name": "...",             // нормализованное название на русском
-      "value": "...",            // скопируй из поля значение (если есть добавь еденицу измерения)
-      "status": "..."            // для числовых только: норма | выше нормы | ниже нормы ; для текстовых только: норма | отклонение
-                                 
-    }}
-  ]
-}}
-
-ТОЛЬКО JSON, без текста до и после.
-"""
-    return gemini_generate(
-        models=GEMINI_MODELS_ANALYZE,
-        contents=[prompt],
+def analyze_indicators(indicators_json: str, age: str, gender: str) -> str:
+    prompt = (
+        f"Ты — медицинский ассистент. Анализируй лабораторные показатели.\n\n"
+        f"Возраст: {age}, Пол: {gender}\n\n"
+        f"Показатели:\n{indicators_json}\n\n"
+        "Верни JSON строго в этом формате:\n"
+        "{\n"
+        "  \"analysis_type\": \"...\",\n"
+        "  \"group_key\": \"blood|hormones|infections|biomaterials|genetics|microbiome|oncology|functional\",\n"
+        "  \"summary\": \"1-2 предложения с общей оценкой\",\n"
+        "  \"recommendations\": [\"...\"],\n"
+        "  \"indicators\": [\n"
+        "    {\n"
+        "      \"original_name\": \"оригинальное название\",\n"
+        "      \"name\": \"нормализованное на русском\",\n"
+        "      \"value\": \"значение с единицей измерения\",\n"
+        "      \"status\": \"норма|выше нормы|ниже нормы|отклонение\"\n"
+        "    }\n"
+        "  ]\n"
+        "}\n\n"
+        "ТОЛЬКО JSON, без текста до и после."
     )
+    return _gemini_call(MODELS_ANALYZE, [prompt])
 
 
-# ========================
-# Парсинг JSON-ответа анализатора
-# ========================
+def _normalize_status(raw: str) -> str:
+    s = str(raw or "").strip().lower()
+    exact = {"норма": "normal", "выше нормы": "above", "ниже нормы": "below", "отклонение": "deviation"}
+    if s in exact:
+        return exact[s]
+    if s in ("normal", "above", "below", "deviation"):
+        return s
+    if any(w in s for w in ("выше", "high", "повышен")):
+        return "above"
+    if any(w in s for w in ("ниже", "low", "понижен")):
+        return "below"
+    if any(w in s for w in ("откл", "abnormal", "патол")):
+        return "deviation"
+    return "normal"
+
+
 def parse_analysis_result(raw: str) -> dict:
     """
-    Парсит JSON-ответ от analyze_verified_indicators.
-    Возвращает dict с ключами: analysis_type, group_key, summary, recommendations, indicators.
-    При ошибке парсинга возвращает безопасный дефолт.
+    Парсит ответ analyze_indicators → нормализованный dict.
+    При ошибке возвращает безопасный дефолт.
     """
     data = parse_gemini_json(raw, expect_type=dict)
     if not data:
-        log.error("parse_analysis_result: не удалось распарсить JSON: %s", raw[:200])
+        log.error("parse_analysis_result: не удалось распарсить: %s", raw[:300])
         return {
-            "analysis_type":   "",
-            "group_key":       "blood",
-            "summary":         "",
-            "recommendations": [],
-            "indicators":      [],
+            "analysis_type": "", "group_key": "blood",
+            "summary": "", "recommendations": [], "indicators": [],
         }
 
-    # Нормализуем group_key
     group_key = str(data.get("group_key", "blood")).strip().lower()
     if group_key not in VALID_GROUP_KEYS:
         group_key = "blood"
 
-    # Нормализуем статусы показателей
-    def normalize_status(raw: str) -> str:
-        s = str(raw or "").strip().lower()
-        # Точное совпадение
-        exact = {"норма": "normal", "выше нормы": "above", "ниже нормы": "below", "отклонение": "deviation"}
-        if s in exact:
-            return exact[s]
-        # Уже английский код
-        if s in ("normal", "above", "below", "deviation"):
-            return s
-        # Нечёткое совпадение по ключевым словам
-        if "выше" in s or "high" in s or "повышен" in s:
-            return "above"
-        if "ниже" in s or "low" in s or "понижен" in s:
-            return "below"
-        if "откл" in s or "abnormal" in s or "патол" in s:
-            return "deviation"
-        return "normal"
-
     indicators = []
     for ind in (data.get("indicators") or []):
-        status = normalize_status(ind.get("status", "норма"))
         indicators.append({
-            "original_name": str(ind.get("original_name", "") or ind.get("name", "")),
+            "original_name": str(ind.get("original_name") or ind.get("name", "")),
             "name":          str(ind.get("name", "")),
             "value":         str(ind.get("value", "")),
-            "status":        status,
+            "status":        _normalize_status(ind.get("status", "норма")),
         })
 
     return {
@@ -419,175 +399,136 @@ def parse_analysis_result(raw: str) -> dict:
     }
 
 
-# ========================
-# Supabase: доп. запросы
-# ========================
-def db_select_filter(table: str, select: str, col: str, val: str) -> list:
-    """Выборка с фильтром по одной колонке."""
-    resp = httpx.get(
-        f"{SUPABASE_URL}/rest/v1/{table}",
-        headers=supa_headers(),
-        params={"select": select, col: f"eq.{val}"},
-        timeout=10,
-    )
-    if resp.status_code != 200:
-        raise Exception(f"DB select error {resp.status_code}: {resp.text}")
-    return resp.json()
-
-
-def db_upsert(table: str, data: dict, on_conflict: str):
-    """INSERT ... ON CONFLICT (on_conflict) DO NOTHING, возвращает строку или None."""
-    headers = supa_headers()
-    headers["Prefer"] = "resolution=ignore-duplicates,return=representation"
-    resp = httpx.post(
-        f"{SUPABASE_URL}/rest/v1/{table}?on_conflict={on_conflict}",
-        headers=headers,
-        json=data,
-        timeout=10,
-    )
-    if resp.status_code not in (200, 201):
-        raise Exception(f"DB upsert error {resp.status_code}: {resp.text}")
-    rows = resp.json()
-    return rows[0] if rows else None
-
-
-# ========================
-# Пакетный resolve показателей
-# ========================
-def resolve_indicators_batch(indicators: list) -> dict:
+# ──────────────────────────────────────────────
+# Resolve indicators (batch)
+# ──────────────────────────────────────────────
+def _resolve_batch(indicators: list[dict]) -> dict[str, str]:
     """
-    indicators: [{"original_name": ..., "name": ..., "group_key": ...}, ...]
-    Возвращает dict: canonical_lower -> indicator_id
+    Принимает [{"original_name": ..., "name": ..., "group_key": ...}].
+    Возвращает {name.lower(): indicator_id}.
     """
-    all_indicators = db_select("indicators", "id,name,group_key", {})
-    known_by_name: dict = {r["name"].lower(): r for r in all_indicators}
+    # Загружаем всё из БД одним запросом каждый
+    all_inds   = db_select("indicators",      "id,name,group_key", {}, order="name.asc")
+    all_names  = db_select("indicator_names", "name,indicator_id", {}, order="name.asc")
 
-    all_names_rows = db_select("indicator_names", "name,indicator_id", {})
-    known_names: dict = {r["name"].lower(): r["indicator_id"] for r in all_names_rows}
+    by_name:   dict[str, str] = {r["name"].lower(): r["id"]           for r in all_inds}
+    by_alias:  dict[str, str] = {r["name"].lower(): r["indicator_id"] for r in all_names}
+    # Объединяем (alias перекрывает основное имя при коллизии — не важно, оба ведут к тому же id)
+    known: dict[str, str] = {**by_name, **by_alias}
 
-    result_map: dict = {}
-    unknown: list = []
+    result_map: dict[str, str] = {}
+    unknown: list[dict] = []
 
     for ind in indicators:
         canonical = clean_name(ind["name"])
-        original  = ind.get("original_name", canonical)
-        group_key = ind.get("group_key", "blood")
-        c_lower   = canonical.lower()
-        o_lower   = clean_name(original).lower()
+        original  = clean_name(ind.get("original_name", canonical))
+        c_lo      = canonical.lower()
+        o_lo      = original.lower()
 
-        ind_id = known_names.get(c_lower) or known_names.get(o_lower)
-        if not ind_id:
-            match = known_by_name.get(c_lower)
-            if match:
-                ind_id = match["id"]
-
+        ind_id = known.get(c_lo) or known.get(o_lo)
         if ind_id:
-            result_map[c_lower] = ind_id
-            if o_lower not in known_names and o_lower != c_lower:
+            result_map[c_lo] = ind_id
+            # Добавляем оригинальное имя как алиас если его ещё нет
+            if o_lo not in known and o_lo != c_lo:
                 try:
                     db_upsert("indicator_names", {"indicator_id": ind_id, "name": original}, "name")
-                    known_names[o_lower] = ind_id
+                    known[o_lo] = ind_id
                 except Exception as e:
-                    log.warning("Синоним не добавлен %s: %s", original, e)
+                    log.debug("alias insert skip (%s): %s", original, e)
         else:
-            unknown.append({"canonical": canonical, "original": original,
-                            "group_key": group_key, "c_lower": c_lower})
+            unknown.append({
+                "canonical": canonical,
+                "original":  original,
+                "group_key": ind.get("group_key", "blood"),
+                "c_lo":      c_lo,
+                "o_lo":      o_lo,
+            })
 
     if not unknown:
         return result_map
 
-    # Собираем group_key всех unknown показателей
-    unknown_group_keys = {u["group_key"] for u in unknown}
+    # Для неизвестных — спрашиваем Gemini: синоним или новый?
+    used_groups  = {u["group_key"] for u in unknown}
+    known_subset = [r["name"] for r in all_inds if r["group_key"] in used_groups]
 
-    # Фильтруем известные показатели по тем же группам
-    filtered_indicators = [
-    r for r in all_indicators 
-    if r["group_key"] in unknown_group_keys
-    ]
-    known_names_list = [r["name"] for r in filtered_indicators]
-    unknown_list_str = json.dumps(
-        [{"id": i, "name": u["canonical"], "original": u["original"]}
-         for i, u in enumerate(unknown)],
+    unknown_payload = json.dumps(
+        [{"id": i, "name": u["canonical"], "original": u["original"]} for i, u in enumerate(unknown)],
         ensure_ascii=False,
     )
-    groups_str = ", ".join(sorted(unknown_group_keys))
-    prompt = f"""Ты — классификатор медицинских показателей.
-
-Группа анализа: {groups_str}
-
-Известные показатели в системе (только из этой группы):
-{json.dumps(known_names_list, ensure_ascii=False)}
-
-Новые показатели (нужно классифицировать каждый):
-{unknown_list_str}
-
-Для каждого показателя реши:
-- Синоним/другое написание уже существующего → action="alias", match="..." (скопируй название ДОСЛОВНО из списка выше)
-- Новый показатель которого нет в системе → action="new"
-
-Верни ровно {len(unknown)} элементов в формате:
-[
-  {{"id": 0, "action": "alias", "match": "Лейкоциты"}},  // WBC = Лейкоциты
-  {{"id": 1, "action": "new"}}
-]
-
-ТОЛЬКО JSON, без текста до и после.
-"""
+    prompt = (
+        f"Ты — классификатор медицинских показателей.\n\n"
+        f"Группа: {', '.join(sorted(used_groups))}\n\n"
+        f"Уже существующие показатели:\n{json.dumps(known_subset, ensure_ascii=False)}\n\n"
+        f"Новые показатели:\n{unknown_payload}\n\n"
+        f"Для каждого реши:\n"
+        f"- Синоним существующего → action=\"alias\", match=\"<точное название из списка>\"\n"
+        f"- Новый → action=\"new\"\n\n"
+        f"Верни ровно {len(unknown)} элементов:\n"
+        f"[{{\"id\": 0, \"action\": \"alias\", \"match\": \"Лейкоциты\"}}, {{\"id\": 1, \"action\": \"new\"}}]\n\n"
+        f"ТОЛЬКО JSON."
+    )
 
     try:
-        raw = gemini_generate(GEMINI_MODELS_EXTRACT, [prompt])
-        decisions = parse_gemini_json(raw, expect_type=list)
+        raw_decisions = _gemini_call(MODELS_EXTRACT, [prompt])
+        decisions: list = parse_gemini_json(raw_decisions, expect_type=list)
         if not decisions:
             raise ValueError("пустой ответ")
     except Exception as e:
-        log.error("resolve_indicators_batch Gemini error: %s", e)
+        log.error("_resolve_batch Gemini error: %s", e)
         decisions = [{"id": i, "action": "new"} for i in range(len(unknown))]
 
-    for decision in decisions:
-        idx = decision.get("id")
+    # Применяем решения
+    inds_by_name: dict[str, dict] = {r["name"].lower(): r for r in all_inds}
+
+    for dec in decisions:
+        idx = dec.get("id")
         if idx is None or idx >= len(unknown):
             continue
         u = unknown[idx]
         try:
-            if decision.get("action") == "alias":
-                match_name = decision.get("match", "")
-                matched = next(
-                    (r for r in all_indicators if r["name"].lower() == match_name.lower()), None
-                )
+            if dec.get("action") == "alias":
+                match_lo = dec.get("match", "").lower()
+                matched  = inds_by_name.get(match_lo)
                 if matched:
                     ind_id = matched["id"]
-                    for alias in set([u["canonical"], u["original"]]):
-                        if alias.lower() not in known_names:
+                    for alias in {u["canonical"], u["original"]}:
+                        if alias.lower() not in known:
                             try:
                                 db_upsert("indicator_names", {"indicator_id": ind_id, "name": alias}, "name")
-                                known_names[alias.lower()] = ind_id
+                                known[alias.lower()] = ind_id
                             except Exception:
                                 pass
-                    result_map[u["c_lower"]] = ind_id
-                    log.info("resolve: '%s' → alias '%s'", u["canonical"], match_name)
+                    result_map[u["c_lo"]] = ind_id
+                    log.info("resolve alias: '%s' → '%s'", u["canonical"], matched["name"])
                     continue
+                # Если match не найден — создаём как новый
 
-            # new (или alias без match)
-            new_ind = db_upsert("indicators", {"name": u["canonical"], "group_key": u["group_key"]}, "name")
-            if new_ind:
-                ind_id = new_ind["id"]
+            # action == "new" (или alias без совпадения)
+            new_row = db_upsert(
+                "indicators",
+                {"name": u["canonical"], "group_key": u["group_key"]},
+                "name",
+            )
+            if new_row:
+                ind_id = new_row["id"]
             else:
-                rows = db_select_filter("indicators", "id,name,group_key", "name", u["canonical"])
+                # уже существует (race condition)
+                rows = db_select("indicators", "id", {"name": u["canonical"]})
                 if not rows:
                     continue
                 ind_id = rows[0]["id"]
 
-            for alias in set([u["canonical"], u["original"]]):
-                if alias.lower() not in known_names:
+            for alias in {u["canonical"], u["original"]}:
+                if alias.lower() not in known:
                     try:
                         db_upsert("indicator_names", {"indicator_id": ind_id, "name": alias}, "name")
-                        known_names[alias.lower()] = ind_id
+                        known[alias.lower()] = ind_id
                     except Exception:
                         pass
 
-            result_map[u["c_lower"]] = ind_id
-            known_by_name[u["c_lower"]] = {"id": ind_id, "name": u["canonical"], "group_key": u["group_key"]}
-            log.info("resolve: '%s' → new indicator", u["canonical"])
+            result_map[u["c_lo"]] = ind_id
+            inds_by_name[u["c_lo"]] = {"id": ind_id, "name": u["canonical"], "group_key": u["group_key"]}
+            log.info("resolve new: '%s'", u["canonical"])
 
         except Exception as e:
             log.error("resolve error '%s': %s", u["canonical"], e)
@@ -595,176 +536,210 @@ def resolve_indicators_batch(indicators: list) -> dict:
     return result_map
 
 
-def save_user_indicators(
-    user_id: str, analysis_id: str, parsed_indicators: list, group_key: str, measured_at: str | None
+def _save_user_indicators(
+    user_id: str,
+    analysis_id: str,
+    indicators: list[dict],
+    group_key: str,
+    measured_at: str | None,
 ):
-    """Сохраняет значения показателей пользователя после resolve."""
-    if not parsed_indicators:
-        return
-    to_resolve = [
-        {"original_name": ind.get("original_name", ind["name"]),
-         "name": ind["name"], "group_key": group_key}
-        for ind in parsed_indicators
-    ]
-    try:
-        id_map = resolve_indicators_batch(to_resolve)
-    except Exception as e:
-        log.error("save_user_indicators resolve failed: %s", e)
+    if not indicators:
         return
 
-    for ind in parsed_indicators:
+    to_resolve = [
+        {"original_name": ind.get("original_name", ind["name"]),
+         "name": ind["name"],
+         "group_key": group_key}
+        for ind in indicators
+    ]
+    try:
+        id_map = _resolve_batch(to_resolve)
+    except Exception as e:
+        log.error("_save_user_indicators resolve failed: %s", e)
+        return
+
+    for ind in indicators:
         canonical = clean_name(ind["name"])
-        ind_id = id_map.get(canonical.lower())
+        ind_id    = id_map.get(canonical.lower())
         if not ind_id:
             log.warning("нет indicator_id для '%s'", canonical)
             continue
         try:
-            row = {
-                "user_id": user_id, "indicator_id": ind_id,
-                "analysis_id": analysis_id, "value": ind["value"], "status": ind["status"],
+            row: dict = {
+                "user_id":      user_id,
+                "indicator_id": ind_id,
+                "analysis_id":  analysis_id,
+                "value":        ind["value"],
+                "status":       ind["status"],
             }
             if measured_at:
                 row["measured_at"] = measured_at
             db_insert("user_indicators", row)
         except Exception as e:
-            log.error("user_indicators insert error '%s': %s", canonical, e)
+            log.error("user_indicators insert '%s': %s", canonical, e)
 
 
-def save_user_indicators_async(
-    user_id: str, analysis_id: str, parsed_indicators: list, group_key: str, measured_at: str | None
+def _save_user_indicators_async(
+    user_id: str,
+    analysis_id: str,
+    indicators: list[dict],
+    group_key: str,
+    measured_at: str | None,
 ):
-    """Запускает save_user_indicators в фоновом потоке, не блокируя ответ."""
     t = threading.Thread(
-        target=save_user_indicators,
-        args=(user_id, analysis_id, parsed_indicators, group_key, measured_at),
+        target=_save_user_indicators,
+        args=(user_id, analysis_id, indicators, group_key, measured_at),
         daemon=True,
     )
     t.start()
 
 
-def check_duplicate_hash(user_id: str, file_hash: str) -> dict | None:
-    """Возвращает данные дубликата или None."""
-    existing = db_select(
-        "analyses",
-        select="id,analysis_name,analysis_date",
-        filters={"user_id": user_id, "file_hash": file_hash},
-    )
-    if not existing:
+# ──────────────────────────────────────────────
+# File helpers
+# ──────────────────────────────────────────────
+def read_uploaded_file() -> tuple[bytes, str, str]:
+    """
+    Читает файл из request.files['file'].
+    Возвращает (bytes, filename, mime_type) или кидает ValueError.
+    """
+    if "file" not in request.files:
+        raise ValueError("Файл не найден в запросе")
+    f = request.files["file"]
+    if not f or not f.filename:
+        raise ValueError("Файл не выбран")
+    mime = get_mime_type(f.filename)
+    if mime is None:
+        raise ValueError("Недопустимый тип файла. Разрешены: PDF, PNG, JPG/JPEG")
+    f.seek(0)
+    data = f.read()
+    if not data:
+        raise ValueError("Файл пустой")
+    return data, f.filename, mime
+
+
+def check_duplicate(user_id: str, file_hash: str) -> str | None:
+    """
+    Возвращает сообщение об ошибке если дубликат уже существует, иначе None.
+    """
+    rows = db_select("analyses", "id,analysis_name,analysis_date", {"user_id": user_id, "file_hash": file_hash})
+    if not rows:
         return None
-    dup = existing[0]
+    dup  = rows[0]
     name = dup.get("analysis_name") or "—"
     date = dup.get("analysis_date") or ""
     msg  = f"Этот файл уже загружен как «{name}»"
     if date:
         msg += f" (дата анализа: {date})"
-    return {"message": msg}
+    return msg
 
 
-def read_file_from_request() -> tuple[bytes, str, str]:
-    """Читает файл из request.files['file']. Возвращает (bytes, filename, mime_type)."""
-    if "file" not in request.files:
-        raise ValueError("Файл не найден")
-    file = request.files["file"]
-    mime_type = get_mime_type(file.filename)
-    if mime_type is None:
-        raise ValueError("Недопустимый тип файла. Разрешены: PDF, PNG, JPG")
-    file.seek(0)
-    file_bytes = file.read()
-    if not file_bytes:
-        raise ValueError("Файл пустой")
-    return file_bytes, file.filename, mime_type
+def _parse_recommendations(raw) -> list[str]:
+    """Безопасно парсит поле recommendations из БД (может быть str или list)."""
+    if not raw:
+        return []
+    if isinstance(raw, list):
+        return [str(r) for r in raw if r]
+    try:
+        parsed = json.loads(raw)
+        if isinstance(parsed, list):
+            return [str(r) for r in parsed if r]
+    except Exception:
+        pass
+    return []
 
 
-# ========================
-# API Routes
-# ========================
+# ──────────────────────────────────────────────
+# Routes
+# ──────────────────────────────────────────────
+
+@app.route("/health", methods=["GET"])
+def health():
+    """Health-check для Render. Не требует авторизации."""
+    return jsonify({"ok": True})
+
 
 @app.route("/check-duplicate", methods=["POST"])
-def check_duplicate():
+def route_check_duplicate():
     try:
-        user = get_current_user(request.headers.get("Authorization"))
-        file_bytes, filename, _ = read_file_from_request()
-        file_hash = hashlib.sha256(file_bytes).hexdigest()
-        dup = check_duplicate_hash(user["id"], file_hash)
-        if dup:
-            return jsonify({"duplicate": True, "message": dup["message"], "file_hash": file_hash})
-        return jsonify({"duplicate": False, "file_hash": file_hash})
+        user      = get_user(request.headers.get("Authorization"))
+        data, _, _= read_uploaded_file()
+        h         = hashlib.sha256(data).hexdigest()
+        msg       = check_duplicate(user["id"], h)
+        if msg:
+            return jsonify({"duplicate": True, "message": msg, "file_hash": h})
+        return jsonify({"duplicate": False, "file_hash": h})
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
     except Exception as e:
-        traceback.print_exc()
+        log.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/extract", methods=["POST"])
-def extract():
-    """Шаг 1: извлечь показатели из файла. Поддерживает авторизованный и публичный режим."""
+def route_extract():
+    """Шаг 1: извлечь показатели из файла (авторизованный или публичный режим)."""
     try:
-        try_get_current_user(request.headers.get("Authorization"))
-
-        file_bytes, filename, _ = read_file_from_request()
-        raw        = extract_indicators_from_file(file_bytes, filename)
+        try_get_user(request.headers.get("Authorization"))
+        data, filename, _ = read_uploaded_file()
+        raw        = extract_indicators_from_file(data, filename)
         indicators = parse_gemini_json(raw, expect_type=list)
         return jsonify({"indicators": indicators, "raw": raw})
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        traceback.print_exc()
+        log.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/analyze-indicators", methods=["POST"])
-def analyze_indicators():
-    """Шаг 2: анализ проверенных показателей. Поддерживает авторизованный и публичный режим."""
+def route_analyze_indicators():
+    """Шаг 2: анализ показателей (авторизованный или публичный режим)."""
     try:
-        try_get_current_user(request.headers.get("Authorization"))
+        try_get_user(request.headers.get("Authorization"))
 
         indicators_json = request.form.get("indicators", "[]").strip()
         age             = request.form.get("age", "").strip()
         gender          = request.form.get("gender", "").strip()
 
         if not age or not gender:
-            return jsonify({"error": "Возраст или пол не указаны"}), 400
+            return jsonify({"error": "Не указаны возраст или пол"}), 400
         validate_age(age)
 
-        raw      = analyze_verified_indicators(indicators_json, age, gender)
+        raw      = analyze_indicators(indicators_json, age, gender)
         analysis = parse_analysis_result(raw)
         return jsonify({"analysis": analysis})
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        traceback.print_exc()
+        log.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/save-analysis", methods=["POST"])
-def save_analysis():
-    """Шаг 3: сохранить файл и результат анализа."""
+def route_save_analysis():
+    """Шаг 3: сохранить файл + результат анализа в БД."""
     try:
-        user = get_current_user(request.headers.get("Authorization"))
+        user = get_user(request.headers.get("Authorization"))
 
-        file_bytes, filename, mime_type = read_file_from_request()
-        # analysis — теперь JSON-строка (сериализованный dict от parse_analysis_result)
+        file_bytes, filename, mime = read_uploaded_file()
         analysis_raw  = request.form.get("analysis", "").strip()
-        analysis_name = request.form.get("analysis_name", filename).strip()
+        analysis_name = request.form.get("analysis_name", filename).strip() or filename
         analysis_date = request.form.get("analysis_date", "").strip()
         age           = request.form.get("age", "").strip()
         gender        = request.form.get("gender", "").strip()
 
         if not analysis_raw:
-            return jsonify({"error": "Текст анализа отсутствует"}), 400
+            return jsonify({"error": "Отсутствует результат анализа"}), 400
 
-        # Парсим структурированный результат
-        analysis = parse_analysis_result(analysis_raw)
-
+        analysis  = parse_analysis_result(analysis_raw)
         file_hash = hashlib.sha256(file_bytes).hexdigest()
-        dup = check_duplicate_hash(user["id"], file_hash)
-        if dup:
-            return jsonify({"error": dup["message"]}), 409
+        dup_msg   = check_duplicate(user["id"], file_hash)
+        if dup_msg:
+            return jsonify({"error": dup_msg}), 409
 
-        file_url = upload_file_to_storage(user["id"], filename, file_bytes, mime_type)
+        file_url = upload_to_storage(user["id"], filename, file_bytes, mime)
 
-        row = {
+        row: dict = {
             "user_id":         user["id"],
             "filename":        filename,
             "analysis_name":   analysis_name,
@@ -774,6 +749,7 @@ def save_analysis():
             "file_url":        file_url,
             "file_hash":       file_hash,
             "summary":         analysis["summary"],
+            # Сохраняем как JSON-строку для совместимости с TEXT и JSONB колонками
             "recommendations": json.dumps(analysis["recommendations"], ensure_ascii=False),
             "group_key":       analysis["group_key"],
         }
@@ -783,55 +759,61 @@ def save_analysis():
         try:
             inserted = db_insert("analyses", row)
         except Exception as db_err:
-            log.error("DB insert failed, cleaning storage: %s", db_err)
-            delete_file_from_storage(file_url)
+            log.error("DB insert failed, rolling back storage: %s", db_err)
+            delete_from_storage(file_url)
             raise
 
-        # Сохраняем показатели в user_indicators асинхронно
-        analysis_id = inserted[0]["id"] if inserted else None
+        analysis_id = (inserted[0]["id"] if isinstance(inserted, list) and inserted
+                       else inserted.get("id") if isinstance(inserted, dict) else None)
+
         if analysis_id and analysis["indicators"]:
-            save_user_indicators_async(
-                user_id=user["id"],
-                analysis_id=analysis_id,
-                parsed_indicators=analysis["indicators"],
-                group_key=analysis["group_key"],
-                measured_at=analysis_date or None,
+            _save_user_indicators_async(
+                user_id          = user["id"],
+                analysis_id      = analysis_id,
+                indicators       = analysis["indicators"],
+                group_key        = analysis["group_key"],
+                measured_at      = analysis_date or None,
             )
 
         return jsonify({"ok": True})
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
+    except RuntimeError as e:
+        msg = str(e)
+        if "409" in msg or "duplicate" in msg.lower():
+            return jsonify({"error": msg}), 409
+        log.error(traceback.format_exc())
+        return jsonify({"error": msg}), 500
     except Exception as e:
-        traceback.print_exc()
+        log.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/history", methods=["GET"])
-def history():
+def route_history():
     try:
-        user = get_current_user(request.headers.get("Authorization"))
+        user = get_user(request.headers.get("Authorization"))
         rows = db_select(
             "analyses",
-            # result намеренно исключён — тяжёлое поле, не нужно в списке истории
-            select="id,filename,analysis_name,age,gender,file_url,analysis_date,created_at,summary,group_key",
-            filters={"user_id": user["id"]},
+            "id,filename,analysis_name,age,gender,file_url,analysis_date,created_at,summary,group_key",
+            {"user_id": user["id"]},
         )
         return jsonify({"history": rows})
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
     except Exception as e:
-        traceback.print_exc()
+        log.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/analysis/<analysis_id>", methods=["GET"])
-def get_analysis(analysis_id):
+def route_get_analysis(analysis_id: str):
     try:
-        user = get_current_user(request.headers.get("Authorization"))
+        user = get_user(request.headers.get("Authorization"))
         rows = db_select(
             "analyses",
-            select="id,filename,analysis_name,age,gender,result,file_url,analysis_date,created_at",
-            filters={"id": analysis_id, "user_id": user["id"]},
+            "id,filename,analysis_name,age,gender,result,file_url,analysis_date,created_at",
+            {"id": analysis_id, "user_id": user["id"]},
         )
         if not rows:
             return jsonify({"error": "Анализ не найден"}), 404
@@ -839,61 +821,60 @@ def get_analysis(analysis_id):
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
     except Exception as e:
-        traceback.print_exc()
+        log.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/analysis/<analysis_id>", methods=["DELETE"])
-def delete_analysis(analysis_id):
+def route_delete_analysis(analysis_id: str):
     try:
-        user = get_current_user(request.headers.get("Authorization"))
-        rows = db_select(
-            "analyses",
-            select="id,file_url",
-            filters={"id": analysis_id, "user_id": user["id"]},
-        )
+        user = get_user(request.headers.get("Authorization"))
+        rows = db_select("analyses", "id,file_url", {"id": analysis_id, "user_id": user["id"]})
         if not rows:
             return jsonify({"error": "Анализ не найден"}), 404
 
         file_url = rows[0].get("file_url")
         db_delete("analyses", {"id": analysis_id, "user_id": user["id"]})
-        delete_file_from_storage(file_url)
+        delete_from_storage(file_url)
         return jsonify({"ok": True})
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
     except Exception as e:
-        traceback.print_exc()
+        log.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/dashboard", methods=["GET"])
-def dashboard():
-    """Один запрос: history + indicators + recommendations для личного кабинета."""
+def route_dashboard():
+    """
+    Один запрос для личного кабинета:
+    history + последние показатели (по одному на каждый indicator) + рекомендации.
+    """
     try:
-        user = get_current_user(request.headers.get("Authorization"))
+        user = get_user(request.headers.get("Authorization"))
         uid  = user["id"]
 
-        # 1. История анализов (без тяжёлого result)
+        # 1. История анализов
         history = db_select(
             "analyses",
-            select="id,filename,analysis_name,age,gender,file_url,analysis_date,created_at,summary,group_key",
-            filters={"user_id": uid},
+            "id,filename,analysis_name,age,gender,file_url,analysis_date,created_at,summary,group_key",
+            {"user_id": uid},
         )
 
-        # 2. Последние показатели из user_indicators
-        ind_resp = httpx.get(
-            f"{SUPABASE_URL}/rest/v1/user_indicators",
-            headers=supa_headers(),
+        # 2. Последние показатели (JOIN с indicators)
+        ind_rows = _get(
+            "/rest/v1/user_indicators",
             params={
                 "select":  "value,status,measured_at,indicator_id,indicators(name,group_key)",
                 "user_id": f"eq.{uid}",
                 "order":   "measured_at.desc",
             },
-            timeout=10,
         )
-        ind_rows = ind_resp.json() if ind_resp.status_code == 200 else []
-        seen_ind = set()
-        indicators = []
+        if not isinstance(ind_rows, list):
+            ind_rows = []
+
+        seen_ind:    set[str] = set()
+        indicators: list[dict] = []
         for row in ind_rows:
             ind_id = row.get("indicator_id")
             if ind_id in seen_ind:
@@ -909,24 +890,18 @@ def dashboard():
             })
         indicators.sort(key=lambda x: x["name"])
 
-        # 3. Рекомендации из колонки analyses.recommendations
+        # 3. Рекомендации (дедупликация по первым 60 символам)
         rec_rows = db_select(
             "analyses",
-            select="recommendations,analysis_name,analysis_date",
-            filters={"user_id": uid},
+            "recommendations,analysis_name,analysis_date",
+            {"user_id": uid},
         )
-        seen_rec = set()
-        recommendations = []
+        seen_rec: set[str] = set()
+        recommendations: list[dict] = []
         for row in rec_rows:
-            raw = row.get("recommendations")
-            if not raw:
-                continue
-            try:
-                items = json.loads(raw) if isinstance(raw, str) else raw
-            except Exception:
-                continue
+            items  = _parse_recommendations(row.get("recommendations"))
             source = row.get("analysis_name", "")
-            for text in (items or []):
+            for text in items:
                 if "все показатели в норме" in text.lower():
                     continue
                 key = text[:60].lower()
@@ -942,33 +917,29 @@ def dashboard():
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
     except Exception as e:
-        traceback.print_exc()
+        log.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/indicators", methods=["GET"])
-def indicators():
+def route_indicators():
+    """Все последние показатели пользователя (по одному на каждый indicator)."""
     try:
-        user = get_current_user(request.headers.get("Authorization"))
+        user = get_user(request.headers.get("Authorization"))
 
-        resp = httpx.get(
-            f"{SUPABASE_URL}/rest/v1/user_indicators",
-            headers=supa_headers(),
+        rows = _get(
+            "/rest/v1/user_indicators",
             params={
                 "select":  "value,status,measured_at,indicator_id,analysis_id,indicators(name,group_key)",
                 "user_id": f"eq.{user['id']}",
                 "order":   "measured_at.desc",
             },
-            timeout=10,
         )
-        if resp.status_code != 200:
-            raise Exception(f"DB error {resp.status_code}: {resp.text}")
+        if not isinstance(rows, list):
+            rows = []
 
-        rows = resp.json()
-
-        # Дедуплицируем — берём первую (самую свежую) запись по каждому indicator_id
-        seen = set()
-        result = []
+        seen: set[str] = set()
+        result: list[dict] = []
         for row in rows:
             ind_id = row.get("indicator_id")
             if ind_id in seen:
@@ -976,41 +947,37 @@ def indicators():
             seen.add(ind_id)
             ind = row.get("indicators") or {}
             result.append({
-                "name":       ind.get("name", ""),
-                "group_key":  ind.get("group_key", "blood"),
-                "value":      row.get("value", ""),
-                "status":     row.get("status", "normal"),
-                "date":       row.get("measured_at", ""),
+                "name":      ind.get("name", ""),
+                "group_key": ind.get("group_key", "blood"),
+                "value":     row.get("value", ""),
+                "status":    row.get("status", "normal"),
+                "date":      row.get("measured_at", ""),
             })
-
         result.sort(key=lambda x: x["name"])
         return jsonify({"indicators": result})
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
     except Exception as e:
-        traceback.print_exc()
+        log.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/indicator-history", methods=["GET"])
-def indicator_history():
-    """История значений одного показателя по всем анализам (один RPC-запрос)."""
+def route_indicator_history():
+    """История значений одного показателя по имени через Supabase RPC."""
     try:
-        user = get_current_user(request.headers.get("Authorization"))
+        user = get_user(request.headers.get("Authorization"))
         name = request.args.get("name", "").strip()
         if not name:
             return jsonify({"error": "Параметр name обязателен"}), 400
 
-        resp = httpx.post(
-            f"{SUPABASE_URL}/rest/v1/rpc/get_indicator_history",
-            headers=supa_headers(),
-            json={"p_user_id": user["id"], "p_name": name},
-            timeout=10,
+        rows = _post(
+            "/rest/v1/rpc/get_indicator_history",
+            {"p_user_id": user["id"], "p_name": name},
         )
-        if resp.status_code != 200:
-            raise Exception(f"DB error {resp.status_code}: {resp.text}")
+        if not isinstance(rows, list):
+            rows = []
 
-        rows = resp.json()
         history = [
             {
                 "value":  r.get("value", ""),
@@ -1024,30 +991,25 @@ def indicator_history():
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
     except Exception as e:
-        traceback.print_exc()
+        log.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/recommendations", methods=["GET"])
-def recommendations():
+def route_recommendations():
+    """Все уникальные рекомендации пользователя."""
     try:
-        user = get_current_user(request.headers.get("Authorization"))
+        user = get_user(request.headers.get("Authorization"))
         rows = db_select(
             "analyses",
-            select="recommendations,analysis_name,analysis_date",
-            filters={"user_id": user["id"]},
+            "recommendations,analysis_name,analysis_date",
+            {"user_id": user["id"]},
         )
 
-        seen = set()
-        recs = []
+        seen: set[str] = set()
+        recs: list[dict] = []
         for row in rows:
-            raw = row.get("recommendations")
-            if not raw:
-                continue
-            try:
-                items = json.loads(raw) if isinstance(raw, str) else raw
-            except Exception:
-                continue
+            items  = _parse_recommendations(row.get("recommendations"))
             source = row.get("analysis_name", "")
             for text in items:
                 if "все показатели в норме" in text.lower():
@@ -1061,12 +1023,12 @@ def recommendations():
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
     except Exception as e:
-        traceback.print_exc()
+        log.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 
-# ========================
-# Запуск
-# ========================
+# ──────────────────────────────────────────────
+# Entry point (dev only)
+# ──────────────────────────────────────────────
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)

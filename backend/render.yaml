@@ -3,7 +3,7 @@ services:
     name: medeus-backend
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: gunicorn app:app --workers 2 --threads 4 --timeout 120 --bind 0.0.0.0:5000
     envVars:
       - key: GEMINI_API_KEY
         sync: false
@@ -11,3 +11,4 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_KEY
         sync: false
+    healthCheckPath: /health
