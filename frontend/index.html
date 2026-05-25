@@ -748,6 +748,7 @@ function parseAnalysisObj(data){
     let status = 'normal';
     if(s.includes('выше')) status = 'above';
     else if(s.includes('ниже')) status = 'below';
+    else if(s.includes('отклонение')) status = 'above';
     return { name: ind.name || ind.original_name || '', value: ind.value || '', status };
   });
 
