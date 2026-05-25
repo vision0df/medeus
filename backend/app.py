@@ -383,11 +383,18 @@ def parse_analysis_result(raw: str) -> dict:
         group_key = "blood"
 
     # Нормализуем статусы показателей
+    STATUS_MAP = {
+        "норма":       "normal",
+        "выше нормы":  "above",
+        "ниже нормы":  "below",
+        "отклонение":  "deviation",
+    }
     indicators = []
     for ind in (data.get("indicators") or []):
-        status = str(ind.get("status", "норма")).strip().lower()
-        if status not in ("норма", "выше нормы", "ниже нормы", "отклонение"):
-            status = "норма"
+        status_raw = str(ind.get("status", "норма")).strip().lower()
+        if status_raw not in STATUS_MAP:
+            status_raw = "норма"
+        status = STATUS_MAP[status_raw]
         indicators.append({
             "original_name": str(ind.get("original_name", "") or ind.get("name", "")),
             "name":          str(ind.get("name", "")),

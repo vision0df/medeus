@@ -636,8 +636,8 @@ function renderResultBlocks(analysis){
   if(tbody){
     if(parsed.indicators.length){
       tbody.innerHTML=parsed.indicators.map(ind=>{
-        const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':'tag-ok';
-        const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':'✓ норма';
+        const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':ind.status==='deviation'?'tag-high':'tag-ok';
+        const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':ind.status==='deviation'?'⚠ отклонение':'✓ норма';
         return`<tr><td class="col-name">${escHtml(ind.name)}</td><td class="col-value">${escHtml(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;
       }).join('');
     } else {
