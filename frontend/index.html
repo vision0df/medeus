@@ -732,42 +732,35 @@ document.getElementById('startOverBtn').addEventListener('click', () => {
 
 function escHtml3(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-function parseAnalysisText(text){
-  const result={analysisType:'',status:'',recommendations:[],indicators:[]};
-  if(!text)return result;
-  let section='';
-  for(const rawLine of text.split('\n')){
-    const line=rawLine.trim();if(!line)continue;
-    const up=line.toUpperCase();
-    if(up.startsWith('ТИП АНАЛИЗА:')){result.analysisType=line.replace(/^ТИП АНАЛИЗА:\s*/i,'').trim();continue;}
-    if(up.startsWith('ГРУППА:')){continue;}
-    if(up.startsWith('ОБЩЕЕ СОСТОЯНИЕ:')){result.status=line.replace(/^ОБЩЕЕ СОСТОЯНИЕ:\s*/i,'').trim();section='status';continue;}
-    if(up.startsWith('РЕКОМЕНДАЦИИ')){section='rec';continue;}
-    if(up.startsWith('ПОКАЗАТЕЛИ')){section='ind';continue;}
-    if(section==='status'&&!result.status){result.status=line;}
-    else if(section==='rec'){const clean=line.replace(/^[-•→*]\s*/,'').trim();if(clean.length>5)result.recommendations.push(clean);}
-    else if(section==='ind'){
-      // Новый формат: "оригинал | нормализованное - значение - статус"
-      // Старый формат: "название - значение - статус"
-      let rest=line;
-      if(line.includes('|')){rest=line.split('|')[1].trim();}
-      const parts=rest.split(/\s+-\s+/);
-      if(parts.length>=3){
-        const name=parts[0].trim();
-        const value=parts[1].trim();
-        const statusRaw=parts.slice(2).join(' - ').trim().toLowerCase();
-        let status='normal';
-        if(statusRaw.includes('выше'))status='above';
-        else if(statusRaw.includes('ниже'))status='below';
-        if(name.length>=2)result.indicators.push({name,value,status});
-      }
+function parseAnalysisObj(data){
+  // data — объект от бэкенда: {analysis_type, summary, recommendations, indicators}
+  // или строка (старый формат) — на всякий случай обрабатываем оба
+  if(typeof data === 'string'){
+    // fallback: попробовать JSON.parse, иначе вернуть пустой результат
+    try { data = JSON.parse(data); } catch(e) {
+      return {analysisType:'',status:'',recommendations:[],indicators:[]};
     }
   }
-  return result;
+  if(!data) return {analysisType:'',status:'',recommendations:[],indicators:[]};
+
+  const indicators = (data.indicators || []).map(ind => {
+    const s = (ind.status || 'норма').toLowerCase();
+    let status = 'normal';
+    if(s.includes('выше')) status = 'above';
+    else if(s.includes('ниже')) status = 'below';
+    return { name: ind.name || ind.original_name || '', value: ind.value || '', status };
+  });
+
+  return {
+    analysisType: data.analysis_type || '',
+    status: data.summary || '',
+    recommendations: data.recommendations || [],
+    indicators
+  };
 }
 
-function renderResultBlocks3(text){
-  const parsed=parseAnalysisText(text);
+function renderResultBlocks3(data){
+  const parsed=parseAnalysisObj(data);
   // Populate meta: type from AI result
   const typeEl=document.getElementById('r3MetaType');
   if(typeEl) typeEl.textContent=parsed.analysisType||'Анализ крови';
