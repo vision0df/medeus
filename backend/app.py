@@ -419,6 +419,7 @@ def _resolve_batch(indicators: list[dict]) -> dict[str, str]:
 
     by_name:   dict[str, str] = {r["name"].lower(): r["id"]           for r in all_inds}
     by_alias:  dict[str, str] = {r["name"].lower(): r["indicator_id"] for r in all_names}
+    inds_by_id: dict[str, dict] = {r["id"]: r for r in all_inds}
     # Объединяем (alias перекрывает основное имя при коллизии — не важно, оба ведут к тому же id)
     known: dict[str, str] = {**by_name, **by_alias}
 
@@ -533,7 +534,9 @@ def _resolve_batch(indicators: list[dict]) -> dict[str, str]:
                         pass
 
             result_map[u["c_lo"]] = ind_id
-            inds_by_name[u["c_lo"]] = {"id": ind_id, "name": u["canonical"], "group_key": u["group_key"]}
+            new_entry = {"id": ind_id, "name": u["canonical"], "group_key": u["group_key"]}
+            inds_by_name[u["c_lo"]] = new_entry
+            inds_by_id[ind_id]      = new_entry
             log.info("resolve new: '%s'", u["canonical"])
 
         except Exception as e:
@@ -581,6 +584,7 @@ def _save_user_indicators(
                 "analysis_id":  analysis_id,
                 "value":        ind["value"],
                 "status":       ind["status"],
+                "group_key":    group_key,
             }
             if measured_at:
                 row["measured_at"] = measured_at
@@ -875,7 +879,7 @@ def route_dashboard():
         ind_rows = _get(
             "/rest/v1/user_indicators",
             params={
-                "select":  "value,status,measured_at,indicator_id,indicators(name,group_key)",
+                "select":  "value,status,measured_at,group_key,indicator_id,indicators(name)",
                 "user_id": f"eq.{uid}",
                 "order":   "measured_at.desc",
             },
@@ -893,7 +897,7 @@ def route_dashboard():
             ind = row.get("indicators") or {}
             indicators.append({
                 "name":      ind.get("name", ""),
-                "group_key": ind.get("group_key", "blood"),
+                "group_key": row.get("group_key", "blood"),
                 "value":     row.get("value", ""),
                 "status":    row.get("status", "normal"),
                 "date":      row.get("measured_at", ""),
@@ -940,7 +944,7 @@ def route_indicators():
         rows = _get(
             "/rest/v1/user_indicators",
             params={
-                "select":  "value,status,measured_at,indicator_id,analysis_id,indicators(name,group_key)",
+                "select":  "value,status,measured_at,group_key,indicator_id,analysis_id,indicators(name)",
                 "user_id": f"eq.{user['id']}",
                 "order":   "measured_at.desc",
             },
@@ -958,7 +962,7 @@ def route_indicators():
             ind = row.get("indicators") or {}
             result.append({
                 "name":      ind.get("name", ""),
-                "group_key": ind.get("group_key", "blood"),
+                "group_key": row.get("group_key", "blood"),
                 "value":     row.get("value", ""),
                 "status":    row.get("status", "normal"),
                 "date":      row.get("measured_at", ""),
