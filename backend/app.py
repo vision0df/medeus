@@ -1004,31 +1004,54 @@ def route_indicators():
 
 @app.route("/indicator-history", methods=["GET"])
 def route_indicator_history():
-    """История значений одного показателя по имени через Supabase RPC."""
+    """История значений одного показателя по имени."""
     try:
         user = get_user(request.headers.get("Authorization"))
         name = request.args.get("name", "").strip()
         if not name:
             return jsonify({"error": "Параметр name обязателен"}), 400
 
-        rows = _post(
-            "/rest/v1/rpc/get_indicator_history",
-            {"p_user_id": user["id"], "p_name": name},
+        # Находим indicator_id по каноническому имени
+        ind_rows = _get(
+            "/rest/v1/indicators",
+            params={"name": f"eq.{name}", "select": "id"},
+        )
+        if not isinstance(ind_rows, list) or not ind_rows:
+            return jsonify({"name": name, "history": []})
+        indicator_id = ind_rows[0]["id"]
+
+        # Получаем все записи пользователя для этого показателя
+        rows = _get(
+            "/rest/v1/user_indicators",
+            params={
+                "select":       "value,status,measured_at,analysis_id,analyses(analysis_name,id),indicator_names(name)",
+                "user_id":      f"eq.{user['id']}",
+                "indicator_id": f"eq.{indicator_id}",
+                "order":        "measured_at.asc",
+            },
         )
         if not isinstance(rows, list):
             rows = []
 
-        history = [
-            {
+        history = []
+        for r in rows:
+            analysis      = r.get("analyses") or {}
+            ind_name_rows = r.get("indicator_names")
+            # indicator_names может быть списком или объектом
+            if isinstance(ind_name_rows, list):
+                original_name = ind_name_rows[0].get("name", "") if ind_name_rows else ""
+            elif isinstance(ind_name_rows, dict):
+                original_name = ind_name_rows.get("name", "")
+            else:
+                original_name = ""
+            history.append({
                 "value":         r.get("value", ""),
                 "status":        r.get("status", "normal"),
                 "date":          r.get("measured_at", ""),
-                "source":        r.get("analysis_name", ""),
-                "analysis_id":   r.get("analysis_id", ""),
-                "original_name": r.get("original_name", ""),
-            }
-            for r in rows
-        ]
+                "source":        analysis.get("analysis_name", ""),
+                "analysis_id":   analysis.get("id", r.get("analysis_id", "")),
+                "original_name": original_name,
+            })
         return jsonify({"name": name, "history": history})
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
