@@ -968,7 +968,7 @@ def route_indicators():
         rows = _get(
             "/rest/v1/user_indicators",
             params={
-                "select":  "value,status,measured_at,group_key,indicator_id,analysis_id,indicators(name)",
+                "select":  "value,status,measured_at,group_key,indicator_id,analysis_id,indicators(name),analyses(analysis_name)",
                 "user_id": f"eq.{user['id']}",
                 "order":   "measured_at.desc",
             },
@@ -983,13 +983,15 @@ def route_indicators():
             if ind_id in seen:
                 continue
             seen.add(ind_id)
-            ind = row.get("indicators") or {}
+            ind      = row.get("indicators") or {}
+            analysis = row.get("analyses")   or {}
             result.append({
                 "name":      ind.get("name", ""),
                 "group_key": row.get("group_key", "blood"),
                 "value":     row.get("value", ""),
                 "status":    row.get("status", "normal"),
                 "date":      row.get("measured_at", ""),
+                "source":    analysis.get("analysis_name", ""),
             })
         result.sort(key=lambda x: x["name"])
         return jsonify({"indicators": result})
