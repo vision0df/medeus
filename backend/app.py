@@ -307,7 +307,7 @@ def _gemini_call(models: list[str], contents: list) -> str:
 
 def extract_indicators_from_file(file_bytes: bytes, filename: str) -> str:
     prompt = (
-        "Ты — парсер медицинских документов. Извлеки ВСЕ показатели из документа.\n\n"
+        "Ты — парсер медицинских документов. Извлеки ВСЕ медецинские показатели из документа.\n\n"
         "ПРАВИЛА:\n"
         "1. Верни ТОЛЬКО валидный JSON-массив без пояснений и markdown-блоков.\n"
         "2. Каждый элемент: {\"name\": \"...\", \"value\": \"...\", \"unit\": \"...\"}\n"
