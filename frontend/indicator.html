@@ -259,12 +259,16 @@ function render(name, history){
   if(history.length>=2){
     const labels=history.map(h=>fmtDate(h.date));
     const values=history.map(h=>parseFltVal(h.value));
-    const colors=history.map(h=>h.status==='above'?'#ef4444':h.status==='below'?'#3b82f6':'#22c55e');
+    // не-норма → жёлтый
+    const colors=history.map(h=>h.status==='normal'?'#22c55e':'#f59e0b');
 
     const isDark=document.documentElement.getAttribute('data-theme')==='dark'||
       window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const gridColor=isDark?'rgba(255,255,255,0.15)':'rgba(0,0,0,0.12)';
-    const textColor=isDark?'#888':'#aaa';
+    // явные hex-цвета вместо CSS-переменных — Chart.js их не резолвит
+    const lineColor='#ff8a00';
+    const fillColor='rgba(255,138,0,0.10)';
+    const gridColor=isDark?'rgba(255,255,255,0.20)':'rgba(0,0,0,0.15)';
+    const textColor=isDark?'#888':'#999';
 
     new Chart(document.getElementById('historyChart'),{
       type:'line',
@@ -272,8 +276,8 @@ function render(name, history){
         labels,
         datasets:[{
           data:values,
-          borderColor:'var(--orange)',
-          backgroundColor:'rgba(255,138,0,0.08)',
+          borderColor:lineColor,
+          backgroundColor:fillColor,
           fill:true,
           tension:0.3,
           pointRadius:5,
@@ -301,11 +305,13 @@ function render(name, history){
         },
         scales:{
           x:{
-            grid:{display:true,color:gridColor,lineWidth:1},
+            grid:{display:true,color:gridColor,lineWidth:1,drawOnChartArea:true},
+            border:{display:true},
             ticks:{color:textColor,font:{family:'monospace',size:11}}
           },
           y:{
-            grid:{display:true,color:gridColor,lineWidth:1},
+            grid:{display:true,color:gridColor,lineWidth:1,drawOnChartArea:true},
+            border:{display:true},
             ticks:{color:textColor,font:{family:'monospace',size:11}}
           }
         }
