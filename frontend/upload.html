@@ -102,9 +102,10 @@
   .ind-result-table tbody td { padding:8px 12px; vertical-align:middle; font-family:var(--mono); font-size:12px; color:var(--text-mid); }
   .ind-result-table .col-name { color:var(--text); font-weight:600; }
   .ind-result-table .col-value { color:var(--text); }
-  .tag-high { color:var(--red); font-weight:700; font-size:11px; }
-  .tag-low  { color:var(--blue,#3b82f6); font-weight:700; font-size:11px; }
+  .tag-high { color:#f59e0b; font-weight:700; font-size:11px; }
+  .tag-low  { color:#f59e0b; font-weight:700; font-size:11px; }
   .tag-ok   { color:var(--green); font-weight:700; font-size:11px; }
+  .tag-dev  { color:#f59e0b; font-weight:700; font-size:11px; }
 
   /* ─── RESULT BOX (fallback) ─── */
   .result-box {
@@ -199,8 +200,8 @@
   .ind-res-table tbody td { padding:7px 10px; font-family:var(--mono); font-size:12px; color:var(--text-mid); }
   .ind-res-table .col-name { color:var(--text); font-weight:600; }
   .ind-res-table .col-value { color:var(--text); }
-  .tag-high { color:var(--red); font-weight:700; }
-  .tag-low  { color:#3b82f6; font-weight:700; }
+  .tag-high { color:#f59e0b; font-weight:700; }
+  .tag-low  { color:#f59e0b; font-weight:700; }
   .tag-ok   { color:var(--green); font-weight:700; }
   @media(max-width:680px){ .r3-info-grid { grid-template-columns:1fr; } .r3-thumb-wrap { border-right:none; border-bottom:1px solid var(--line); } }
 </style>
@@ -636,7 +637,7 @@ function renderResultBlocks(analysis){
   if(tbody){
     if(parsed.indicators.length){
       tbody.innerHTML=parsed.indicators.map(ind=>{
-        const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':ind.status==='deviation'?'tag-high':'tag-ok';
+        const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':ind.status==='deviation'?'tag-dev':'tag-ok';
         const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':ind.status==='deviation'?'⚠ отклонение':'✓ норма';
         return`<tr><td class="col-name">${escHtml(ind.name)}</td><td class="col-value">${escHtml(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;
       }).join('');

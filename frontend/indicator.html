@@ -42,9 +42,10 @@
   .hist-table tbody tr:last-child { border-bottom:none; }
   .hist-table tbody td { padding:10px 16px; font-family:var(--mono); font-size:13px; color:var(--text-mid); }
   .hist-table .col-val { color:var(--text); font-weight:600; }
-  .tag-high { color:var(--red); font-weight:700; }
-  .tag-low  { color:#3b82f6; font-weight:700; }
+  .tag-high { color:#f59e0b; font-weight:700; }
+  .tag-low  { color:#f59e0b; font-weight:700; }
   .tag-ok   { color:var(--green); font-weight:700; }
+  .tag-dev  { color:#f59e0b; font-weight:700; }
 
   /* ─── STATE MSGS ─── */
   .state-loader { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding:80px 24px; }
@@ -227,8 +228,8 @@ function render(name, history){
             <thead><tr><th>Дата</th><th>Значение</th><th>Статус</th><th>Источник</th></tr></thead>
             <tbody>
               ${[...history].reverse().map(h=>{
-                const sc=h.status==='above'?'tag-high':h.status==='below'?'tag-low':'tag-ok';
-                const sl=h.status==='above'?'↑ выше нормы':h.status==='below'?'↓ ниже нормы':'✓ норма';
+                const sc=h.status==='above'?'tag-high':h.status==='below'?'tag-low':h.status==='deviation'?'tag-dev':'tag-ok';
+                const sl=h.status==='above'?'↑ выше нормы':h.status==='below'?'↓ ниже нормы':h.status==='deviation'?'⚠ отклонение':'✓ норма';
                 return`<tr>
                   <td>${fmtDate(h.date)}</td>
                   <td class="col-val">${escHtml(h.value)}</td>
@@ -285,7 +286,7 @@ function render(name, history){
             callbacks:{
               label:ctx=>{
                 const h=history[ctx.dataIndex];
-                const sl=h.status==='above'?'↑ выше нормы':h.status==='below'?'↓ ниже нормы':'✓ норма';
+                const sl=h.status==='above'?'↑ выше нормы':h.status==='below'?'↓ ниже нормы':h.status==='deviation'?'⚠ отклонение':'✓ норма';
                 return` ${ctx.parsed.y} — ${sl}`;
               }
             }

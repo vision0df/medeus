@@ -37,7 +37,7 @@
   .stat-chip-num { font-family:var(--sans); font-size:28px; font-weight:700; color:var(--text); letter-spacing:-1px; line-height:1; }
   .stat-chip.ok   .stat-chip-num { color:var(--green); }
   .stat-chip.warn .stat-chip-num { color:var(--yellow); }
-  .stat-chip.alert .stat-chip-num { color:var(--red); }
+  .stat-chip.alert .stat-chip-num { color:var(--yellow); }
   .stat-chip-label { font-family:var(--mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-dim); margin-top:4px; line-height:1.4; }
 
   /* ─── FILTERS ─── */
@@ -107,7 +107,7 @@
   .col-status { gap:8px; }
   .col-status.ok    { color:var(--green); }
   .col-status.warn  { color:var(--yellow); }
-  .col-status.alert { color:var(--red); }
+  .col-status.alert { color:var(--yellow); }
   .status-dot { width:6px; height:6px; background:currentColor; flex-shrink:0; }
   .col-date, .col-source { color:var(--text-dim); font-size:11px; }
   .count-label { font-family:var(--mono); font-size:10px; color:var(--text-dim); padding:11px 20px; border-top:1px solid var(--line); letter-spacing:0.05em; }
@@ -315,7 +315,7 @@ function matchesCategory(ind){
   return keys.some(k=>n.includes(k));
 }
 
-function statusMeta(s){if(s==='above')return{cls:'warn',label:'↑ выше нормы'};if(s==='below')return{cls:'alert',label:'↓ ниже нормы'};return{cls:'ok',label:'✓ норма'};}
+function statusMeta(s){if(s==='above')return{cls:'warn',label:'↑ выше нормы'};if(s==='below')return{cls:'warn',label:'↓ ниже нормы'};if(s==='deviation')return{cls:'warn',label:'⚠ отклонение'};return{cls:'ok',label:'✓ норма'};}
 
 function renderTable(){
   const body=document.getElementById('tableBody'),countEl=document.getElementById('countLabel'),loader=document.getElementById('loader');

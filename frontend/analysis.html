@@ -91,9 +91,10 @@
   .ind-res-table tbody tr:last-child { border-bottom:none; }
   .ind-res-table tbody td { padding:7px 10px; vertical-align:middle; font-family:var(--mono); font-size:12px; color:var(--text-mid); }
   .ind-res-table .col-name { color:var(--text); font-weight:600; }
-  .tag-high { color:var(--red); font-weight:700; font-size:11px; }
-  .tag-low  { color:#3b82f6; font-weight:700; font-size:11px; }
+  .tag-high { color:#f59e0b; font-weight:700; font-size:11px; }
+  .tag-low  { color:#f59e0b; font-weight:700; font-size:11px; }
   .tag-ok   { color:var(--green); font-weight:700; font-size:11px; }
+  .tag-dev  { color:#f59e0b; font-weight:700; font-size:11px; }
 
   /* ─── DELETE CONFIRM ─── */
   .delete-confirm-overlay {
@@ -339,7 +340,8 @@ function parseAnalysisText(text){
           const s=(ind.status||'').toLowerCase().trim();
           let status='normal';
           if(s==='above'||s.includes('выше'))status='above';
-          else if(s==='below'||s==='deviation'||s.includes('ниже')||s.includes('отклонение'))status='below';
+          else if(s==='below'||s.includes('ниже'))status='below';
+          else if(s==='deviation'||s.includes('отклонение'))status='deviation';
           return{name:ind.name||ind.original_name||'',value:ind.value||'',status};
         });
       }
@@ -396,8 +398,8 @@ function renderResultBlocks(text){
   if(tbody){
     if(parsed.indicators.length){
       tbody.innerHTML=parsed.indicators.map(ind=>{
-        const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':'tag-ok';
-        const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':'✓ норма';
+        const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':ind.status==='deviation'?'tag-dev':'tag-ok';
+        const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':ind.status==='deviation'?'⚠ отклонение':'✓ норма';
         return`<tr><td class="col-name">${escHtml(ind.name)}</td><td>${escHtml(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;
       }).join('');
     } else {

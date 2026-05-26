@@ -689,7 +689,7 @@ function renderHistory(rows){
 }
 
 function statusClass(s){return(s==='above'||s==='below')?'alert':'ok';}
-function statusLabel(s){if(s==='above')return'↑ выше нормы';if(s==='below')return'↓ ниже нормы';return'✓ норма';}
+function statusLabel(s){if(s==='above')return'↑ выше нормы';if(s==='below')return'↓ ниже нормы';if(s==='deviation')return'⚠ отклонение';return'✓ норма';}
 
 function renderIndicators(indicators){
   const grid=document.getElementById('summaryGrid');
