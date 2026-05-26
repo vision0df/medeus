@@ -1020,11 +1020,12 @@ def route_indicator_history():
 
         history = [
             {
-                "value":       r.get("value", ""),
-                "status":      r.get("status", "normal"),
-                "date":        r.get("measured_at", ""),
-                "source":      r.get("analysis_name", ""),
-                "analysis_id": r.get("analysis_id", ""),
+                "value":         r.get("value", ""),
+                "status":        r.get("status", "normal"),
+                "date":          r.get("measured_at", ""),
+                "source":        r.get("analysis_name", ""),
+                "analysis_id":   r.get("analysis_id", ""),
+                "original_name": r.get("original_name", ""),
             }
             for r in rows
         ]
