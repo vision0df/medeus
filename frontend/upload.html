@@ -599,6 +599,7 @@ document.getElementById('manualBtn').addEventListener('click',()=>{
 continueBtn.addEventListener('click',async()=>{
   if(!analysisNameInput.value.trim()){showError(2,'Введите название анализа.');return;}
   if(!analysisDate.value){showError(2,'Укажите дату сдачи анализа.');return;}
+  if(analysisDate.value>new Date().toISOString().split('T')[0]){showError(2,'Дата сдачи не может быть в будущем.');return;}
   if(!indicators.length){showError(2,'Добавьте хотя бы один показатель.');return;}
   const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
   const age=calcAge(userProfile?.birth_date)||'0',gender=userProfile?.gender||'не указан';
