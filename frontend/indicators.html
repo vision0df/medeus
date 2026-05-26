@@ -87,7 +87,7 @@
   .table-outer { background:var(--text); clip-path:polygon(20px 0%,100% 0%,100% calc(100% - 20px),calc(100% - 20px) 100%,0% 100%,0% 20px); padding:2px; }
   .table-inner { background:var(--white); clip-path:polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px); overflow:hidden; }
   .table-head {
-    display:grid; grid-template-columns:2fr 1fr 1.2fr 1fr 1.2fr;
+    display:grid; grid-template-columns:1.2fr 2fr 1fr 1.2fr 1fr;
     background:var(--bg2); border-bottom:1px solid var(--line-mid);
     padding:0;
   }
@@ -95,7 +95,7 @@
   .table-head > div:first-child::before { content:'/ '; color:var(--orange); }
   .table-body { overflow-y:auto; max-height:580px; }
   .table-row {
-    display:grid; grid-template-columns:2fr 1fr 1.2fr 1fr 1.2fr;
+    display:grid; grid-template-columns:1.2fr 2fr 1fr 1.2fr 1fr;
     border-bottom:1px solid var(--line); transition:background 0.12s;
     animation:fadeUp 0.3s ease both;
   }
@@ -122,7 +122,7 @@
   @media (max-width:960px) {
     .page { padding:78px 28px 52px; }
     .stats-row { grid-template-columns:1fr 1fr; }
-    .table-head, .table-row { grid-template-columns:2fr 1fr 1.2fr; }
+    .table-head, .table-row { grid-template-columns:1.2fr 2fr 1fr; }
     .table-head > div:nth-child(4), .table-head > div:nth-child(5),
     .table-row > div:nth-child(4), .table-row > div:nth-child(5) { display:none; }
   }
@@ -233,11 +233,11 @@
   <div class="table-outer">
     <div class="table-inner">
       <div class="table-head">
+        <div>Источник</div>
         <div>Показатель</div>
         <div>Значение</div>
         <div>Статус</div>
         <div>Дата</div>
-        <div>Источник</div>
       </div>
       <div class="table-body" id="tableBody">
         <div class="card-loader" id="loader">
@@ -327,11 +327,11 @@ function renderTable(){
   body.innerHTML=filtered.map((ind,idx)=>{
     const{cls,label}=statusMeta(ind.status);
     return`<div class="table-row" style="animation-delay:${Math.min(idx*0.02,0.4)}s;cursor:pointer;" data-ind-name="${escHtml(ind.name)}">
+      <div class="col-source">${escHtml(ind.source||'—')}</div>
       <div class="col-name">${escHtml(ind.name)}</div>
       <div class="col-value">${escHtml(ind.value)}</div>
       <div class="col-status ${cls}"><span class="status-dot"></span>${label}</div>
       <div class="col-date">${fmtDate(ind.date)}</div>
-      <div class="col-source">${escHtml(ind.source||'—')}</div>
     </div>`;
   }).join('');
   if(countEl){countEl.textContent=`Показано: ${filtered.length} из ${allIndicators.length}`;countEl.classList.remove('hidden');}
@@ -366,7 +366,7 @@ document.getElementById('logoutBtn')?.addEventListener('click',async e=>{e.preve
   const session=await requireAuth();if(!session)return;
   try{
     const data=await apiFetch('/indicators',session);if(!data)return;
-    allIndicators=data.indicators||[];renderStats(allIndicators);renderTable();
+    allIndicators=(data.indicators||[]).sort((a,b)=>new Date(b.date)-new Date(a.date));renderStats(allIndicators);renderTable();
   }catch(e){
     console.error('Indicators:',e);
     const loader=document.getElementById('loader');if(loader)loader.innerHTML='<div class="loader-text" style="color:var(--red)">Ошибка загрузки данных</div>';
