@@ -319,7 +319,7 @@
           </div>
           <div class="name-field-group" style="flex:1;min-width:140px;margin-bottom:0;">
             <label for="analysisDate">Дата сдачи</label>
-            <input class="name-field-input" type="date" id="analysisDate">
+            <input class="name-field-input" type="date" id="analysisDate" max="">
           </div>
         </div>
 
@@ -488,6 +488,7 @@ const fileNameEl=document.getElementById('fileName');
 const fileSizeEl=document.getElementById('fileSize');
 const fileRemove=document.getElementById('fileRemove');
 const analysisDate=document.getElementById('analysisDate');
+analysisDate.max=new Date().toISOString().split('T')[0];
 const analysisNameInput=document.getElementById('analysisNameInput');
 const extractBtn=document.getElementById('extractBtn');
 const continueBtn=document.getElementById('continueBtn');
