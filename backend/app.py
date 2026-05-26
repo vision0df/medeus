@@ -416,16 +416,28 @@ def parse_analysis_result(raw: str) -> dict:
 def _resolve_batch(indicators: list[dict]) -> dict[str, str]:
     """
     Принимает [{"original_name": ..., "name": ..., "group_key": ...}].
-    Возвращает {name.lower(): indicator_id}.
-    """
-    # Загружаем всё из БД одним запросом каждый
-    all_inds   = db_select("indicators",      "id,name,group_key", {}, order="name.asc")
-    all_names  = db_select("indicator_names", "name,indicator_id", {}, order="name.asc")
+    Возвращает {_rk(name.lower(), group_key): indicator_id}.
 
-    by_name:   dict[str, str] = {r["name"].lower(): r["id"]           for r in all_inds}
-    by_alias:  dict[str, str] = {r["name"].lower(): r["indicator_id"] for r in all_names}
+    Ключ — (name_lower, group_key), поэтому показатели с одинаковым
+    именем в РАЗНЫХ группах живут независимо и не пересекаются.
+    """
+
+    def _rk(name_lo: str, gk: str) -> str:
+        """Строковый ключ: имя + группа."""
+        return f"{name_lo}||{gk}"
+
+    # Загружаем всё из БД одним запросом
+    all_inds  = db_select("indicators",      "id,name,group_key", {}, order="name.asc")
+    all_names = db_select("indicator_names", "name,indicator_id,group_key", {}, order="name.asc")
+
+    # Ключ = _rk(name.lower(), group_key) → indicator_id
+    by_name:  dict[str, str] = {_rk(r["name"].lower(), r["group_key"]): r["id"] for r in all_inds}
+    by_alias: dict[str, str] = {
+        _rk(r["name"].lower(), r["group_key"]): r["indicator_id"]
+        for r in all_names
+        if r.get("group_key")
+    }
     inds_by_id: dict[str, dict] = {r["id"]: r for r in all_inds}
-    # Объединяем (alias перекрывает основное имя при коллизии — не важно, оба ведут к тому же id)
     known: dict[str, str] = {**by_name, **by_alias}
 
     result_map: dict[str, str] = {}
@@ -434,24 +446,29 @@ def _resolve_batch(indicators: list[dict]) -> dict[str, str]:
     for ind in indicators:
         canonical = clean_name(ind["name"])
         original  = clean_name(ind.get("original_name", canonical))
+        gk        = ind.get("group_key", "blood")
         c_lo      = canonical.lower()
         o_lo      = original.lower()
 
-        ind_id = known.get(c_lo) or known.get(o_lo)
+        ind_id = known.get(_rk(c_lo, gk)) or known.get(_rk(o_lo, gk))
         if ind_id:
-            result_map[c_lo] = ind_id
-            # Добавляем оригинальное имя как алиас если его ещё нет
-            if o_lo not in known and o_lo != c_lo:
+            result_map[_rk(c_lo, gk)] = ind_id
+            # Добавляем оригинальное имя как алиас (в той же группе)
+            if o_lo != c_lo and _rk(o_lo, gk) not in known:
                 try:
-                    db_upsert("indicator_names", {"indicator_id": ind_id, "name": original}, "name")
-                    known[o_lo] = ind_id
+                    db_upsert(
+                        "indicator_names",
+                        {"indicator_id": ind_id, "name": original, "group_key": gk},
+                        "name,group_key",
+                    )
+                    known[_rk(o_lo, gk)] = ind_id
                 except Exception as e:
                     log.debug("alias insert skip (%s): %s", original, e)
         else:
             unknown.append({
                 "canonical": canonical,
                 "original":  original,
-                "group_key": ind.get("group_key", "blood"),
+                "group_key": gk,
                 "c_lo":      c_lo,
                 "o_lo":      o_lo,
             })
@@ -460,20 +477,28 @@ def _resolve_batch(indicators: list[dict]) -> dict[str, str]:
         return result_map
 
     # Для неизвестных — спрашиваем Gemini: синоним или новый?
+    # Сравниваем строго внутри той же group_key
     used_groups  = {u["group_key"] for u in unknown}
-    known_subset = [r["name"] for r in all_inds if r["group_key"] in used_groups]
+    known_subset = [
+        {"name": r["name"], "group_key": r["group_key"]}
+        for r in all_inds
+        if r["group_key"] in used_groups
+    ]
 
     unknown_payload = json.dumps(
-        [{"id": i, "name": u["canonical"], "original": u["original"]} for i, u in enumerate(unknown)],
+        [
+            {"id": i, "name": u["canonical"], "original": u["original"], "group_key": u["group_key"]}
+            for i, u in enumerate(unknown)
+        ],
         ensure_ascii=False,
     )
     prompt = (
         f"Ты — классификатор медицинских показателей.\n\n"
-        f"Группа: {', '.join(sorted(used_groups))}\n\n"
-        f"Уже существующие показатели:\n{json.dumps(known_subset, ensure_ascii=False)}\n\n"
+        f"Уже существующие показатели (name + group_key):\n"
+        f"{json.dumps(known_subset, ensure_ascii=False)}\n\n"
         f"Новые показатели:\n{unknown_payload}\n\n"
-        f"Для каждого реши:\n"
-        f"- Синоним существующего → action=\"alias\", match=\"<точное название из списка>\"\n"
+        f"Для каждого реши (сравнивай ТОЛЬКО внутри той же group_key):\n"
+        f"- Синоним существующего → action=\"alias\", match=\"<точное name из списка>\"\n"
         f"- Новый → action=\"new\"\n\n"
         f"Верни ровно {len(unknown)} элементов:\n"
         f"[{{\"id\": 0, \"action\": \"alias\", \"match\": \"Лейкоциты\"}}, {{\"id\": 1, \"action\": \"new\"}}]\n\n"
@@ -490,59 +515,72 @@ def _resolve_batch(indicators: list[dict]) -> dict[str, str]:
         decisions = [{"id": i, "action": "new"} for i in range(len(unknown))]
 
     # Применяем решения
-    inds_by_name: dict[str, dict] = {r["name"].lower(): r for r in all_inds}
+    inds_by_name_gk: dict[str, dict] = {
+        _rk(r["name"].lower(), r["group_key"]): r for r in all_inds
+    }
 
     for dec in decisions:
         idx = dec.get("id")
         if idx is None or idx >= len(unknown):
             continue
         u = unknown[idx]
+        gk = u["group_key"]
         try:
             if dec.get("action") == "alias":
                 match_lo = dec.get("match", "").lower()
-                matched  = inds_by_name.get(match_lo)
+                matched  = inds_by_name_gk.get(_rk(match_lo, gk))
                 if matched:
                     ind_id = matched["id"]
                     for alias in {u["canonical"], u["original"]}:
-                        if alias.lower() not in known:
+                        rk = _rk(alias.lower(), gk)
+                        if rk not in known:
                             try:
-                                db_upsert("indicator_names", {"indicator_id": ind_id, "name": alias}, "name")
-                                known[alias.lower()] = ind_id
+                                db_upsert(
+                                    "indicator_names",
+                                    {"indicator_id": ind_id, "name": alias, "group_key": gk},
+                                    "name,group_key",
+                                )
+                                known[rk] = ind_id
                             except Exception:
                                 pass
-                    result_map[u["c_lo"]] = ind_id
-                    log.info("resolve alias: '%s' → '%s'", u["canonical"], matched["name"])
+                    result_map[_rk(u["c_lo"], gk)] = ind_id
+                    log.info("resolve alias: '%s' [%s] → '%s'", u["canonical"], gk, matched["name"])
                     continue
-                # Если match не найден — создаём как новый
+                # match не найден → создаём как новый
 
             # action == "new" (или alias без совпадения)
             new_row = db_upsert(
                 "indicators",
-                {"name": u["canonical"], "group_key": u["group_key"]},
-                "name",
+                {"name": u["canonical"], "group_key": gk},
+                "name,group_key",
             )
             if new_row:
                 ind_id = new_row["id"]
             else:
                 # уже существует (race condition)
-                rows = db_select("indicators", "id", {"name": u["canonical"]})
+                rows = db_select("indicators", "id,group_key", {"name": u["canonical"], "group_key": gk})
                 if not rows:
                     continue
                 ind_id = rows[0]["id"]
 
             for alias in {u["canonical"], u["original"]}:
-                if alias.lower() not in known:
+                rk = _rk(alias.lower(), gk)
+                if rk not in known:
                     try:
-                        db_upsert("indicator_names", {"indicator_id": ind_id, "name": alias}, "name")
-                        known[alias.lower()] = ind_id
+                        db_upsert(
+                            "indicator_names",
+                            {"indicator_id": ind_id, "name": alias, "group_key": gk},
+                            "name,group_key",
+                        )
+                        known[rk] = ind_id
                     except Exception:
                         pass
 
-            result_map[u["c_lo"]] = ind_id
-            new_entry = {"id": ind_id, "name": u["canonical"], "group_key": u["group_key"]}
-            inds_by_name[u["c_lo"]] = new_entry
-            inds_by_id[ind_id]      = new_entry
-            log.info("resolve new: '%s'", u["canonical"])
+            result_map[_rk(u["c_lo"], gk)] = ind_id
+            new_entry = {"id": ind_id, "name": u["canonical"], "group_key": gk}
+            inds_by_name_gk[_rk(u["c_lo"], gk)] = new_entry
+            inds_by_id[ind_id]                   = new_entry
+            log.info("resolve new: '%s' [%s]", u["canonical"], gk)
 
         except Exception as e:
             log.error("resolve error '%s': %s", u["canonical"], e)
@@ -578,7 +616,7 @@ def _save_user_indicators(
 
     for ind in indicators:
         canonical = clean_name(ind["name"])
-        ind_id    = id_map.get(canonical.lower())
+        ind_id    = id_map.get(f"{canonical.lower()}||{group_key}")
         if not ind_id:
             log.warning("нет indicator_id для '%s'", canonical)
             continue
