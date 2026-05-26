@@ -294,6 +294,7 @@ function render(name, history){
 
     new Chart(document.getElementById('historyChart'),{
       type:'line',
+      plugins:[gridPlugin],
       data:{
         labels,
         datasets:[{
@@ -336,7 +337,7 @@ function render(name, history){
           }
         }
       }
-    },{plugins:[gridPlugin]});
+    });
   }
 }
 
