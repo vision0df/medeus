@@ -42,7 +42,6 @@
   .hist-table tbody tr:last-child { border-bottom:none; }
   .hist-table tbody td { padding:10px 16px; font-family:var(--mono); font-size:13px; color:var(--text-mid); }
   .hist-table .col-val { color:var(--text); font-weight:600; }
-  .hist-table .col-orig-name { color:var(--text-dim); font-size:11px; font-style:italic; }
   .tag-high { color:#f59e0b; font-weight:700; }
   .tag-low  { color:#f59e0b; font-weight:700; }
   .tag-ok   { color:var(--green); font-weight:700; }
@@ -231,7 +230,7 @@ function render(name, history){
         <div class="a-card-body" style="padding:0;">
           ${history.length?`
           <table class="hist-table">
-            <thead><tr><th>Дата</th><th>Значение</th><th>Название</th><th>Статус</th><th>Источник</th></tr></thead>
+            <thead><tr><th>Дата</th><th>Значение</th><th>Статус</th><th>Источник</th></tr></thead>
             <tbody>
               ${[...history].reverse().map(h=>{
                 const sc=h.status==='above'?'tag-high':h.status==='below'?'tag-low':h.status==='deviation'?'tag-dev':'tag-ok';
@@ -241,7 +240,6 @@ function render(name, history){
                 return`<tr ${rowAttr}>
                   <td>${fmtDate(h.date)}${href?'<svg style="margin-left:5px;vertical-align:middle;opacity:0.4;" viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>':''}</td>
                   <td class="col-val">${escHtml(h.value)}</td>
-                  <td class="col-orig-name">${escHtml(h.original_name||'—')}</td>
                   <td><span class="${sc}">${sl}</span></td>
                   <td>${escHtml(h.source||'—')}</td>
                 </tr>`;
