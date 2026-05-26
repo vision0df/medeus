@@ -27,7 +27,7 @@
   .cv-value { font-family:var(--sans); font-size:28px; font-weight:700; letter-spacing:-1px; color:var(--text); line-height:1; }
   .cv-value.ok { color:var(--green); }
   .cv-value.warn { color:var(--red); }
-  .cv-value.low  { color:#3b82f6; }
+  .cv-value.low  { color:#f59e0b; }
   .cv-sub { font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-top:5px; }
 
   /* ─── CHART ─── */
@@ -59,7 +59,7 @@
   /* ─── TREND BADGE ─── */
   .trend-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.08em; }
   .trend-up   { background:var(--red-pale);    color:var(--red);   border:1px solid var(--red-border); }
-  .trend-down { background:var(--blue-pale,#eff6ff); color:#2563eb; border:1px solid #bfdbfe; }
+  .trend-down { background:#fffbeb; color:#d97706; border:1px solid #fcd34d; }
   .trend-stable { background:var(--green-pale); color:var(--green); border:1px solid var(--green-border); }
 
   @media(max-width:600px){ .page { padding:78px 20px 52px; } }
@@ -185,7 +185,7 @@ function render(name, history){
       <div class="a-card">
         <div class="a-card-header">
           <div class="a-card-label">Текущее значение</div>
-          <div class="pill ${latestStatus==='normal'?'pill-green':latestStatus==='above'?'pill-red':'pill-blue'}"><span class="pill-inner">${latestStatus==='normal'?'Норма':latestStatus==='above'?'Выше нормы':'Ниже нормы'}</span></div>
+          <div class="pill ${latestStatus==='normal'?'pill-green':latestStatus==='above'?'pill-red':'pill-yellow'}"><span class="pill-inner">${latestStatus==='normal'?'Норма':latestStatus==='above'?'Выше нормы':'Ниже нормы'}</span></div>
         </div>
         <div class="a-card-body">
           <div class="current-val-grid">
@@ -270,6 +270,28 @@ function render(name, history){
     const gridColor=isDark?'rgba(255,255,255,0.20)':'rgba(0,0,0,0.15)';
     const textColor=isDark?'#888':'#999';
 
+    // кастомный плагин сетки — рисуем сами, не полагаясь на Chart.js
+    const gridPlugin={
+      id:'customGrid',
+      beforeDraw(chart){
+        const {ctx,chartArea:{left,right,top,bottom},scales:{x,y}}=chart;
+        ctx.save();
+        ctx.strokeStyle=gridColor;
+        ctx.lineWidth=1;
+        // горизонтальные линии по оси Y
+        y.ticks.forEach((_,i)=>{
+          const yPos=y.getPixelForTick(i);
+          ctx.beginPath();ctx.moveTo(left,yPos);ctx.lineTo(right,yPos);ctx.stroke();
+        });
+        // вертикальные линии по оси X
+        x.ticks.forEach((_,i)=>{
+          const xPos=x.getPixelForTick(i);
+          ctx.beginPath();ctx.moveTo(xPos,top);ctx.lineTo(xPos,bottom);ctx.stroke();
+        });
+        ctx.restore();
+      }
+    };
+
     new Chart(document.getElementById('historyChart'),{
       type:'line',
       data:{
@@ -305,18 +327,16 @@ function render(name, history){
         },
         scales:{
           x:{
-            grid:{display:true,color:gridColor,lineWidth:1,drawOnChartArea:true},
-            border:{display:true},
+            grid:{display:false},
             ticks:{color:textColor,font:{family:'monospace',size:11}}
           },
           y:{
-            grid:{display:true,color:gridColor,lineWidth:1,drawOnChartArea:true},
-            border:{display:true},
+            grid:{display:false},
             ticks:{color:textColor,font:{family:'monospace',size:11}}
           }
         }
       }
-    });
+    },{plugins:[gridPlugin]});
   }
 }
 
