@@ -307,15 +307,20 @@ def _gemini_call(models: list[str], contents: list) -> str:
 
 def extract_indicators_from_file(file_bytes: bytes, filename: str) -> str:
     prompt = (
-        "Ты — парсер медицинских документов. Извлеки ВСЕ медецинские показатели из документа.\n\n"
+        "Ты — парсер медицинских документов. Извлеки название анализа и ВСЕ показатели из документа.\n\n"
+        "Верни JSON-объект строго в этом формате (без markdown и пояснений):\n"
+        "{\n"
+        "  \"analysis_name\": \"краткое название анализа на русском (например: Общий анализ крови, Биохимия, Гормоны щитовидной железы)\",\n"
+        "  \"indicators\": [\n"
+        "    {\"name\": \"название показателя\", \"value\": \"значение\", \"unit\": \"единица измерения или пустая строка\"}\n"
+        "  ]\n"
+        "}\n\n"
         "ПРАВИЛА:\n"
-        "1. Верни ТОЛЬКО валидный JSON-массив без пояснений и markdown-блоков.\n"
-        "2. Каждый элемент: {\"name\": \"...\", \"value\": \"...\", \"unit\": \"...\"}\n"
-        "3. name — оригинальное название показателя из документа.\n"
-        "4. value — значение (числовое или текстовое). Если пусто или «-» — ставь «-».\n"
-        "5. unit — единица измерения или пустая строка \"\".\n"
-        "6. Если медицинских показателей нет — верни [].\n"
-        "7. НЕ интерпретируй, НЕ добавляй статус, только JSON."
+        "1. analysis_name — короткое понятное название анализа из документа.\n"
+        "2. value — числовое или текстовое значение. Если пусто или прочерк — ставь \"-\".\n"
+        "3. unit — единица измерения или пустая строка.\n"
+        "4. Если показателей нет — indicators: [].\n"
+        "5. НЕ интерпретируй, НЕ добавляй статус, только JSON."
     )
     return _gemini_call(
         MODELS_EXTRACT,
@@ -696,8 +701,16 @@ def route_extract():
         try_get_user(request.headers.get("Authorization"))
         data, filename, _ = read_uploaded_file()
         raw        = extract_indicators_from_file(data, filename)
-        indicators = parse_gemini_json(raw, expect_type=list)
-        return jsonify({"indicators": indicators, "raw": raw})
+        parsed     = parse_gemini_json(raw, expect_type=dict)
+        # Поддерживаем оба формата: новый {analysis_name, indicators} и старый []
+        if isinstance(parsed, dict):
+            indicators    = parsed.get("indicators", [])
+            analysis_name = parsed.get("analysis_name", "")
+        else:
+            # fallback — если Gemini вернул просто массив
+            indicators    = parse_gemini_json(raw, expect_type=list)
+            analysis_name = ""
+        return jsonify({"indicators": indicators, "analysis_name": analysis_name})
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
@@ -731,13 +744,12 @@ def route_analyze_indicators():
 
 @app.route("/save-analysis", methods=["POST"])
 def route_save_analysis():
-    """Шаг 3: сохранить файл + результат анализа в БД."""
+    """Шаг 3: сохранить результат анализа в БД. Файл опционален."""
     try:
         user = get_user(request.headers.get("Authorization"))
 
-        file_bytes, filename, mime = read_uploaded_file()
         analysis_raw  = request.form.get("analysis", "").strip()
-        analysis_name = request.form.get("analysis_name", filename).strip() or filename
+        analysis_name = request.form.get("analysis_name", "").strip()
         analysis_date = request.form.get("analysis_date", "").strip()
         age           = request.form.get("age", "").strip()
         gender        = request.form.get("gender", "").strip()
@@ -745,13 +757,26 @@ def route_save_analysis():
         if not analysis_raw:
             return jsonify({"error": "Отсутствует результат анализа"}), 400
 
-        analysis  = parse_analysis_result(analysis_raw)
-        file_hash = hashlib.sha256(file_bytes).hexdigest()
-        dup_msg   = check_duplicate(user["id"], file_hash)
-        if dup_msg:
-            return jsonify({"error": dup_msg}), 409
+        analysis = parse_analysis_result(analysis_raw)
 
-        file_url = upload_to_storage(user["id"], filename, file_bytes, mime)
+        # Файл опционален — если есть, загружаем в storage
+        file_url  = None
+        filename  = None
+        file_hash = None
+
+        if "file" in request.files and request.files["file"].filename:
+            try:
+                file_bytes, filename, mime = read_uploaded_file()
+                file_hash = hashlib.sha256(file_bytes).hexdigest()
+                dup_msg   = check_duplicate(user["id"], file_hash)
+                if dup_msg:
+                    return jsonify({"error": dup_msg}), 409
+                file_url = upload_to_storage(user["id"], filename, file_bytes, mime)
+            except ValueError as e:
+                return jsonify({"error": str(e)}), 400
+
+        if not analysis_name:
+            analysis_name = filename or "Анализ"
 
         row: dict = {
             "user_id":         user["id"],
@@ -763,7 +788,6 @@ def route_save_analysis():
             "file_url":        file_url,
             "file_hash":       file_hash,
             "summary":         analysis["summary"],
-            # Сохраняем как JSON-строку для совместимости с TEXT и JSONB колонками
             "recommendations": json.dumps(analysis["recommendations"], ensure_ascii=False),
             "group_key":       analysis["group_key"],
         }

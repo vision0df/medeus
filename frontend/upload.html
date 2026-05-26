@@ -284,21 +284,18 @@
             </button>
           </div>
 
-          <div class="form-row" style="margin-bottom:22px;">
-            <div class="form-group">
-              <label for="analysisDate">Дата сдачи</label>
-              <input type="date" id="analysisDate">
-            </div>
-            <div class="form-group" style="flex:2;">
-              <label for="analysisNameInput">Название анализа</label>
-              <input type="text" id="analysisNameInput" placeholder="Например: Общий анализ крови" autocomplete="off">
-            </div>
-          </div>
 
-          <button id="extractBtn" disabled type="button" class="btn-primary btn-full">
-            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <span>Извлечь показатели</span>
-          </button>
+
+          <div style="display:flex;gap:10px;margin-top:0;">
+            <button id="extractBtn" disabled type="button" class="btn-primary" style="flex:1;">
+              <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <span>Извлечь показатели</span>
+            </button>
+            <button id="manualBtn" type="button" class="btn-secondary">
+              <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Вручную</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -314,6 +311,17 @@
         </div>
 
         <div class="panel-label">Проверка показателей</div>
+
+        <div style="display:flex;gap:16px;margin-bottom:20px;align-items:flex-end;flex-wrap:wrap;">
+          <div class="name-field-group" style="flex:2;min-width:180px;margin-bottom:0;">
+            <label for="analysisNameInput">Название анализа</label>
+            <input class="name-field-input" type="text" id="analysisNameInput" placeholder="Определяется автоматически" autocomplete="off">
+          </div>
+          <div class="name-field-group" style="flex:1;min-width:140px;margin-bottom:0;">
+            <label for="analysisDate">Дата сдачи</label>
+            <input class="name-field-input" type="date" id="analysisDate">
+          </div>
+        </div>
 
         <div class="err-banner" id="step2Error">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -508,9 +516,8 @@ function handleFile(file){
 }
 fileRemove.addEventListener('click',()=>{selectedFile=null;fileInput.value='';filePreview.classList.remove('show');uploadZone.style.display='';hideError(1);checkStep1();});
 
-function checkStep1(){extractBtn.disabled=!(selectedFile&&analysisNameInput.value.trim()&&analysisDate.value);}
-analysisDate.addEventListener('change',checkStep1);
-analysisNameInput.addEventListener('input',checkStep1);
+function checkStep1(){extractBtn.disabled=!selectedFile;}
+
 
 function showError(panel,msg){
   if(panel===1){document.getElementById('step1ErrorText').textContent=msg;document.getElementById('step1Error').classList.add('show');}
@@ -535,8 +542,6 @@ function setStep(n){
 // STEP 1 → 2
 extractBtn.addEventListener('click',async()=>{
   if(!selectedFile)return;
-  if(!analysisNameInput.value.trim()){showError(1,'Введите название анализа.');return;}
-  if(!analysisDate.value){showError(1,'Укажите дату сдачи анализа.');return;}
   const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
   hideError(1);s1Loader.classList.add('show');extractBtn.disabled=true;
   try{
@@ -551,7 +556,9 @@ extractBtn.addEventListener('click',async()=>{
     const data=await resp.json();
     if(resp.status===401){window.location.href='auth.html';return;}
     if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
-    indicators=data.indicators||[];renderIndicators();setStep(2);
+    indicators=data.indicators||[];
+    if(data.analysis_name)analysisNameInput.value=data.analysis_name;
+    renderIndicators();setStep(2);
   }catch(err){showError(1,err.message||'Не удалось подключиться к серверу');}
   finally{s1Loader.classList.remove('show');extractBtn.disabled=false;checkStep1();}
 });
@@ -578,8 +585,19 @@ document.getElementById('addIndBtn').addEventListener('click',()=>{
 
 document.getElementById('backToStep1Btn').addEventListener('click',()=>{hideError(2);setStep(1);});
 
+document.getElementById('manualBtn').addEventListener('click',()=>{
+  indicators=[];
+  analysisNameInput.value='';
+  analysisDate.value='';
+  renderIndicators();
+  hideError(1);
+  setStep(2);
+});
+
 // STEP 2 → 3
 continueBtn.addEventListener('click',async()=>{
+  if(!analysisNameInput.value.trim()){showError(2,'Введите название анализа.');return;}
+  if(!analysisDate.value){showError(2,'Укажите дату сдачи анализа.');return;}
   if(!indicators.length){showError(2,'Добавьте хотя бы один показатель.');return;}
   const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
   const age=calcAge(userProfile?.birth_date)||'0',gender=userProfile?.gender||'не указан';
@@ -655,26 +673,30 @@ function renderUpMetaBlock(){
   const setEl=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
   setEl('r3MetaName',analysisNameInput?analysisNameInput.value.trim()||'—':'—');
   setEl('r3MetaDate',dateFmt);
-  setEl('r3MetaFile',fname);
+  setEl('r3MetaFile',selectedFile?fname:'Внесено вручную');
   // Thumb
   const thumbWrap=document.getElementById('r3ThumbWrap');
   const nameSpan=document.getElementById('r3ThumbName');
-  if(nameSpan)nameSpan.textContent=fname;
-  if(thumbWrap&&selectedFile&&!isPdf(fname)){
-    const url=URL.createObjectURL(selectedFile);
-    thumbWrap.innerHTML=`<img class="r3-thumb-img" src="${url}" alt="${escHtml(fname)}">`;
+  if(!selectedFile){
+    if(thumbWrap)thumbWrap.innerHTML=`<div class="r3-thumb-pdf" style="gap:14px;"><svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><span style="color:var(--orange);">Внесено вручную</span></div>`;
+  } else {
+    if(nameSpan)nameSpan.textContent=fname;
+    if(thumbWrap&&!isPdf(fname)){
+      const url=URL.createObjectURL(selectedFile);
+      thumbWrap.innerHTML=`<img class="r3-thumb-img" src="${url}" alt="${escHtml(fname)}">`;
+    }
   }
 }
 
 // SAVE
 saveBtn.addEventListener('click',async()=>{
-  if(!analysisResult||!selectedFile)return;
+  if(!analysisResult)return;
   const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
   const age=calcAge(userProfile?.birth_date)||'0',gender=userProfile?.gender||'не указан';
   saveBtn.disabled=true;hideError(3);
   const origHtml=saveBtn.innerHTML;saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><circle cx="12" cy="12" r="10"/></svg><span>Сохраняем...</span>';
   try{
-    const fd=new FormData();fd.append('file',selectedFile);fd.append('analysis',JSON.stringify(analysisResult));fd.append('analysis_name',analysisNameInput.value.trim());fd.append('analysis_date',analysisDate.value||'');fd.append('age',age);fd.append('gender',gender);
+    const fd=new FormData();if(selectedFile)fd.append('file',selectedFile);fd.append('analysis',JSON.stringify(analysisResult));fd.append('analysis_name',analysisNameInput.value.trim());fd.append('analysis_date',analysisDate.value||'');fd.append('age',age);fd.append('gender',gender);
     const resp=await fetch(`${API_BASE}/save-analysis`,{method:'POST',headers:{'Authorization':`Bearer ${session.access_token}`},body:fd});
     const data=await resp.json();if(resp.status===401){window.location.href='auth.html';return;}if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
     saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><polyline points="20 6 9 17 4 12"/></svg><span>Сохранено!</span>';
@@ -687,7 +709,6 @@ saveBtn.addEventListener('click',async()=>{
   }
 });
 
-analysisDate.value=new Date().toISOString().split('T')[0];
 checkStep1();setStep(1);
 </script>
 </body>
