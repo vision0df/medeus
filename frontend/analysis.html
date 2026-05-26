@@ -401,7 +401,12 @@ function renderResultBlocks(text){
       tbody.innerHTML=parsed.indicators.map(ind=>{
         const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':ind.status==='deviation'?'tag-dev':'tag-ok';
         const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':ind.status==='deviation'?'⚠ отклонение':'✓ норма';
-        return`<tr><td class="col-name">${escHtml(ind.name)}</td><td>${escHtml(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;
+        const href=`indicator.html?name=${encodeURIComponent(ind.name)}`;
+        return`<tr class="ind-row-link" onclick="window.location.href='${href}'" title="Открыть динамику показателя">
+          <td class="col-name">${escHtml(ind.name)}<svg style="margin-left:5px;vertical-align:middle;opacity:0.35;" viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></td>
+          <td>${escHtml(ind.value)}</td>
+          <td><span class="${sc}">${sl}</span></td>
+        </tr>`;
       }).join('');
     } else {
       tbody.innerHTML='<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text-dim);font-family:var(--mono);font-size:12px;">Таблица не найдена</td></tr>';
