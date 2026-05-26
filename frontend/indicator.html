@@ -273,22 +273,28 @@ function render(name, history){
     // кастомный плагин сетки — рисуем сами, не полагаясь на Chart.js
     const gridPlugin={
       id:'customGrid',
-      beforeDraw(chart){
-        const {ctx,chartArea:{left,right,top,bottom},scales:{x,y}}=chart;
-        ctx.save();
-        ctx.strokeStyle=gridColor;
-        ctx.lineWidth=1;
-        // горизонтальные линии по оси Y
-        y.ticks.forEach((_,i)=>{
-          const yPos=y.getPixelForTick(i);
-          ctx.beginPath();ctx.moveTo(left,yPos);ctx.lineTo(right,yPos);ctx.stroke();
-        });
-        // вертикальные линии по оси X
-        x.ticks.forEach((_,i)=>{
-          const xPos=x.getPixelForTick(i);
-          ctx.beginPath();ctx.moveTo(xPos,top);ctx.lineTo(xPos,bottom);ctx.stroke();
-        });
-        ctx.restore();
+      afterDraw(chart){
+        try{
+          const {ctx,chartArea,scales}=chart;
+          if(!chartArea||!scales.x||!scales.y)return;
+          const {left,right,top,bottom}=chartArea;
+          const {x,y}=scales;
+          ctx.save();
+          ctx.strokeStyle=isDark?'rgba(255,255,255,0.25)':'rgba(0,0,0,0.18)';
+          ctx.lineWidth=1;
+          ctx.setLineDash([]);
+          y.ticks.forEach((_,i)=>{
+            const yp=y.getPixelForTick(i);
+            if(yp<top||yp>bottom)return;
+            ctx.beginPath();ctx.moveTo(left,yp);ctx.lineTo(right,yp);ctx.stroke();
+          });
+          x.ticks.forEach((_,i)=>{
+            const xp=x.getPixelForTick(i);
+            if(xp<left||xp>right)return;
+            ctx.beginPath();ctx.moveTo(xp,top);ctx.lineTo(xp,bottom);ctx.stroke();
+          });
+          ctx.restore();
+        }catch(e){}
       }
     };
 
