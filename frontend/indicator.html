@@ -52,6 +52,9 @@
   .state-error  { text-align:center; padding:60px 24px; color:var(--red); font-family:var(--mono); font-size:13px; }
   .no-history   { text-align:center; padding:40px 24px; color:var(--text-dim); font-family:var(--mono); font-size:12px; line-height:1.9; }
   .no-history strong { display:block; color:var(--text-mid); margin-bottom:8px; }
+  .hist-row-link { cursor:pointer; transition:background 0.12s; }
+  .hist-row-link:hover { background:var(--orange-pale); }
+  .hist-row-link:hover td:first-child { color:var(--orange); }
 
   /* ─── TREND BADGE ─── */
   .trend-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.08em; }
@@ -230,8 +233,10 @@ function render(name, history){
               ${[...history].reverse().map(h=>{
                 const sc=h.status==='above'?'tag-high':h.status==='below'?'tag-low':h.status==='deviation'?'tag-dev':'tag-ok';
                 const sl=h.status==='above'?'↑ выше нормы':h.status==='below'?'↓ ниже нормы':h.status==='deviation'?'⚠ отклонение':'✓ норма';
-                return`<tr>
-                  <td>${fmtDate(h.date)}</td>
+                const href=h.analysis_id?`analysis.html?id=${encodeURIComponent(h.analysis_id)}`:null;
+                const rowAttr=href?`class="hist-row-link" onclick="window.location.href='${href}'" title="Открыть анализ"`:`class=""`;
+                return`<tr ${rowAttr}>
+                  <td>${fmtDate(h.date)}${href?'<svg style="margin-left:5px;vertical-align:middle;opacity:0.4;" viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>':''}</td>
                   <td class="col-val">${escHtml(h.value)}</td>
                   <td><span class="${sc}">${sl}</span></td>
                   <td>${escHtml(h.source||'—')}</td>
