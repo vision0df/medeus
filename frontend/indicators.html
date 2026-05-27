@@ -40,10 +40,15 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
   padding: 2px;
   min-width: 0;
   cursor: pointer;
-  transition: opacity .15s;
+  transition: background .15s;
 }
-.stat-card:not(.active) { opacity: .55; }
-.stat-card:hover { opacity: 1; }
+.stat-card:not(.active) .stat-card-inner { background: var(--bg2); }
+.stat-card:not(.active) .stat-num { opacity: .45; }
+.stat-card:not(.active) .stat-lbl { opacity: .45; }
+.stat-card:hover .stat-card-inner { background: var(--orange-pale) !important; }
+.stat-card.active .stat-card-inner { background: var(--orange-pale) !important; }
+.stat-card.active .stat-icon { background: var(--orange) !important; }
+.stat-card.active .stat-icon svg { stroke: #fff !important; }
 .stat-card-inner {
   background: var(--white);
   clip-path: polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
