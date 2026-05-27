@@ -25,17 +25,20 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .col-full { grid-column: 1 / -1; }
 
 /* Блок 01 — содержимое ограничено, кнопка всегда видна */
+/* Блок 01 — всё помещается, скролла нет */
 .dash-card-wrap.col-full:first-child .dash-card { display: flex; flex-direction: column; }
 .dash-card-wrap.col-full:first-child .dash-card-body { padding: 0; overflow: hidden; }
-.dash-card-wrap.col-full:first-child .overview-block { height: 370px; }
-.dash-card-wrap.col-full:first-child .overview-summary { overflow-y: auto; }
-.dash-card-wrap.col-full:first-child .anatomy-menu { overflow-y: auto; }
+.dash-card-wrap.col-full:first-child .overview-summary { overflow: hidden; }
+.dash-card-wrap.col-full:first-child .anatomy-menu { overflow: hidden; }
+
+/* Уменьшаем высоту строк категорий: 8 × 40px = 320px */
+.dash-card-wrap.col-full:first-child .anatomy-cat { height: 40px; }
+/* Уменьшаем высоту строк показателей: до 8 × 40px = 320px */
+.dash-card-wrap.col-full:first-child .ov-ind-item { height: 40px; }
 
 /* На мобиле — в столбик */
 @media (max-width: 767px) {
   .dashboard { grid-template-columns: 1fr; }
-  .dash-card-wrap.col-full:first-child .overview-block { height: auto; }
-  .dash-card-wrap.col-full:first-child .overview-summary { max-height: 260px; }
 }
 
 /* ─── DASH CARD ─── */
@@ -117,7 +120,6 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 
 .overview-summary {
   border-right: 1px solid var(--line);
-  min-height: 300px;
 }
 .overview-indicators {
   display: flex; flex-direction: column; gap: 0;
@@ -161,8 +163,8 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
   overflow: hidden;
 }
 @media (min-width: 768px) { .anatomy-silhouette { display: block; } }
-.silhouette-wrap { position: relative; height: 100%; min-height: 340px; display: flex; align-items: center; justify-content: center; }
-.silhouette-svg { height: 280px; width: auto; object-fit: contain; opacity: .7; position: relative; z-index: 1; }
+.silhouette-wrap { position: relative; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.silhouette-svg { height: 220px; width: auto; object-fit: contain; opacity: .7; position: relative; z-index: 1; }
 .body-zone {
   position: absolute; border-radius: 50%; background: transparent;
   border: 1.5px solid transparent; transform: translateX(-50%);
