@@ -21,9 +21,21 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .desk-nav-link.active { color: var(--orange); border-bottom-color: var(--orange); }
 
 /* ─── DASHBOARD GRID ─── */
-.dashboard { display: grid; grid-template-columns: 1fr; gap: 18px; }
-@media (min-width: 768px) { .dashboard { grid-template-columns: 1fr 1fr; } }
+.dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .col-full { grid-column: 1 / -1; }
+
+/* Блок 01 — фиксированная высота */
+.dash-card-wrap.col-full:first-child .dash-card { height: 520px; }
+.dash-card-wrap.col-full:first-child .overview-block { height: calc(520px - 45px - 48px); }
+.dash-card-wrap.col-full:first-child .overview-summary { overflow-y: auto; }
+.dash-card-wrap.col-full:first-child .anatomy-menu { overflow-y: auto; }
+
+/* На мобиле — в столбик */
+@media (max-width: 767px) {
+  .dashboard { grid-template-columns: 1fr; }
+  .dash-card-wrap.col-full:first-child .dash-card { height: auto; }
+  .dash-card-wrap.col-full:first-child .overview-block { height: auto; }
+}
 
 /* ─── DASH CARD ─── */
 .dash-card-wrap {
