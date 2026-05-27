@@ -294,10 +294,20 @@ body { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hid
 
 /* ─── MOBILE: DASHBOARD ─── */
 @media (max-width: 767px) {
-  /* Предотвращаем выход за экран */
+  /* Убираем clip-path, заменяем на border-radius чтобы не вылезало за экран */
+  .dash-card-wrap {
+    clip-path: none !important;
+    border-radius: 4px;
+    max-width: 100%;
+    width: 100%;
+  }
+  .dash-card {
+    clip-path: none !important;
+    border-radius: 2px;
+    min-width: 0;
+  }
+
   .dashboard { grid-template-columns: 1fr; gap: 12px; }
-  .dash-card-wrap { max-width: 100%; width: 100%; }
-  .dash-card { min-width: 0; }
 
   /* Карточка 01 — без фиксированной высоты на мобиле */
   .dash-card-wrap.col-full:first-child .dash-card { height: auto !important; }
