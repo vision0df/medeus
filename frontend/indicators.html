@@ -45,8 +45,8 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .stat-card:not(.active) .stat-card-inner { background: var(--bg2); }
 .stat-card:not(.active) .stat-num { opacity: .45; }
 .stat-card:not(.active) .stat-lbl { opacity: .45; }
-.stat-card:hover .stat-card-inner { background: var(--orange-pale) !important; }
-.stat-card.active .stat-card-inner { background: var(--orange-pale) !important; }
+.stat-card:hover .stat-card-inner { background: rgba(255, 107, 26, 0.06) !important; }
+.stat-card.active .stat-card-inner { background: rgba(255, 107, 26, 0.06) !important; }
 .stat-card.active .stat-icon { background: var(--orange) !important; }
 .stat-card.active .stat-icon svg { stroke: #fff !important; }
 .stat-card-inner {
@@ -275,6 +275,19 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
     <div class="page-meta" id="pageMeta">—</div>
   </div>
 
+  <!-- Category tabs -->
+  <div class="cat-scroll" id="catScroll">
+    <button class="cat-btn active" data-cat=""><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div><div class="cat-btn-label">Все группы</div></div></button>
+    <button class="cat-btn" data-cat="blood"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg></div><div class="cat-btn-label">Анализы крови</div></div></button>
+    <button class="cat-btn" data-cat="hormones"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="4" ry="5"/><path d="M12 11v4M8 19h8M10 15l-2 4M14 15l2 4"/><circle cx="7" cy="10" r="2"/><circle cx="17" cy="10" r="2"/></svg></div><div class="cat-btn-label">Гормоны</div></div></button>
+    <button class="cat-btn" data-cat="functional"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="cat-btn-label">Биохимия</div></div></button>
+    <button class="cat-btn" data-cat="oncology"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="cat-btn-label">Онкомаркеры</div></div></button>
+    <button class="cat-btn" data-cat="infections"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg></div><div class="cat-btn-label">Иммунитет</div></div></button>
+    <button class="cat-btn" data-cat="biomaterials"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><path d="M9 3l-6 9h6v9l6-9h-6V3z"/></svg></div><div class="cat-btn-label">Биоматериалы</div></div></button>
+    <button class="cat-btn" data-cat="microbiome"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><circle cx="12" cy="16" r="3"/></svg></div><div class="cat-btn-label">Микрофлора</div></div></button>
+    <button class="cat-btn" data-cat="genetics"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><path d="M2 2c2 4 6 6 10 6S20 6 22 2"/><path d="M2 22c2-4 6-6 10-6s8 2 10 6"/><path d="M12 8v8"/></svg></div><div class="cat-btn-label">Генетика</div></div></button>
+  </div>
+
   <!-- Stats -->
   <div class="stats-row">
     <div class="stat-card active" data-filter="all" onclick="setFilter(this)"><div class="stat-card-inner">
@@ -291,19 +304,7 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
     </div></div>
   </div>
 
-  <!-- Category tabs -->
 
-  <div class="cat-scroll" id="catScroll">
-    <button class="cat-btn active" data-cat=""><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div><div class="cat-btn-label">Все группы</div></div></button>
-    <button class="cat-btn" data-cat="blood"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg></div><div class="cat-btn-label">Анализы крови</div></div></button>
-    <button class="cat-btn" data-cat="hormones"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="4" ry="5"/><path d="M12 11v4M8 19h8M10 15l-2 4M14 15l2 4"/><circle cx="7" cy="10" r="2"/><circle cx="17" cy="10" r="2"/></svg></div><div class="cat-btn-label">Гормоны</div></div></button>
-    <button class="cat-btn" data-cat="functional"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="cat-btn-label">Биохимия</div></div></button>
-    <button class="cat-btn" data-cat="oncology"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="cat-btn-label">Онкомаркеры</div></div></button>
-    <button class="cat-btn" data-cat="infections"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg></div><div class="cat-btn-label">Иммунитет</div></div></button>
-    <button class="cat-btn" data-cat="biomaterials"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><path d="M9 3l-6 9h6v9l6-9h-6V3z"/></svg></div><div class="cat-btn-label">Биоматериалы</div></div></button>
-    <button class="cat-btn" data-cat="microbiome"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><circle cx="12" cy="16" r="3"/></svg></div><div class="cat-btn-label">Микрофлора</div></div></button>
-    <button class="cat-btn" data-cat="genetics"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><path d="M2 2c2 4 6 6 10 6S20 6 22 2"/><path d="M2 22c2-4 6-6 10-6s8 2 10 6"/><path d="M12 8v8"/></svg></div><div class="cat-btn-label">Генетика</div></div></button>
-  </div>
 
   <!-- Search -->
   <div class="search-row">
