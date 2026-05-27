@@ -45,9 +45,15 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .stat-card:not(.active) .stat-card-inner { background: var(--bg2); }
 .stat-card:not(.active) .stat-num { opacity: .45; }
 .stat-card:not(.active) .stat-lbl { opacity: .45; }
-.stat-card:hover .stat-card-inner { background: rgba(255, 107, 26, 0.06) !important; }
-.stat-card.active .stat-card-inner { background: rgba(255, 107, 26, 0.06) !important; }
-.stat-card.active .stat-icon { background: var(--orange) !important; }
+.stat-card:hover .stat-card-inner { background: var(--orange) !important; }
+.stat-card:hover .stat-num,
+.stat-card:hover .stat-lbl { color: #fff !important; opacity: 1 !important; }
+.stat-card:hover .stat-icon { background: rgba(255,255,255,0.2) !important; }
+.stat-card:hover .stat-icon svg { stroke: #fff !important; }
+.stat-card.active .stat-card-inner { background: var(--orange) !important; }
+.stat-card.active .stat-num,
+.stat-card.active .stat-lbl { color: #fff !important; opacity: 1 !important; }
+.stat-card.active .stat-icon { background: rgba(255,255,255,0.2) !important; }
 .stat-card.active .stat-icon svg { stroke: #fff !important; }
 .stat-card-inner {
   background: var(--white);
