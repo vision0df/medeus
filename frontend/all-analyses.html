@@ -4,148 +4,201 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // Все анализы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="global.css">
 <style>
-  body { display: flex; flex-direction: column; }
-  .page { flex:1; padding:88px 52px 64px; max-width:1100px; margin:0 auto; width:100%; position:relative; z-index:1; }
+body { display: flex; flex-direction: column; min-height: 100vh; }
+.desk-nav-link { font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mid);text-decoration:none;padding:6px 0;border-bottom:2px solid transparent;transition:color .15s,border-color .15s; }
+.desk-nav-link:hover{color:var(--text);}
+.desk-nav-link.active{color:var(--orange);border-bottom-color:var(--orange);}
+.btn-nav-sm{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg3);border:none;cursor:pointer;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mid);text-decoration:none;transition:all .15s;clip-path:var(--clip-sm);}
+.btn-nav-sm:hover{background:var(--text);color:#fff;}
 
-  .search-wrap {
-    position: relative; margin-bottom: 28px;
-  }
-  .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--text-dim); fill: none; pointer-events: none; }
-  .search-input {
-    width: 100%; padding: 14px 16px 14px 46px; height: 50px;
-    border: 1px solid var(--line-mid); border-left: 3px solid var(--bg3);
-    background: var(--white); font-family: var(--mono); font-size: 13px; color: var(--text);
-    outline: none; transition: border-color 0.15s, border-left-color 0.15s;
-  }
-  .search-input:focus { border-color: var(--text); border-left-color: var(--orange); }
-  .search-input::placeholder { color: var(--text-dim); }
+.search-row{position:relative;margin-bottom:18px;animation:fadeUp .4s ease both;}
+.search-row .sico{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--text-dim);fill:none;pointer-events:none;transition:stroke .15s;}
+.search-row:focus-within .sico{stroke:var(--orange);}
+.search-inp{width:100%;padding:12px 14px 12px 44px;height:46px;border:1px solid var(--line-mid);border-left:3px solid var(--bg3);background:var(--bg);font-family:var(--mono);font-size:13px;color:var(--text);outline:none;transition:border-color .15s,background .15s;}
+.search-inp:focus{border-color:var(--text);border-left-color:var(--orange);background:var(--white);}
+.search-inp::placeholder{color:var(--text-dim);font-size:12px;}
 
-  .list-card-wrap { background: var(--text); clip-path: polygon(20px 0%,100% 0%,100% calc(100% - 20px),calc(100% - 20px) 100%,0% 100%,0% 20px); padding: 2px; }
-  .list-card { background: var(--white); clip-path: polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px); }
+.list-outer{border:1.5px solid var(--text);animation:fadeUp .45s ease both;}
+.list-head{display:grid;grid-template-columns:1fr 180px 120px;background:var(--text);color:rgba(255,255,255,.5);font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;}
+.list-th{padding:10px 16px;}
+.list-th:first-child{color:rgba(255,255,255,.85);}
+.list-th:first-child::before{content:'/ ';color:var(--orange);}
+.list-body{background:var(--white);}
 
-  .analyses-list { display: flex; flex-direction: column; }
-  .analysis-row {
-    display: grid; grid-template-columns: 44px 1fr auto auto; align-items: center; gap: 16px;
-    padding: 14px 22px; border-bottom: 1px solid var(--line); cursor: pointer;
-    transition: background 0.15s; animation: fadeUp 0.3s ease both;
-  }
-  .analysis-row:last-child { border-bottom: none; }
-  .analysis-row:hover { background: var(--bg); }
-  .analysis-icon { width: 36px; height: 36px; flex-shrink: 0; background: var(--bg3); display: flex; align-items: center; justify-content: center; clip-path: polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px); transition: background 0.15s; }
-  .analysis-row:hover .analysis-icon { background: var(--orange); }
-  .analysis-icon svg { width: 16px; height: 16px; stroke: var(--text-dim); fill: none; transition: stroke 0.15s; }
-  .analysis-row:hover .analysis-icon svg { stroke: #fff; }
-  .analysis-info { min-width: 0; }
-  .analysis-name { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .analysis-meta { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 3px; letter-spacing: 0.03em; }
-  .analysis-badge { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 10px; background: var(--bg3); color: var(--text-dim); }
-  .analysis-arrow { color: var(--text-dim); }
-  .analysis-arrow svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+.list-row{display:grid;grid-template-columns:1fr 180px 120px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s;animation:fadeUp .3s ease both;}
+.list-row:last-child{border-bottom:none;}
+.list-row:hover{background:var(--orange-pale);}
+.list-td{padding:12px 16px;font-family:var(--mono);font-size:12px;color:var(--text-mid);display:flex;align-items:center;overflow:hidden;}
+.list-td-main{gap:10px;}
+.td-icon{width:32px;height:32px;flex-shrink:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;clip-path:var(--clip-sm);transition:background .15s;}
+.list-row:hover .td-icon{background:var(--orange);}
+.td-icon svg{width:14px;height:14px;stroke:var(--text-mid);fill:none;transition:stroke .15s;}
+.list-row:hover .td-icon svg{stroke:#fff;}
+.td-name{color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.td-arrow{color:var(--text-dim);margin-left:auto;}
+.td-arrow svg{width:13px;height:13px;stroke:currentColor;fill:none;}
 
-  .analyses-empty { font-family: var(--mono); padding: 52px 24px; text-align: center; font-size: 12px; color: var(--text-dim); letter-spacing: 0.05em; }
-  .count-label { font-family: var(--mono); font-size: 10px; color: var(--text-dim); padding: 11px 22px; border-top: 1px solid var(--line); letter-spacing: 0.05em; }
-  .count-label.hidden { display: none; }
+/* Mobile cards */
+.mobile-list{display:none;flex-direction:column;gap:8px;animation:fadeUp .4s ease both;}
+.ml-card{background:var(--white);border:1px solid var(--line-mid);border-left:3px solid var(--bg3);padding:14px 16px;cursor:pointer;transition:border-left-color .12s,background .12s;display:flex;align-items:center;gap:12px;}
+.ml-card:hover{background:var(--orange-pale);border-left-color:var(--orange);}
+.ml-icon{width:36px;height:36px;flex-shrink:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;clip-path:var(--clip-sm);transition:background .15s;}
+.ml-card:hover .ml-icon{background:var(--orange);}
+.ml-icon svg{width:16px;height:16px;stroke:var(--text-mid);fill:none;transition:stroke .15s;}
+.ml-card:hover .ml-icon svg{stroke:#fff;}
+.ml-info{flex:1;min-width:0;}
+.ml-name{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ml-meta{font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:3px;}
 
-  .card-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 60px 24px; }
-  .card-loader.hidden { display: none; }
+.count-bar{font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:.1em;padding:10px 16px;border-top:1px solid var(--line-mid);background:var(--bg2);}
+.empty-state{text-align:center;padding:52px 20px;font-family:var(--mono);font-size:12px;color:var(--text-dim);line-height:1.8;}
+.empty-state strong{display:block;color:var(--text);font-size:14px;margin-bottom:8px;}
+.state-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:60px 20px;}
 
-  @media (max-width: 640px) { .page { padding: 78px 18px 52px; } }
+@media(max-width:767px){
+  .list-outer{display:none;}
+  .mobile-list{display:flex;}
+}
 </style>
 </head>
 <body>
-
 <header>
   <a class="logo" href="cabinet.html">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
-        <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
-      </svg>
-    </div>
-    <div class="logo-wordmark">
-      <div class="logo-text">Medeus<span>.</span></div>
-      <div class="logo-sub">Medical AI</div>
-    </div>
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke-linecap="round"/></svg></div>
+    <div class="logo-wordmark"><div class="logo-text">Medeus<span>.</span></div><div class="logo-sub">Medical AI</div></div>
   </a>
-  <div class="header-right">
-    <a href="upload.html" class="btn-nav">
-      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+  <nav class="header-actions desktop-nav" id="desktopNav" style="display:flex;gap:24px;align-items:center;"></nav>
+  <div class="header-actions desktop-nav">
+    <a href="upload.html" class="btn-nav-sm" style="background:var(--orange);color:#fff;">
+      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="13" height="13"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       Загрузить
-    </a>
-    <a href="cabinet.html" class="btn-nav btn-ghost">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-      Кабинет
     </a>
   </div>
 </header>
+<nav class="mobile-nav" id="mobileNav"></nav>
 
 <main class="page">
   <div class="page-header">
     <div>
-      <div class="page-title-label">Личный кабинет</div>
+      <div class="page-title-label">История</div>
       <div class="page-title">Все анализы<span class="cursor-blink"></span></div>
     </div>
+    <div class="page-meta" id="pageMeta">—</div>
   </div>
 
-  <div class="search-wrap">
-    <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-    <input class="search-input" type="text" id="searchInput" placeholder="Поиск по названию...">
+  <div class="search-row">
+    <svg class="sico" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <input class="search-inp" type="text" id="searchInput" placeholder="Поиск по названию анализа...">
   </div>
 
-  <div class="list-card-wrap">
-    <div class="list-card">
-      <div class="analyses-list" id="analysesList">
-        <div class="card-loader" id="loader">
-          <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-          <div class="loader-text">Загрузка анализов...</div>
-        </div>
+  <!-- Desktop -->
+  <div class="list-outer">
+    <div class="list-head">
+      <div class="list-th">Анализ</div>
+      <div class="list-th">Дата сдачи</div>
+      <div class="list-th">Добавлен</div>
+    </div>
+    <div class="list-body" id="listBody">
+      <div class="state-loader">
+        <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="loader-text">Загрузка...</div>
       </div>
-      <div class="count-label hidden" id="countLabel"></div>
+    </div>
+    <div class="count-bar hidden" id="countBar"></div>
+  </div>
+
+  <!-- Mobile -->
+  <div class="mobile-list" id="mobileList">
+    <div class="state-loader" style="padding:40px 20px;">
+      <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="loader-text">Загрузка...</div>
     </div>
   </div>
 </main>
 
 <div class="status-bar">
-  <div><span class="status-bar-dot"></span>Все анализы · <span id="statusDate">—</span></div>
-  <div class="status-bar-right">Medeus © 2026</div>
+  <div><span class="status-dot"></span>История анализов · <span id="statusDate">—</span></div>
+  <div style="color:rgba(255,255,255,.2)">Medeus © 2026</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase.js"></script>
 <script>
+const PAGES=[
+  {id:'cabinet',href:'cabinet.html',label:'Кабинет',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`},
+  {id:'upload',href:'upload.html',label:'Анализ',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`},
+  {id:'indicators',href:'indicators.html',label:'Данные',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`},
+  {id:'profile',href:'profile.html',label:'Профиль',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`},
+];
+document.getElementById('mobileNav').innerHTML=PAGES.map(p=>`<a href="${p.href}" class="mobile-nav-item">${p.icon}${p.label}</a>`).join('');
+document.getElementById('desktopNav').innerHTML=PAGES.map(p=>`<a href="${p.href}" class="desk-nav-link">${p.label}</a>`).join('');
+document.getElementById('statusDate').textContent=new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+
 function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function fmtDate(s){if(!s)return'—';const d=new Date(s);return isNaN(d)?s:d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});}
-async function apiFetch(path,session){const r=await fetch(`${API_BASE}${path}`,{headers:{'Authorization':`Bearer ${session.access_token}`}});if(r.status===401){window.location.href='auth.html';return null;}if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}
 
-document.getElementById('statusDate').textContent=new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
-let allRows=[];
+let allRows=[],searchQ='';
 
-function renderList(rows){
-  const list=document.getElementById('analysesList');
-  const countEl=document.getElementById('countLabel');
-  const loader=document.getElementById('loader');
-  if(loader)loader.classList.add('hidden');
-  if(!rows.length){list.innerHTML='<div class="analyses-empty">Ничего не найдено</div>';if(countEl)countEl.classList.add('hidden');return;}
-  list.innerHTML=rows.map((row,idx)=>{
+function renderAll(){
+  const q=searchQ.toLowerCase();
+  const filtered=q?allRows.filter(r=>(r.analysis_name||r.filename||'').toLowerCase().includes(q)):allRows;
+  const meta=document.getElementById('pageMeta');
+  if(meta)meta.innerHTML=`Всего анализов<br><strong style="color:var(--text);font-size:14px;">${filtered.length}</strong>`;
+  const countBar=document.getElementById('countBar');
+  if(countBar){if(q){countBar.textContent=`Найдено: ${filtered.length} из ${allRows.length}`;countBar.classList.remove('hidden');}else countBar.classList.add('hidden');}
+
+  if(!filtered.length){
+    const empty=`<div class="empty-state"><strong>${allRows.length?'Ничего не найдено':'Анализов пока нет'}</strong>${allRows.length?'Попробуйте изменить поиск':'Нажмите «Загрузить», чтобы добавить первый анализ'}</div>`;
+    document.getElementById('listBody').innerHTML=empty;
+    document.getElementById('mobileList').innerHTML=empty;
+    return;
+  }
+
+  document.getElementById('listBody').innerHTML=filtered.map((row,i)=>{
     const name=escHtml(row.analysis_name||row.filename||'—');
-    const aDate=row.analysis_date?fmtDate(row.analysis_date):fmtDate(row.created_at);
-    return`<div class="analysis-row" style="animation-delay:${Math.min(idx*0.025,0.5)}s" onclick="location.href='analysis.html?id=${row.id}'">
-      <div class="analysis-icon"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-      <div class="analysis-info"><div class="analysis-name">${name}</div><div class="analysis-meta">${aDate}</div></div>
-      <span class="analysis-badge">готово</span>
-      <div class="analysis-arrow"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+    return`<div class="list-row" style="animation-delay:${Math.min(i*0.015,0.3)}s" onclick="location.href='analysis.html?id=${row.id}'">
+      <div class="list-td list-td-main">
+        <div class="td-icon"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <span class="td-name">${name}</span>
+        <div class="td-arrow"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+      <div class="list-td">${fmtDate(row.analysis_date)}</div>
+      <div class="list-td">${fmtDate(row.created_at)}</div>
     </div>`;
   }).join('');
-  if(countEl){countEl.textContent=`Всего: ${rows.length}`;countEl.classList.remove('hidden');}
+
+  document.getElementById('mobileList').innerHTML=filtered.map(row=>{
+    const name=escHtml(row.analysis_name||row.filename||'—');
+    return`<div class="ml-card" onclick="location.href='analysis.html?id=${row.id}'">
+      <div class="ml-icon"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="ml-info">
+        <div class="ml-name">${name}</div>
+        <div class="ml-meta">Сдан: ${fmtDate(row.analysis_date)} · Добавлен: ${fmtDate(row.created_at)}</div>
+      </div>
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="14" height="14" style="stroke:var(--text-dim);fill:none;flex-shrink:0;"><path d="M9 18l6-6-6-6"/></svg>
+    </div>`;
+  }).join('');
 }
 
-document.getElementById('searchInput').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();renderList(q?allRows.filter(r=>(r.analysis_name||r.filename||'').toLowerCase().includes(q)):allRows);});
+document.getElementById('searchInput').addEventListener('input',e=>{searchQ=e.target.value.trim();renderAll();});
 
 (async()=>{
   const session=await requireAuth();if(!session)return;
-  try{const data=await apiFetch('/history',session);if(!data)return;allRows=data.history||[];renderList(allRows);}
-  catch(e){document.getElementById('loader').innerHTML='<div class="loader-text" style="color:var(--red)">Ошибка загрузки</div>';}
+  try{
+    const r=await fetch(`${API_BASE}/history`,{headers:{'Authorization':`Bearer ${session.access_token}`}});
+    if(r.status===401){window.location.href='auth.html';return;}
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    const data=await r.json();
+    allRows=(data.history||[]).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+    renderAll();
+  }catch(e){
+    const err=`<div class="empty-state"><strong>Ошибка загрузки</strong>${escHtml(e.message)}</div>`;
+    document.getElementById('listBody').innerHTML=err;document.getElementById('mobileList').innerHTML=err;
+  }
 })();
 </script>
 </body>

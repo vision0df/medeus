@@ -4,206 +4,119 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // Новый анализ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="global.css">
 <style>
-  body { display: flex; flex-direction: column; }
-  .page { flex:1; padding:88px 52px 64px; max-width:1140px; margin:0 auto; width:100%; position:relative; z-index:1; }
+body { display: flex; flex-direction: column; min-height: 100vh; }
 
-  /* ─── ANALYZER BLOCK (same as index) ─── */
-  .analyzer-grid-wrap {
-    background: var(--text);
-    clip-path: polygon(24px 0%,100% 0%,100% calc(100% - 24px),calc(100% - 24px) 100%,0% 100%,0% 24px);
-    padding: 2px;
-  }
-  .analyzer-panels {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
-    background: var(--line-mid);
-    clip-path: polygon(22px 0%,100% 0%,100% calc(100% - 22px),calc(100% - 22px) 100%,0% 100%,0% 22px);
-  }
-  .a-panel { background: var(--bg2); padding: 44px; position: relative; }
-  .analyzer-panels--single { grid-template-columns: 1fr; background: var(--bg2); }
-  @media(max-width:960px){
-    .analyzer-grid-wrap { clip-path: none; }
-    .analyzer-panels { clip-path: none; grid-template-columns:1fr; }
-    .a-panel { padding: 28px 24px; }
-    .page { padding:78px 28px 52px; }
-  }
+.desk-nav-link {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-mid); text-decoration: none; padding: 6px 0;
+  border-bottom: 2px solid transparent; transition: color .15s, border-color .15s;
+}
+.desk-nav-link:hover { color: var(--text); }
+.desk-nav-link.active { color: var(--orange); border-bottom-color: var(--orange); }
 
-  /* ─── PANELS WRAPPER (step 2/3 reuse) ─── */
-  .panels-outer {
-    background: var(--text);
-    clip-path: polygon(24px 0%,100% 0%,100% calc(100% - 24px),calc(100% - 24px) 100%,0% 100%,0% 24px);
-    padding: 2px;
-  }
-  .panels-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
-    background: var(--line-mid);
-    clip-path: polygon(22px 0%,100% 0%,100% calc(100% - 22px),calc(100% - 22px) 100%,0% 100%,0% 22px);
-  }
-  .panel-full { grid-column: 1/-1; }
-  .up-panel { background: var(--bg2); padding: 40px 44px; position: relative; }
-  @media(max-width:960px){
-    .panels-outer,.panels-grid { clip-path:none; }
-    .panels-grid { grid-template-columns:1fr; }
-    .up-panel { padding:26px 20px; }
-  }
+/* Step panels wrap */
+.step-wrap {
+  background: var(--text);
+  clip-path: polygon(18px 0%, 100% 0%, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0% 100%, 0% 18px);
+  padding: 2px; animation: fadeUp .35s ease both;
+}
+.step-panel {
+  background: var(--white);
+  clip-path: polygon(16px 0%, 100% 0%, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0% 100%, 0% 16px);
+  padding: 28px 24px; position: relative;
+}
+@media (min-width: 768px) { .step-panel { padding: 36px 40px; } }
 
-  /* ─── NAME FIELD ─── */
-  .name-field-group { display:flex; flex-direction:column; gap:7px; margin-bottom:20px; }
-  .name-field-group label { font-family:var(--mono); font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-dim); }
-  .name-field-input {
-    width:100%; padding:12px 16px; height:48px;
-    background:var(--bg); border:1px solid var(--line-mid); border-left:3px solid var(--orange);
-    font-family:var(--sans); font-size:14px; font-weight:500; color:var(--text);
-    outline:none; transition:border-color 0.15s;
-  }
-  .name-field-input:focus { border-color:var(--orange); background:var(--white); }
-  .name-field-input::placeholder { color:var(--text-dim); font-weight:400; }
+/* name + date row */
+.meta-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
+@media (min-width: 600px) { .meta-row { grid-template-columns: 1fr auto; } }
+.meta-row input[type="date"] { width: 100%; max-width: 200px; }
 
-  /* ─── DATE FIELD ─── */
-  .date-group { display: flex; flex-direction: column; gap: 7px; margin-bottom: 26px; }
+/* Result cards */
+.r3-card { margin-bottom: 16px; animation: fadeUp .35s ease both; }
+.r3-card:nth-child(2){animation-delay:.07s}
 
-  /* ─── EXTRACT LOADER overlay in panel ─── */
-  .panel-loader-overlay {
-    display: none; position: absolute; inset: 0; background: var(--bg2); z-index: 10;
-    flex-direction: column; align-items: center; justify-content: center; gap: 22px;
-  }
-  .panel-loader-overlay.show { display: flex; }
+.r3-card-outer {
+  background: var(--text);
+  clip-path: polygon(14px 0%, 100% 0%, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0% 100%, 0% 14px);
+  padding: 2px;
+}
+.r3-card-inner {
+  background: var(--white);
+  clip-path: polygon(12px 0%, 100% 0%, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0% 100%, 0% 12px);
+}
+.r3-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px 12px; border-bottom: 1px solid var(--line); background: var(--bg2);
+  flex-wrap: wrap; gap: 8px;
+}
+.r3-card-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-dim); display: flex; align-items: center; gap: 6px;
+}
+.r3-card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
+.r3-card-body { padding: 20px; }
 
-  /* ─── RESULT BLOCKS ─── */
-  .result-two-col { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--line-mid); }
-  .result-block { background:var(--bg2); padding:30px 36px; }
-  .result-block-label {
-    font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.18em;
-    text-transform:uppercase; color:var(--text-dim); margin-bottom:16px;
-    padding-bottom:8px; border-bottom:1px solid var(--line-mid);
-    display:flex; align-items:center; gap:8px;
-  }
-  .result-block-label::before { content:''; display:inline-block; width:6px; height:6px; background:var(--orange); flex-shrink:0; }
+/* Meta info grid */
+.meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (min-width: 600px) { .meta-grid { grid-template-columns: repeat(4, 1fr); } }
+.meta-item { background: var(--bg); padding: 12px 14px; }
+.meta-item-key { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 5px; }
+.meta-item-val { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text); word-break: break-all; }
 
-  /* summary block */
-  .summary-type { font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.1em;
-    text-transform:uppercase; color:var(--orange); margin-bottom:10px; }
-  .summary-status { font-family:var(--sans); font-size:14px; color:var(--text); line-height:1.7; margin-bottom:16px; }
-  .rec-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
-  .rec-item { display:flex; gap:10px; font-family:var(--mono); font-size:12px; color:var(--text-mid); line-height:1.65; }
-  .rec-item::before { content:'→'; color:var(--orange); flex-shrink:0; margin-top:1px; }
-  .rec-all-good { font-family:var(--mono); font-size:12px; color:var(--green); display:flex; align-items:center; gap:8px; }
-  .rec-all-good::before { content:'✓'; font-weight:700; }
+/* Result analysis blocks */
+.result-block { background: var(--bg); padding: 18px; border: 1px solid var(--line-mid); margin-bottom: 14px; }
+.result-block-title {
+  font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--text-dim); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line-mid);
+  display: flex; align-items: center; gap: 7px;
+}
+.result-block-title::before { content:''; display:inline-block; width:5px; height:5px; background:var(--orange); flex-shrink:0; }
 
-  /* table block */
-  .ind-result-table { width:100%; border-collapse:collapse; }
-  .ind-result-table thead th { font-family:var(--mono); font-size:9px; letter-spacing:0.18em; text-transform:uppercase;
-    color:var(--text-dim); padding:8px 12px; text-align:left; border-bottom:1px solid var(--line-mid);
-    background:var(--bg3); font-weight:700; white-space:nowrap; }
-  .ind-result-table thead th:first-child::before { content:'/ '; color:var(--orange); }
-  .ind-result-table tbody tr { border-bottom:1px solid var(--line); }
-  .ind-result-table tbody tr:last-child { border-bottom:none; }
-  .ind-result-table tbody td { padding:8px 12px; vertical-align:middle; font-family:var(--mono); font-size:12px; color:var(--text-mid); }
-  .ind-result-table .col-name { color:var(--text); font-weight:600; }
-  .ind-result-table .col-value { color:var(--text); }
-  .tag-high { color:#f59e0b; font-weight:700; font-size:11px; }
-  .tag-low  { color:#f59e0b; font-weight:700; font-size:11px; }
-  .tag-ok   { color:var(--green); font-weight:700; font-size:11px; }
-  .tag-dev  { color:#f59e0b; font-weight:700; font-size:11px; }
+.summary-status { font-family: var(--sans); font-size: 14px; color: var(--text); line-height: 1.65; margin-bottom: 14px; }
+.rec-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.rec-item { display: flex; gap: 8px; font-family: var(--mono); font-size: 12px; color: var(--text-mid); line-height: 1.6; }
+.rec-item::before { content: '→'; color: var(--orange); flex-shrink: 0; }
+.rec-all-good { font-family: var(--mono); font-size: 12px; color: var(--green); display: flex; align-items: center; gap: 7px; }
+.rec-all-good::before { content: '✓'; font-weight: 700; }
 
-  /* ─── RESULT BOX (fallback) ─── */
-  .result-box {
-    background: var(--bg); border: 1px solid var(--line-mid);
-    padding: 26px; min-height: 200px;
-    font-family: var(--mono); font-size: 13px; line-height: 1.85; color: var(--text-mid);
-    max-height: 420px; overflow-y: auto; position: relative;
-  }
+/* Result table */
+.res-table { width: 100%; border-collapse: collapse; }
+.res-table thead th { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line-mid); background: var(--bg3); font-weight: 700; white-space: nowrap; }
+.res-table thead th:first-child::before { content: '/ '; color: var(--orange); }
+.res-table tbody tr { border-bottom: 1px solid var(--line); }
+.res-table tbody td { padding: 7px 12px; font-family: var(--mono); font-size: 12px; color: var(--text-mid); }
+.col-name { color: var(--text); font-weight: 600; }
+.tag-ok  { color: var(--green);  font-weight: 700; font-size: 10px; }
+.tag-high{ color: var(--red);    font-weight: 700; font-size: 10px; }
+.tag-low { color: #3b82f6;       font-weight: 700; font-size: 10px; }
+.tag-dev { color: var(--yellow); font-weight: 700; font-size: 10px; }
 
-  /* ─── INDICATORS TABLE ─── */
-  .ind-table-wrap { border:1px solid var(--line-mid); background:var(--bg); max-height:380px; overflow-y:auto; margin-bottom:18px; }
-  .ind-table { width:100%; border-collapse:collapse; }
-  .ind-table thead th { font-family:var(--mono); font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-dim); padding:11px 16px; text-align:left; border-bottom:1px solid var(--line-mid); background:var(--bg3); font-weight:700; white-space:nowrap; }
-  .ind-table thead th:first-child::before { content:'/ '; color:var(--orange); }
-  .ind-table tbody tr { border-bottom:1px solid var(--line); transition:background 0.12s; }
-  .ind-table tbody tr:last-child { border-bottom:none; }
-  .ind-table tbody tr:hover { background:var(--orange-pale); }
-  .ind-table tbody td { padding:9px 16px; vertical-align:middle; }
-  .ind-input { padding:7px 11px; height:36px; border:1px solid var(--line); border-left:2px solid var(--bg3); background:var(--bg); font-family:var(--mono); font-size:12px; color:var(--text); outline:none; transition:border-color 0.12s; width:100%; min-width:80px; }
-  .ind-input:focus { border-color:var(--orange); border-left-color:var(--orange); background:var(--white); }
-  .ind-del { width:30px; height:30px; background:transparent; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-dim); transition:color 0.12s; padding:0; }
-  .ind-del:hover { color:var(--red); }
-  .ind-del svg { width:13px; height:13px; stroke:currentColor; fill:none; }
-  .add-indicator-row { display:flex; gap:8px; margin-bottom:22px; }
-  .add-indicator-row input { flex:1; padding:9px 13px; height:40px; border:1px dashed var(--line-mid); border-left:2px dashed var(--bg3); background:var(--bg); font-family:var(--mono); font-size:12px; color:var(--text); outline:none; transition:border-color 0.12s; }
-  .add-indicator-row input:focus { border-color:var(--orange); border-style:solid; }
-  .add-indicator-row input::placeholder { color:var(--text-dim); }
-  .btn-add-row { padding:9px 16px; background:var(--bg3); border:1px solid var(--line-mid); font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; color:var(--text-mid); transition:all 0.15s; white-space:nowrap; clip-path:polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px); }
-  .btn-add-row:hover { background:var(--orange); color:#fff; border-color:var(--orange); }
-  .empty-indicators { text-align:center; padding:40px 24px; color:var(--text-dim); font-family:var(--mono); font-size:12px; line-height:1.9; }
-  .empty-indicators strong { display:block; font-size:13px; margin-bottom:9px; color:var(--text-mid); }
+/* Save info */
+.save-info { background: var(--green-pale); border: 1px solid var(--green-border); padding: 14px 16px; margin-bottom: 16px; font-family: var(--mono); font-size: 11px; color: var(--green); line-height: 1.7; }
+.err-banner {
+  display: none; align-items: flex-start; gap: 10px; padding: 12px 14px; margin-bottom: 14px;
+  background: var(--red-pale); border: 1px solid var(--red-border);
+  color: var(--red); font-family: var(--mono); font-size: 12px;
+}
+.err-banner.show { display: flex; }
+.err-banner svg { width: 15px; height: 15px; stroke: currentColor; fill: none; flex-shrink: 0; margin-top: 1px; }
 
-  /* ─── ERROR BANNER ─── */
-  .err-banner { display:none; align-items:center; gap:10px; padding:12px 16px; background:var(--red-pale); border:1px solid var(--red-border); color:var(--red); font-family:var(--mono); font-size:12px; margin-bottom:20px; animation:shake 0.35s ease; }
-  .err-banner.show { display:flex; }
-  .err-banner svg { width:16px; height:16px; stroke:currentColor; fill:none; flex-shrink:0; }
+.btn-nav-sm {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; background: var(--bg3); border: none; cursor: pointer;
+  font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-mid); text-decoration: none; transition: all .15s;
+  clip-path: var(--clip-sm);
+}
+.btn-nav-sm:hover { background: var(--text); color: #fff; }
 
-  /* ─── BTN ROW ─── */
-  .btn-row { display:flex; gap:11px; margin-top:22px; }
-
-  /* ─── TOAST ─── */
-  .toast { position:fixed; bottom:36px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--text); color:#fff; font-family:var(--mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; padding:14px 28px; display:flex; align-items:center; gap:10px; opacity:0; transition:all 0.35s ease; z-index:400; pointer-events:none; clip-path:polygon(11px 0%,100% 0%,100% calc(100% - 11px),calc(100% - 11px) 100%,0% 100%,0% 11px); }
-  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-  .toast svg { width:15px; height:15px; stroke:var(--green); fill:none; flex-shrink:0; }
-
-  /* ─── RESPONSIVE ─── */
-  @media (max-width:960px) {
-    .panels-grid { grid-template-columns:1fr; }
-    .result-two-col { grid-template-columns:1fr; }
-    .panels-outer, .panels-grid { clip-path:none; }
-    .page { padding:78px 28px 52px; }
-  }
-  @media (max-width:480px) {
-    .up-panel { padding:26px 20px; }
-    .add-indicator-row { flex-wrap:wrap; }
-    .result-block { padding:20px; }
-  }
-  /* ─── STEP 3 RESULT CARDS — mirrors analysis.html ─── */
-  .r3-card-wrap { background:var(--text); clip-path:polygon(20px 0%,100% 0%,100% calc(100% - 20px),calc(100% - 20px) 100%,0% 100%,0% 20px); padding:2px; margin-bottom:20px; animation:fadeUp 0.35s ease both; }
-  .r3-card-wrap:nth-child(2){animation-delay:.07s}
-  .r3-card { background:var(--white); clip-path:polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px); }
-  .r3-card-header { display:flex; align-items:center; justify-content:space-between; padding:14px 22px 12px; border-bottom:1px solid var(--line); background:var(--bg2); }
-  .r3-card-label { font-family:var(--mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-dim); display:flex; align-items:center; gap:7px; }
-  .r3-card-label::before { content:'/'; color:var(--orange); font-weight:700; font-size:13px; }
-  .r3-info-grid { display:grid; grid-template-columns:200px 1fr; }
-  .r3-thumb-wrap { border-right:1px solid var(--line); padding:22px; display:flex; align-items:flex-start; justify-content:center; }
-  .r3-thumb-pdf { width:160px; height:160px; background:var(--bg3); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:var(--text-dim); }
-  .r3-thumb-pdf svg { width:44px; height:44px; stroke:var(--text-dim); fill:none; }
-  .r3-thumb-pdf span { font-family:var(--mono); font-size:10px; text-align:center; letter-spacing:0.05em; word-break:break-all; padding:0 8px; }
-  .r3-thumb-img { width:160px; height:160px; object-fit:cover; display:block; }
-  .r3-meta-panel { padding:18px 20px; display:flex; flex-direction:column; }
-  .r3-meta-item { padding:9px 0; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:14px; }
-  .r3-meta-item:last-child { border-bottom:none; }
-  .r3-meta-key { font-family:var(--mono); font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-dim); min-width:100px; flex-shrink:0; }
-  .r3-meta-val { font-family:var(--mono); font-size:13px; color:var(--text); font-weight:500; }
-  .r3-result-body { padding:22px; display:flex; flex-direction:column; gap:18px; }
-  .r3-block { background:var(--bg2); padding:20px; border:1px solid var(--line-mid); }
-  .r3-block-label { font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-dim); margin-bottom:14px; padding-bottom:7px; border-bottom:1px solid var(--line-mid); display:flex; align-items:center; gap:8px; }
-  .r3-block-label::before { content:''; display:inline-block; width:5px; height:5px; background:var(--orange); flex-shrink:0; }
-  .summary-type { font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--orange); margin-bottom:8px; }
-  .summary-status { font-family:var(--sans); font-size:13px; color:var(--text); line-height:1.65; margin-bottom:14px; }
-  .rec-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:7px; }
-  .rec-item { display:flex; gap:8px; font-family:var(--mono); font-size:11px; color:var(--text-mid); line-height:1.6; }
-  .rec-item::before { content:'→'; color:var(--orange); flex-shrink:0; }
-  .rec-all-good { font-family:var(--mono); font-size:11px; color:var(--green); display:flex; align-items:center; gap:8px; }
-  .rec-all-good::before { content:'✓'; font-weight:700; }
-  .ind-res-table { width:100%; border-collapse:collapse; }
-  .ind-res-table thead th { font-family:var(--mono); font-size:9px; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim); padding:6px 10px; text-align:left; border-bottom:1px solid var(--line-mid); background:var(--bg3); font-weight:700; }
-  .ind-res-table thead th:first-child::before { content:'/ '; color:var(--orange); }
-  .ind-res-table tbody tr { border-bottom:1px solid var(--line); }
-  .ind-res-table tbody tr:last-child { border-bottom:none; }
-  .ind-res-table tbody td { padding:7px 10px; font-family:var(--mono); font-size:12px; color:var(--text-mid); }
-  .ind-res-table .col-name { color:var(--text); font-weight:600; }
-  .ind-res-table .col-value { color:var(--text); }
-  .tag-high { color:#f59e0b; font-weight:700; }
-  .tag-low  { color:#f59e0b; font-weight:700; }
-  .tag-ok   { color:var(--green); font-weight:700; }
-  @media(max-width:680px){ .r3-info-grid { grid-template-columns:1fr; } .r3-thumb-wrap { border-right:none; border-bottom:1px solid var(--line); } }
+@media (max-width: 480px) { .res-table { font-size: 11px; } .res-table tbody td { padding: 6px 8px; } }
 </style>
 </head>
 <body>
@@ -211,22 +124,23 @@
 <header>
   <a class="logo" href="cabinet.html">
     <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
-        <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
-      </svg>
+      <svg viewBox="0 0 24 24"><path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke-linecap="round"/></svg>
     </div>
     <div class="logo-wordmark">
       <div class="logo-text">Medeus<span>.</span></div>
       <div class="logo-sub">Medical AI</div>
     </div>
   </a>
-  <div class="header-right">
-    <a href="cabinet.html" class="btn-nav btn-ghost">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+  <nav class="header-actions desktop-nav" id="desktopNav" style="display:flex;gap:24px;align-items:center;"></nav>
+  <div class="header-actions desktop-nav" style="gap:8px;">
+    <a href="cabinet.html" class="btn-nav-sm">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
       Кабинет
     </a>
   </div>
 </header>
+
+<nav class="mobile-nav" id="mobileNav"></nav>
 
 <main class="page">
   <div class="page-header">
@@ -237,100 +151,95 @@
     <div class="page-meta" id="pageSubtitleEl">Шаг 1 из 3</div>
   </div>
 
-  <!-- STEPPER -->
-  <div class="stepper" id="stepper" style="margin-bottom:36px;">
-    <div class="step-item active" id="si1"><div class="step-num-badge">1</div><span>Загрузка</span></div>
+  <!-- Stepper -->
+  <div class="stepper" id="stepper">
+    <div class="step-item active" id="si1"><div class="step-num">1</div><span>Загрузка</span></div>
     <div class="step-line"></div>
-    <div class="step-item" id="si2"><div class="step-num-badge">2</div><span>Показатели</span></div>
+    <div class="step-item" id="si2"><div class="step-num">2</div><span>Показатели</span></div>
     <div class="step-line"></div>
-    <div class="step-item" id="si3"><div class="step-num-badge">3</div><span>Результат</span></div>
+    <div class="step-item" id="si3"><div class="step-num">3</div><span>Результат</span></div>
   </div>
 
-  <!-- ═══════════ STEP 1 ═══════════ -->
+  <!-- ═══ STEP 1 ═══ -->
   <div id="step1Panel">
-    <div class="analyzer-grid-wrap">
-      <div class="analyzer-panels analyzer-panels--single">
-        <div class="a-panel" style="position:relative;">
-          <div class="loader-overlay" id="step1Loader">
-            <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-            <div class="loader-text">Извлекаем показатели...<br><span>Обычно 5–15 секунд</span></div>
+    <div class="step-wrap">
+      <div class="step-panel">
+        <div class="loader-overlay" id="step1Loader">
+          <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="loader-text">Извлекаем показатели...<br><span style="opacity:.6;font-size:10px;">Обычно 5–15 секунд</span></div>
+        </div>
+
+        <div class="panel-label">Документ с результатами</div>
+
+        <div class="error-banner" id="step1Error">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="step1ErrorText"></span>
+        </div>
+
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="fileInput" accept="image/*,.pdf" style="display:none;">
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           </div>
+          <div class="upload-title">Загрузите результаты анализов</div>
+          <div class="upload-sub">Перетащите файл или нажмите для выбора</div>
+          <div class="upload-formats">Форматы: <span>PNG</span>·<span>JPG</span>·<span>PDF</span> · Макс. 10 МБ</div>
+        </div>
 
-          <div class="panel-label">Документ и данные</div>
-
-          <div class="error-banner" id="step1Error">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span id="step1ErrorText"></span>
+        <div class="file-preview" id="filePreview">
+          <div class="file-preview-icon"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <div class="file-preview-info">
+            <div class="file-preview-name" id="fileName">—</div>
+            <div class="file-preview-size" id="fileSize">—</div>
           </div>
+          <button class="file-remove" id="fileRemove" type="button">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
 
-          <div class="upload-zone" id="uploadZone">
-            <input type="file" id="fileInput" accept="image/*,.pdf" style="display:none;">
-            <div class="upload-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            </div>
-            <div class="upload-title">Загрузите результаты анализов</div>
-            <div class="upload-sub">Перетащите файл или нажмите для выбора</div>
-            <div class="upload-formats"><span>PNG</span>·<span>JPG</span>·<span>PDF</span></div>
-          </div>
-
-          <div class="file-preview" id="filePreview">
-            <div class="file-preview-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-            <div class="file-preview-info">
-              <div class="file-preview-name" id="fileName">—</div>
-              <div class="file-preview-size" id="fileSize">—</div>
-            </div>
-            <button class="file-remove" id="fileRemove" type="button">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-
-
-
-          <div style="display:flex;gap:10px;margin-top:0;">
-            <button id="extractBtn" disabled type="button" class="btn-primary" style="flex:1;">
-              <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <span>Извлечь показатели</span>
-            </button>
-            <button id="manualBtn" type="button" class="btn-secondary">
-              <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              <span>Вручную</span>
-            </button>
-          </div>
+        <div class="btn-row" style="margin-top:4px;">
+          <button id="extractBtn" disabled type="button" class="btn btn-primary btn-primary-lg" style="flex:1;">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <span>Извлечь показатели</span>
+          </button>
+          <button id="manualBtn" type="button" class="btn btn-secondary btn-primary-lg">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span>Вручную</span>
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════ STEP 2 ═══════════ -->
+  <!-- ═══ STEP 2 ═══ -->
   <div id="step2Panel" style="display:none;">
-    <div class="panels-outer">
-      <div class="up-panel panel-full" style="position:relative;">
-        <div class="panel-loader-overlay" id="step2Loader">
+    <div class="step-wrap">
+      <div class="step-panel">
+        <div class="loader-overlay" id="step2Loader">
           <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-          <div class="loader-text">ИИ анализирует показатели...<br><span>До 30 секунд</span></div>
+          <div class="loader-text">ИИ анализирует показатели...<br><span style="opacity:.6;font-size:10px;">Обычно 15–30 секунд</span></div>
         </div>
 
         <div class="panel-label">Проверка показателей</div>
 
-        <div style="display:flex;gap:16px;margin-bottom:20px;align-items:flex-end;flex-wrap:wrap;">
-          <div class="name-field-group" style="flex:2;min-width:180px;margin-bottom:0;">
+        <div class="meta-row">
+          <div class="form-group">
             <label for="analysisNameInput">Название анализа</label>
-            <input class="name-field-input" type="text" id="analysisNameInput" placeholder="Определяется автоматически" autocomplete="off">
+            <input type="text" id="analysisNameInput" placeholder="Определяется автоматически" autocomplete="off">
           </div>
-          <div class="name-field-group" style="flex:1;min-width:140px;margin-bottom:0;">
+          <div class="form-group">
             <label for="analysisDate">Дата сдачи</label>
-            <input class="name-field-input" type="date" id="analysisDate" max="">
+            <input type="date" id="analysisDate">
           </div>
         </div>
 
         <div class="err-banner" id="step2Error">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span id="step2ErrorText"></span>
         </div>
 
-        <p style="font-family:var(--mono);font-size:12px;color:var(--text-mid);line-height:1.75;margin-bottom:20px;">
-          <strong style="color:var(--text);">Проверьте и при необходимости отредактируйте показатели.</strong><br>
-          Исправьте ошибки, удалите лишнее или добавьте пропущенное.
+        <p style="font-family:var(--mono);font-size:12px;color:var(--text-mid);line-height:1.8;margin-bottom:16px;">
+          <strong style="color:var(--text);">Проверьте показатели перед анализом.</strong> Исправьте ошибки, удалите лишнее или добавьте пропущенное.
         </p>
 
         <div class="ind-table-wrap">
@@ -340,20 +249,20 @@
           </table>
         </div>
 
-        <div class="add-indicator-row">
-          <input type="text" id="newIndName" placeholder="Название показателя">
-          <input type="text" id="newIndValue" placeholder="Значение" style="max-width:120px;">
-          <input type="text" id="newIndUnit" placeholder="Ед." style="max-width:90px;">
+        <div class="add-ind-row">
+          <input type="text" id="newIndName" placeholder="Название показателя" style="flex:2;">
+          <input type="text" id="newIndValue" placeholder="Значение" style="flex:1;max-width:110px;">
+          <input type="text" id="newIndUnit" placeholder="Ед." style="flex:0;max-width:80px;">
           <button class="btn-add-row" id="addIndBtn" type="button">+ Добавить</button>
         </div>
 
-        <div class="btn-row">
-          <button class="btn-secondary" id="backToStep1Btn" type="button">
-            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        <div class="btn-row" style="margin-top:8px;">
+          <button class="btn btn-secondary btn-primary-lg" id="backToStep1Btn" type="button">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
             Назад
           </button>
-          <button class="btn-primary" id="continueBtn" type="button" style="flex:1;">
-            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6m-3-3 3 3-3 3"/><circle cx="12" cy="12" r="10"/></svg>
+          <button class="btn btn-primary btn-primary-lg" id="continueBtn" type="button" style="flex:1;">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9 12h6m-3-3 3 3-3 3"/></svg>
             <span>Получить анализ</span>
           </button>
         </div>
@@ -361,95 +270,78 @@
     </div>
   </div>
 
-  <!-- ═══════════ STEP 3 ═══════════ -->
+  <!-- ═══ STEP 3 ═══ -->
   <div id="step3Panel" style="display:none;">
 
-    <!-- Card 1: file preview + meta info -->
-    <div class="r3-card-wrap">
-      <div class="r3-card">
-        <div class="r3-card-header">
-          <div class="r3-card-label">Информация и файл</div>
+    <!-- Meta card -->
+    <div class="r3-card">
+      <div class="r3-card-outer"><div class="r3-card-inner">
+        <div class="r3-card-head">
+          <div class="r3-card-label">Информация</div>
         </div>
-        <div class="r3-info-grid">
-          <div class="r3-thumb-wrap" id="r3ThumbWrap">
-            <div class="r3-thumb-pdf">
-              <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <span id="r3ThumbName">—</span>
-            </div>
-          </div>
-          <div class="r3-meta-panel">
-            <div class="r3-meta-item"><div class="r3-meta-key">Название</div><div class="r3-meta-val" id="r3MetaName">—</div></div>
-            <div class="r3-meta-item"><div class="r3-meta-key">Тип анализа</div><div class="r3-meta-val" id="r3MetaType">—</div></div>
-            <div class="r3-meta-item"><div class="r3-meta-key">Дата сдачи</div><div class="r3-meta-val" id="r3MetaDate">—</div></div>
-            <div class="r3-meta-item"><div class="r3-meta-key">Файл</div><div class="r3-meta-val" id="r3MetaFile">—</div></div>
+        <div class="r3-card-body">
+          <div class="meta-grid">
+            <div class="meta-item"><div class="meta-item-key">Название</div><div class="meta-item-val" id="r3MetaName">—</div></div>
+            <div class="meta-item"><div class="meta-item-key">Тип</div><div class="meta-item-val" id="r3MetaType">—</div></div>
+            <div class="meta-item"><div class="meta-item-key">Дата</div><div class="meta-item-val" id="r3MetaDate">—</div></div>
+            <div class="meta-item"><div class="meta-item-key">Файл</div><div class="meta-item-val" id="r3MetaFile">—</div></div>
           </div>
         </div>
-      </div>
+      </div></div>
     </div>
 
-    <!-- Card 2: AI result (summary + table vertical) + save panel -->
-    <div class="r3-card-wrap">
-      <div class="r3-card">
-        <div class="r3-card-header">
+    <!-- Result card -->
+    <div class="r3-card">
+      <div class="r3-card-outer"><div class="r3-card-inner">
+        <div class="r3-card-head">
           <div class="r3-card-label">Результат анализа ИИ</div>
-          <div class="pill pill-green"><span class="pill-inner">Готово</span></div>
+          <span class="pill pill-green" style="font-size:10px;padding:3px 10px;font-family:var(--mono);font-weight:700;letter-spacing:.1em;text-transform:uppercase;">Готово</span>
         </div>
-        <div class="r3-result-body">
-          <div class="r3-block">
-            <div class="r3-block-label">Общее состояние и рекомендации</div>
+        <div class="r3-card-body">
+          <div class="result-block">
+            <div class="result-block-title">Общее состояние и рекомендации</div>
             <div id="summaryBlock"></div>
           </div>
-          <div class="r3-block">
-            <div class="r3-block-label">Показатели</div>
-            <div style="overflow-x:auto;">
-              <table class="ind-res-table">
+          <div class="result-block" style="margin-bottom:0;">
+            <div class="result-block-title">Показатели</div>
+            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+              <table class="res-table">
                 <thead><tr><th>Показатель</th><th>Значение</th><th>Статус</th></tr></thead>
                 <tbody id="resultTableBody"></tbody>
               </table>
             </div>
           </div>
         </div>
-      </div>
+      </div></div>
     </div>
 
-    <!-- Save panel -->
-    <div class="panels-outer" style="margin-bottom:20px;">
-      <div class="panels-grid" style="grid-template-columns:1fr 1fr;">
-        <div class="up-panel" style="display:flex;flex-direction:column;gap:16px;">
-          <div class="panel-label">Сохранение</div>
-          <div style="background:var(--bg);padding:20px;border-left:3px solid var(--orange);">
-            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Название</div>
-            <div style="font-family:var(--sans);font-size:15px;font-weight:600;color:var(--text);" id="saveCategoryLabel">—</div>
-          </div>
-          <div style="background:var(--bg);padding:20px;border-left:3px solid var(--bg3);">
-            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">Файл</div>
-            <div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="saveFileLabel">—</div>
-          </div>
-          <div style="background:var(--green-pale);padding:18px;border:1px solid var(--green-border);">
-            <div style="font-family:var(--mono);font-size:11px;color:var(--green);line-height:1.7;">Анализ будет сохранён в ваш личный кабинет. Показатели войдут в общую сводку состояния здоровья.</div>
-          </div>
+    <!-- Save card -->
+    <div class="r3-card">
+      <div class="r3-card-outer"><div class="r3-card-inner">
+        <div class="r3-card-head">
+          <div class="r3-card-label">Сохранение</div>
         </div>
-        <div class="up-panel" style="display:flex;flex-direction:column;gap:16px;">
-          <div style="flex:1;"></div>
-          <div id="saveErrBanner" class="err-banner">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div class="r3-card-body">
+          <div class="save-info">✓ Анализ будет сохранён в ваш личный кабинет. Показатели войдут в общую сводку состояния здоровья.</div>
+          <div class="err-banner" id="saveErrBanner">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <span id="saveErrText"></span>
           </div>
-          <div style="display:flex;gap:10px;">
-            <button class="btn-secondary" id="backToStep2Btn" type="button">
-              <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          <div class="btn-row">
+            <button class="btn btn-secondary btn-primary-lg" id="backToStep2Btn" type="button">
+              <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
               Назад
             </button>
-            <button class="btn-save" id="saveBtn" type="button">
-              <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <button class="btn btn-primary btn-primary-lg" id="saveBtn" type="button" style="flex:1;background:var(--green);">
+              <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
               <span>Сохранить в кабинет</span>
             </button>
           </div>
         </div>
-      </div>
+      </div></div>
     </div>
 
-  </div>
+  </div><!-- /step3 -->
 </main>
 
 <footer>
@@ -459,50 +351,33 @@
 </footer>
 
 <div class="toast" id="toast">
-  <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-  <span>Анализ добавлен в кабинет</span>
+  <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span>Анализ сохранён в кабинет</span>
 </div>
-
-<style>
-  /* quick name buttons */
-  .quick-name-btn {
-    padding:5px 12px; background:var(--bg); border:1px solid var(--line-mid);
-    font-family:var(--mono); font-size:11px; color:var(--text-mid); cursor:pointer;
-    transition:all 0.15s; clip-path:polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
-  }
-  .quick-name-btn:hover { background:var(--orange); color:#fff; border-color:var(--orange); }
-</style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase.js"></script>
 <script>
-let currentSession=null,userProfile=null;
+const PAGES=[
+  {id:'cabinet',href:'cabinet.html',label:'Кабинет',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`},
+  {id:'upload',href:'upload.html',label:'Анализ',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`},
+  {id:'indicators',href:'indicators.html',label:'Данные',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`},
+  {id:'profile',href:'profile.html',label:'Профиль',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`},
+];
+document.getElementById('mobileNav').innerHTML=PAGES.map(p=>`<a href="${p.href}" class="mobile-nav-item${p.id==='upload'?' active':''}">${p.icon}${p.label}</a>`).join('');
+document.getElementById('desktopNav').innerHTML=PAGES.map(p=>`<a href="${p.href}" class="desk-nav-link${p.id==='upload'?' active':''}">${p.label}</a>`).join('');
+
+let currentSession=null,userProfile=null,selectedFile=null,indicators=[],analysisResult=null;
+
+document.getElementById('analysisDate').max=new Date().toISOString().split('T')[0];
+
 (async()=>{currentSession=await requireAuth();if(currentSession)await loadUserProfile(currentSession);})();
-async function loadUserProfile(s){try{const c=getSupabase();const{data}=await c.from('profiles').select('gender,birth_date,full_name').eq('id',s.user.id).maybeSingle();if(data)userProfile=data;}catch(e){console.warn('Профиль:',e);}}
+async function loadUserProfile(s){try{const c=getSupabase();const{data}=await c.from('profiles').select('gender,birth_date,full_name').eq('id',s.user.id).maybeSingle();if(data)userProfile=data;}catch(e){}}
 function calcAge(bd){if(!bd)return'';const t=new Date(),b=new Date(bd);let a=t.getFullYear()-b.getFullYear();const m=t.getMonth()-b.getMonth();if(m<0||(m===0&&t.getDate()<b.getDate()))a--;return String(a);}
 
+// File handling
 const fileInput=document.getElementById('fileInput');
 const uploadZone=document.getElementById('uploadZone');
-const filePreview=document.getElementById('filePreview');
-const fileNameEl=document.getElementById('fileName');
-const fileSizeEl=document.getElementById('fileSize');
-const fileRemove=document.getElementById('fileRemove');
-const analysisDate=document.getElementById('analysisDate');
-analysisDate.max=new Date().toISOString().split('T')[0];
-const analysisNameInput=document.getElementById('analysisNameInput');
-const extractBtn=document.getElementById('extractBtn');
-const continueBtn=document.getElementById('continueBtn');
-const saveBtn=document.getElementById('saveBtn');
-const indicatorsBody=document.getElementById('indicatorsBody');
-const toast=document.getElementById('toast');
-const s1Loader=document.getElementById('step1Loader');
-const s2Loader=document.getElementById('step2Loader');
-const panel1=document.getElementById('step1Panel');
-const panel2=document.getElementById('step2Panel');
-const panel3=document.getElementById('step3Panel');
-
-let selectedFile=null,indicators=[],analysisResult=null;
-
 uploadZone.addEventListener('click',()=>fileInput.click());
 uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.classList.add('dragover');});
 uploadZone.addEventListener('dragleave',()=>uploadZone.classList.remove('dragover'));
@@ -511,40 +386,60 @@ fileInput.addEventListener('change',()=>{if(fileInput.files[0])handleFile(fileIn
 
 function formatBytes(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
 function handleFile(file){
-  if(file.size>10*1024*1024){showError(1,`Файл слишком большой: ${formatBytes(file.size)}. Максимум — 10 МБ.`);fileInput.value='';return;}
-  selectedFile=file;fileNameEl.textContent=file.name;fileSizeEl.textContent=formatBytes(file.size);
-  uploadZone.style.display='none';filePreview.classList.add('show');hideError(1);checkStep1();
+  if(file.size>10*1024*1024){showError(1,`Файл слишком большой: ${formatBytes(file.size)}. Макс. 10 МБ.`);fileInput.value='';return;}
+  selectedFile=file;document.getElementById('fileName').textContent=file.name;document.getElementById('fileSize').textContent=formatBytes(file.size);
+  uploadZone.style.display='none';document.getElementById('filePreview').classList.add('show');hideError(1);checkStep1();
 }
-fileRemove.addEventListener('click',()=>{selectedFile=null;fileInput.value='';filePreview.classList.remove('show');uploadZone.style.display='';hideError(1);checkStep1();});
+document.getElementById('fileRemove').addEventListener('click',()=>{selectedFile=null;fileInput.value='';document.getElementById('filePreview').classList.remove('show');uploadZone.style.display='';hideError(1);checkStep1();});
+function checkStep1(){document.getElementById('extractBtn').disabled=!selectedFile;}
 
-function checkStep1(){extractBtn.disabled=!selectedFile;}
-
-
-function showError(panel,msg){
-  if(panel===1){document.getElementById('step1ErrorText').textContent=msg;document.getElementById('step1Error').classList.add('show');}
-  else if(panel===2){document.getElementById('step2ErrorText').textContent=msg;document.getElementById('step2Error').classList.add('show');}
+function showError(p,msg){
+  if(p===1){document.getElementById('step1ErrorText').textContent=msg;document.getElementById('step1Error').classList.add('show');}
+  else if(p===2){document.getElementById('step2ErrorText').textContent=msg;document.getElementById('step2Error').classList.add('show');}
   else{document.getElementById('saveErrText').textContent=msg;document.getElementById('saveErrBanner').classList.add('show');}
 }
-function hideError(panel){
-  if(panel===1)document.getElementById('step1Error').classList.remove('show');
-  else if(panel===2)document.getElementById('step2Error').classList.remove('show');
+function hideError(p){
+  if(p===1)document.getElementById('step1Error').classList.remove('show');
+  else if(p===2)document.getElementById('step2Error').classList.remove('show');
   else document.getElementById('saveErrBanner').classList.remove('show');
 }
-
 function setStep(n){
   const subtitles={1:'Шаг 1 из 3 — загрузите документ',2:'Шаг 2 из 3 — проверьте показатели',3:'Шаг 3 из 3 — результат готов'};
   document.getElementById('pageSubtitleEl').textContent=subtitles[n]||'';
   for(let i=1;i<=3;i++){const el=document.getElementById('si'+i);el.className='step-item'+(i<n?' done':i===n?' active':'');}
-  panel1.style.display=n===1?'':'none';
-  panel2.style.display=n===2?'':'none';
-  panel3.style.display=n===3?'':'none';
+  document.getElementById('step1Panel').style.display=n===1?'':'none';
+  document.getElementById('step2Panel').style.display=n===2?'':'none';
+  document.getElementById('step3Panel').style.display=n===3?'':'none';
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
+function escHtml(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function renderIndicators(){
+  const tbody=document.getElementById('indicatorsBody');
+  if(!indicators.length){tbody.innerHTML='<tr><td colspan="4"><div class="empty-indicators"><strong>Показатели не найдены</strong><br>Добавьте вручную с помощью формы ниже.</div></td></tr>';return;}
+  tbody.innerHTML='';
+  indicators.forEach((ind,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><input class="ind-input" data-field="name" value="${escHtml(ind.name)}" style="min-width:130px;"></td><td><input class="ind-input" data-field="value" value="${escHtml(ind.value)}" style="max-width:90px;"></td><td><input class="ind-input" data-field="unit" value="${escHtml(ind.unit||'')}" style="max-width:75px;"></td><td><button class="ind-del" data-idx="${i}"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg></button></td>`;
+    tr.querySelectorAll('.ind-input').forEach(inp=>inp.addEventListener('input',()=>{indicators[i][inp.dataset.field]=inp.value;}));
+    tr.querySelector('.ind-del').addEventListener('click',()=>{indicators.splice(i,1);renderIndicators();});
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById('addIndBtn').addEventListener('click',()=>{
+  const name=document.getElementById('newIndName').value.trim(),value=document.getElementById('newIndValue').value.trim(),unit=document.getElementById('newIndUnit').value.trim();
+  if(!name||!value)return;indicators.push({name,value,unit});renderIndicators();
+  ['newIndName','newIndValue','newIndUnit'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('newIndName').focus();
+});
+['newIndName','newIndValue','newIndUnit'].forEach(id=>{document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('addIndBtn').click();});});
+
 // STEP 1 → 2
-extractBtn.addEventListener('click',async()=>{
+document.getElementById('extractBtn').addEventListener('click',async()=>{
   if(!selectedFile)return;
   const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
-  hideError(1);s1Loader.classList.add('show');extractBtn.disabled=true;
+  hideError(1);document.getElementById('step1Loader').classList.add('show');document.getElementById('extractBtn').disabled=true;
   try{
     const dupFd=new FormData();dupFd.append('file',selectedFile);
     const dupR=await fetch(`${API_BASE}/check-duplicate`,{method:'POST',headers:{'Authorization':`Bearer ${session.access_token}`},body:dupFd});
@@ -558,157 +453,81 @@ extractBtn.addEventListener('click',async()=>{
     if(resp.status===401){window.location.href='auth.html';return;}
     if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
     indicators=data.indicators||[];
-    if(data.analysis_name)analysisNameInput.value=data.analysis_name;
+    if(data.analysis_name)document.getElementById('analysisNameInput').value=data.analysis_name;
     renderIndicators();setStep(2);
   }catch(err){showError(1,err.message||'Не удалось подключиться к серверу');}
-  finally{s1Loader.classList.remove('show');extractBtn.disabled=false;checkStep1();}
+  finally{document.getElementById('step1Loader').classList.remove('show');document.getElementById('extractBtn').disabled=false;checkStep1();}
 });
 
-function escHtml(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function renderIndicators(){
-  if(!indicators.length){indicatorsBody.innerHTML='<tr><td colspan="4"><div class="empty-indicators"><strong>Показатели не найдены</strong>Добавьте вручную с помощью формы ниже.</div></td></tr>';return;}
-  indicatorsBody.innerHTML='';
-  indicators.forEach((ind,i)=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td><input class="ind-input" data-field="name" value="${escHtml(ind.name)}" style="min-width:140px;"></td><td><input class="ind-input" data-field="value" value="${escHtml(ind.value)}" style="max-width:100px;"></td><td><input class="ind-input" data-field="unit" value="${escHtml(ind.unit||'')}" style="max-width:80px;"></td><td><button class="ind-del" data-idx="${i}"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></td>`;
-    tr.querySelectorAll('.ind-input').forEach(inp=>inp.addEventListener('input',()=>{indicators[i][inp.dataset.field]=inp.value;}));
-    tr.querySelector('.ind-del').addEventListener('click',()=>{indicators.splice(i,1);renderIndicators();});
-    indicatorsBody.appendChild(tr);
-  });
-}
-
-document.getElementById('addIndBtn').addEventListener('click',()=>{
-  const name=document.getElementById('newIndName').value.trim(),value=document.getElementById('newIndValue').value.trim(),unit=document.getElementById('newIndUnit').value.trim();
-  if(!name||!value)return;indicators.push({name,value,unit});renderIndicators();
-  ['newIndName','newIndValue','newIndUnit'].forEach(id=>{document.getElementById(id).value='';});
+document.getElementById('manualBtn').addEventListener('click',()=>{
+  indicators=[];document.getElementById('analysisNameInput').value='';document.getElementById('analysisDate').value='';
+  renderIndicators();hideError(1);setStep(2);
 });
-['newIndName','newIndValue','newIndUnit'].forEach(id=>{document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('addIndBtn').click();});});
 
 document.getElementById('backToStep1Btn').addEventListener('click',()=>{hideError(2);setStep(1);});
 
-document.getElementById('manualBtn').addEventListener('click',()=>{
-  indicators=[];
-  analysisNameInput.value='';
-  analysisDate.value='';
-  renderIndicators();
-  hideError(1);
-  setStep(2);
-});
-
 // STEP 2 → 3
-continueBtn.addEventListener('click',async()=>{
-  if(!analysisNameInput.value.trim()){showError(2,'Введите название анализа.');return;}
-  if(!analysisDate.value){showError(2,'Укажите дату сдачи анализа.');return;}
-  if(analysisDate.value>new Date().toISOString().split('T')[0]){showError(2,'Дата сдачи не может быть в будущем.');return;}
+document.getElementById('continueBtn').addEventListener('click',async()=>{
+  const name=document.getElementById('analysisNameInput').value.trim();
+  const date=document.getElementById('analysisDate').value;
+  if(!name){showError(2,'Введите название анализа.');return;}
+  if(!date){showError(2,'Укажите дату сдачи анализа.');return;}
+  if(date>new Date().toISOString().split('T')[0]){showError(2,'Дата сдачи не может быть в будущем.');return;}
   if(!indicators.length){showError(2,'Добавьте хотя бы один показатель.');return;}
   const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
   const age=calcAge(userProfile?.birth_date)||'0',gender=userProfile?.gender||'не указан';
-  hideError(2);s2Loader.classList.add('show');continueBtn.disabled=true;
+  hideError(2);document.getElementById('step2Loader').classList.add('show');document.getElementById('continueBtn').disabled=true;
   try{
     const fd=new FormData();fd.append('indicators',JSON.stringify(indicators));fd.append('age',age);fd.append('gender',gender);
     const resp=await fetch(`${API_BASE}/analyze-indicators`,{method:'POST',headers:{'Authorization':`Bearer ${session.access_token}`},body:fd});
     const data=await resp.json();if(resp.status===401){window.location.href='auth.html';return;}if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
     analysisResult=data.analysis;
-    renderResultBlocks(analysisResult);
-    renderUpMetaBlock();
-    document.getElementById('saveCategoryLabel').textContent=analysisNameInput.value.trim()||'—';
-    document.getElementById('saveFileLabel').textContent=selectedFile?.name||'—';
-    setStep(3);
-  }catch(err){showError(2,err.message||'Не удалось подключиться к серверу');}
-  finally{s2Loader.classList.remove('show');continueBtn.disabled=false;}
+    renderResultBlocks(analysisResult);renderUpMeta();setStep(3);
+  }catch(err){showError(2,err.message||'Не удалось проанализировать показатели');}
+  finally{document.getElementById('step2Loader').classList.remove('show');document.getElementById('continueBtn').disabled=false;}
 });
 
 document.getElementById('backToStep2Btn').addEventListener('click',()=>setStep(2));
 
-// ─── Render result in two blocks ───
-// analysis — объект {analysis_type, group_key, summary, recommendations, indicators}
 function renderResultBlocks(analysis){
-  if(!analysis){return;}
-  const parsed={
-    analysisType: analysis.analysis_type||'',
-    status:       analysis.summary||'',
-    recommendations: analysis.recommendations||[],
-    indicators:   analysis.indicators||[],
-  };
-
-  // Set type in meta card
-  const typeEl=document.getElementById('r3MetaType');
-  if(typeEl) typeEl.textContent=parsed.analysisType||'Анализ';
-
-  // Summary block
+  if(!analysis)return;
+  const typeEl=document.getElementById('r3MetaType');if(typeEl)typeEl.textContent=analysis.analysis_type||'Анализ';
   const sumEl=document.getElementById('summaryBlock');
   let sumHtml='';
-  if(parsed.status) sumHtml+=`<div class="summary-status">${escHtml(parsed.status)}</div>`;
-  if(parsed.recommendations.length){
-    sumHtml+='<ul class="rec-list">';
-    parsed.recommendations.forEach(r=>{
-      if(r.toLowerCase().includes('все показатели в норме')){
-        sumHtml+=`<li class="rec-all-good">${escHtml(r)}</li>`;
-      } else {
-        sumHtml+=`<li class="rec-item">${escHtml(r)}</li>`;
-      }
-    });
-    sumHtml+='</ul>';
-  }
-  if(sumEl) sumEl.innerHTML=sumHtml||'<div style="color:var(--text-dim);font-family:var(--mono);font-size:12px;">Нет данных</div>';
-
-  // Table
+  if(analysis.summary)sumHtml+=`<div class="summary-status">${escHtml(analysis.summary)}</div>`;
+  const recs=analysis.recommendations||[];
+  if(recs.length){sumHtml+='<ul class="rec-list">';recs.forEach(r=>{if(r.toLowerCase().includes('все показатели в норме')){sumHtml+=`<li class="rec-all-good">${escHtml(r)}</li>`;}else{sumHtml+=`<li class="rec-item">${escHtml(r)}</li>`;}});sumHtml+='</ul>';}
+  if(sumEl)sumEl.innerHTML=sumHtml||'<div style="color:var(--text-dim);font-size:12px;">Нет данных</div>';
   const tbody=document.getElementById('resultTableBody');
-  if(tbody){
-    if(parsed.indicators.length){
-      tbody.innerHTML=parsed.indicators.map(ind=>{
-        const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':ind.status==='deviation'?'tag-dev':'tag-ok';
-        const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':ind.status==='deviation'?'⚠ отклонение':'✓ норма';
-        return`<tr><td class="col-name">${escHtml(ind.name)}</td><td class="col-value">${escHtml(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;
-      }).join('');
-    } else {
-      tbody.innerHTML='<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text-dim);font-family:var(--mono);font-size:12px;">Таблица показателей не найдена</td></tr>';
-    }
-  }
+  const inds=analysis.indicators||[];
+  if(tbody){tbody.innerHTML=inds.length?inds.map(ind=>{const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':ind.status==='deviation'?'tag-dev':'tag-ok';const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':ind.status==='deviation'?'⚠ отклонение':'✓ норма';return`<tr><td class="col-name">${escHtml(ind.name)}</td><td>${escHtml(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;}).join(''):'<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text-dim);">Таблица не найдена</td></tr>';}
 }
 
-function renderUpMetaBlock(){
-  const isPdf=f=>f&&f.toLowerCase().endsWith('.pdf');
-  const fname=selectedFile?selectedFile.name:'—';
-  const adate=analysisDate?analysisDate.value:'';
-  const dateFmt=adate?new Date(adate+'T12:00:00').toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}):new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const setEl=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
-  setEl('r3MetaName',analysisNameInput?analysisNameInput.value.trim()||'—':'—');
-  setEl('r3MetaDate',dateFmt);
-  setEl('r3MetaFile',selectedFile?fname:'Внесено вручную');
-  // Thumb
-  const thumbWrap=document.getElementById('r3ThumbWrap');
-  const nameSpan=document.getElementById('r3ThumbName');
-  if(!selectedFile){
-    if(thumbWrap)thumbWrap.innerHTML=`<div class="r3-thumb-pdf" style="gap:14px;"><svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><span style="color:var(--orange);">Внесено вручную</span></div>`;
-  } else {
-    if(nameSpan)nameSpan.textContent=fname;
-    if(thumbWrap&&!isPdf(fname)){
-      const url=URL.createObjectURL(selectedFile);
-      thumbWrap.innerHTML=`<img class="r3-thumb-img" src="${url}" alt="${escHtml(fname)}">`;
-    }
-  }
+function renderUpMeta(){
+  const name=document.getElementById('analysisNameInput').value.trim()||'—';
+  const dateVal=document.getElementById('analysisDate').value;
+  const dateStr=dateVal?new Date(dateVal+'T12:00:00').toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}):new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+  document.getElementById('r3MetaName').textContent=name;
+  document.getElementById('r3MetaDate').textContent=dateStr;
+  document.getElementById('r3MetaFile').textContent=selectedFile?selectedFile.name:'Внесено вручную';
 }
 
 // SAVE
-saveBtn.addEventListener('click',async()=>{
+document.getElementById('saveBtn').addEventListener('click',async()=>{
   if(!analysisResult)return;
   const session=await getCurrentSession();if(!session){window.location.href='auth.html';return;}
   const age=calcAge(userProfile?.birth_date)||'0',gender=userProfile?.gender||'не указан';
-  saveBtn.disabled=true;hideError(3);
-  const origHtml=saveBtn.innerHTML;saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><circle cx="12" cy="12" r="10"/></svg><span>Сохраняем...</span>';
+  const btn=document.getElementById('saveBtn');btn.disabled=true;hideError(3);
+  const origHtml=btn.innerHTML;btn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="17" height="17"><circle cx="12" cy="12" r="10"/></svg><span>Сохраняем...</span>';
   try{
-    const fd=new FormData();if(selectedFile)fd.append('file',selectedFile);fd.append('analysis',JSON.stringify(analysisResult));fd.append('analysis_name',analysisNameInput.value.trim());fd.append('analysis_date',analysisDate.value||'');fd.append('age',age);fd.append('gender',gender);
+    const fd=new FormData();if(selectedFile)fd.append('file',selectedFile);fd.append('analysis',JSON.stringify(analysisResult));fd.append('analysis_name',document.getElementById('analysisNameInput').value.trim());fd.append('analysis_date',document.getElementById('analysisDate').value||'');fd.append('age',age);fd.append('gender',gender);
     const resp=await fetch(`${API_BASE}/save-analysis`,{method:'POST',headers:{'Authorization':`Bearer ${session.access_token}`},body:fd});
     const data=await resp.json();if(resp.status===401){window.location.href='auth.html';return;}if(!resp.ok)throw new Error(data.error||`Ошибка: ${resp.status}`);
-    saveBtn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><polyline points="20 6 9 17 4 12"/></svg><span>Сохранено!</span>';
-    saveBtn.style.color='var(--green)';saveBtn.style.borderColor='var(--green)';
-    toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3000);
-    setTimeout(()=>{try{localStorage.removeItem('medeus_dashboard_cache');}catch(e){}window.location.href='cabinet.html';},2000);
-  }catch(err){
-    saveBtn.disabled=false;saveBtn.innerHTML=origHtml;
-    showError(3,err.message||'Не удалось сохранить');
-  }
+    btn.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="17" height="17"><polyline points="20 6 9 17 4 12"/></svg><span>Сохранено!</span>';
+    document.getElementById('toast').classList.add('show');setTimeout(()=>document.getElementById('toast').classList.remove('show'),3000);
+    try{localStorage.removeItem('medeus_dash_v3');}catch(e){}
+    setTimeout(()=>window.location.href='cabinet.html',2000);
+  }catch(err){btn.disabled=false;btn.innerHTML=origHtml;showError(3,err.message||'Не удалось сохранить');}
 });
 
 checkStep1();setStep(1);

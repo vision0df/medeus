@@ -3,418 +3,267 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Medeus // Личный кабинет</title>
+<title>Medeus // Кабинет</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="global.css">
 <style>
-  body { display: flex; flex-direction: column; }
+body { display: flex; flex-direction: column; min-height: 100vh; }
 
-  /* ─── LAYOUT ─── */
-  .page {
-    flex: 1; padding: 88px 52px 64px;
-    max-width: 1260px; margin: 0 auto; width: 100%;
-    position: relative; z-index: 1;
-  }
+/* ─── NAV LINKS (desktop) ─── */
+.desk-nav-link {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-mid); text-decoration: none; padding: 6px 0;
+  border-bottom: 2px solid transparent; transition: color .15s, border-color .15s;
+}
+.desk-nav-link:hover { color: var(--text); }
+.desk-nav-link.active { color: var(--orange); border-bottom-color: var(--orange); }
 
-  /* ─── DASHBOARD GRID ─── */
-  .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-  .col-full { grid-column: 1/-1; }
+/* ─── DASHBOARD GRID ─── */
+.dashboard { display: grid; grid-template-columns: 1fr; gap: 18px; }
+@media (min-width: 768px) { .dashboard { grid-template-columns: 1fr 1fr; } }
+.col-full { grid-column: 1 / -1; }
 
-  /* ─── CARD SYSTEM ─── */
-  .dash-card-wrap {
-    background: var(--text);
-    clip-path: polygon(20px 0%,100% 0%,100% calc(100% - 20px),calc(100% - 20px) 100%,0% 100%,0% 20px);
-    padding: 2px;
-    animation: fadeUp 0.4s ease both;
-  }
-  .dash-card-wrap:nth-child(2) { animation-delay:.06s }
-  .dash-card-wrap:nth-child(3) { animation-delay:.12s }
-  .dash-card-wrap:nth-child(4) { animation-delay:.18s }
-  .dash-card-wrap:nth-child(5) { animation-delay:.24s }
+/* ─── DASH CARD ─── */
+.dash-card-wrap {
+  background: var(--text);
+  clip-path: polygon(18px 0%, 100% 0%, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0% 100%, 0% 18px);
+  padding: 2px; animation: fadeUp .4s ease both;
+}
+.dash-card-wrap:nth-child(2){animation-delay:.05s}
+.dash-card-wrap:nth-child(3){animation-delay:.1s}
+.dash-card-wrap:nth-child(4){animation-delay:.15s}
+.dash-card-wrap:nth-child(5){animation-delay:.2s}
 
-  .dash-card {
-    background: var(--white);
-    clip-path: polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px);
-    display: flex; flex-direction: column; height: 100%;
-  }
+.dash-card {
+  background: var(--white);
+  clip-path: polygon(16px 0%, 100% 0%, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0% 100%, 0% 16px);
+  display: flex; flex-direction: column; height: 100%;
+}
+.dash-card-header {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  padding: 16px 22px 14px; border-bottom: 1px solid var(--line); background: var(--bg2);
+}
+.dash-card-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-dim); display: flex; align-items: center; gap: 6px;
+}
+.dash-card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
+.card-badge {
+  font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.13em;
+  text-transform: uppercase; padding: 3px 9px;
+}
+.badge-ok     { background: var(--green-pale); color: var(--green); }
+.badge-warn   { background: var(--yellow-pale); color: var(--yellow); }
+.badge-alert  { background: var(--red-pale); color: var(--red); }
+.badge-neutral{ background: var(--bg3); color: var(--text-dim); }
+.dash-card-body { padding: 22px; flex: 1; }
+.dash-card-footer { border-top: 2px solid var(--text); }
+.dash-card-footer.hidden { display: none; }
+.btn-show-all {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 13px 22px;
+  font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: #fff; background: var(--text); border: none; cursor: pointer; text-decoration: none; outline: none;
+  transition: background .15s;
+}
+.btn-show-all:hover { background: var(--orange); }
+.btn-show-all svg { width: 13px; height: 13px; stroke: currentColor; fill: none; transition: transform .15s; }
+.btn-show-all:hover svg { transform: translateX(3px); }
 
-  .dash-card-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 26px 16px; border-bottom: 1px solid var(--line);
-    background: var(--bg2);
-  }
-  .dash-card-label {
-    font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--text-dim); display: flex; align-items: center; gap: 7px;
-  }
-  .dash-card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 13px; }
+/* Loaders */
+.card-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 36px 20px; }
+.card-loader.hidden { display: none; }
 
-  .card-badge {
-    font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.15em;
-    text-transform: uppercase; padding: 4px 10px;
-  }
-  .badge-ok     { background: var(--green-pale); color: var(--green); }
-  .badge-warn   { background: var(--yellow-pale); color: var(--yellow); }
-  .badge-alert  { background: var(--red-pale); color: var(--red); }
-  .badge-neutral{ background: var(--bg3); color: var(--text-dim); }
+/* Error */
+.dashboard-error {
+  display: none; align-items: flex-start; gap: 12px;
+  padding: 16px 20px; margin-bottom: 20px;
+  background: var(--red-pale); border: 1px solid var(--red-border);
+}
+.dashboard-error.show { display: flex; }
+.dashboard-error svg { flex-shrink: 0; width: 17px; height: 17px; stroke: var(--red); fill: none; margin-top: 1px; }
+.dashboard-error-title { font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--red); margin-bottom: 4px; }
+.dashboard-error-desc  { font-family: var(--mono); font-size: 11px; color: var(--text-mid); line-height: 1.6; }
+.dashboard-error-retry {
+  margin-top: 8px; display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--orange); cursor: pointer; background: none; border: none; padding: 0;
+}
+.dashboard-error-retry:hover { text-decoration: underline; }
 
-  .dash-card-body { padding: 26px; flex: 1; }
+/* ─── OVERVIEW (card 01) ─── */
+.overview-block {
+  display: grid; grid-template-columns: 1fr;
+  gap: 0;
+}
+@media (min-width: 768px) {
+  .overview-block { grid-template-columns: 1fr 200px 1fr; }
+}
 
-  /* ─── CARD FOOTER ─── */
-  .dash-card-footer { border-top: 2px solid var(--text); }
-  .dash-card-footer.hidden { display: none; }
-  .btn-show-all {
-    display: flex; align-items: center; justify-content: center; gap: 9px;
-    width: 100%; padding: 15px 26px;
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--white); background: var(--text);
-    border: none; cursor: pointer; text-decoration: none; outline: none;
-    transition: background 0.15s;
-  }
-  .btn-show-all:hover { background: var(--orange); }
-  .btn-show-all svg { width: 13px; height: 13px; stroke: currentColor; fill: none; transition: transform 0.15s; }
-  .btn-show-all:hover svg { transform: translateX(3px); }
+.overview-summary {
+  border-right: 1px solid var(--line);
+  min-height: 300px;
+}
+.overview-indicators {
+  display: flex; flex-direction: column; gap: 0;
+  height: 100%;
+}
 
-  /* ─── LOADER ─── */
-  .card-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 44px 24px; }
-  .card-loader.hidden { display: none; }
+/* Overview indicator items */
+.ov-ind-item {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 12px 18px; border-bottom: 1px solid var(--line);
+  text-decoration: none; transition: background .12s; flex: 1;
+  min-height: 56px;
+}
+.ov-ind-item:last-child { border-bottom: none; }
+.ov-ind-item:hover { background: var(--orange-pale); }
+.ov-ind-item-name { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 3px; }
+.ov-ind-item-val  { font-family: var(--sans); font-size: 16px; font-weight: 700; color: var(--text); }
+.ov-ind-item-status { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+.ov-ind-item.ok .ov-ind-item-status  { color: var(--green); }
+.ov-ind-item.alert .ov-ind-item-status { color: var(--red); }
+.ov-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; padding: 40px 16px; text-align: center;
+  font-family: var(--mono); font-size: 11px; color: var(--text-dim); height: 100%;
+}
+.ov-empty svg { width: 28px; height: 28px; stroke: var(--green); fill: none; stroke-width: 2.5; }
 
-  /* ─── DASHBOARD ERROR ─── */
-  .dashboard-error {
-    display: none; align-items: flex-start; gap: 14px;
-    padding: 18px 22px; margin-bottom: 26px;
-    background: var(--red-pale); border: 1px solid var(--red-border);
-  }
-  .dashboard-error.show { display: flex; }
-  .dashboard-error-icon { flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px; stroke: var(--red); fill: none; }
-  .dashboard-error-title { font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--red); margin-bottom: 4px; }
-  .dashboard-error-desc  { font-family: var(--mono); font-size: 12px; color: var(--text-mid); line-height: 1.6; }
-  .dashboard-error-retry { margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); cursor: pointer; background: none; border: none; padding: 0; }
-  .dashboard-error-retry:hover { text-decoration: underline; }
+/* Silhouette */
+.anatomy-silhouette {
+  display: none; border-right: 1px solid var(--line); position: relative;
+  overflow: hidden;
+}
+@media (min-width: 768px) { .anatomy-silhouette { display: block; } }
+.silhouette-wrap { position: relative; height: 100%; min-height: 340px; display: flex; align-items: center; justify-content: center; }
+.silhouette-svg { height: 280px; width: auto; object-fit: contain; opacity: .7; position: relative; z-index: 1; }
+.body-zone {
+  position: absolute; border-radius: 50%; background: transparent;
+  border: 1.5px solid transparent; transform: translateX(-50%);
+  transition: all .3s; cursor: pointer; z-index: 2;
+}
+.body-zone.active { background: var(--orange-pale); border-color: var(--orange-border); }
+.anatomy-hint {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: #fff; padding: 10px 14px;
+  font-family: var(--mono); font-size: 10px; text-align: center;
+  white-space: nowrap; opacity: 0; transition: opacity .2s; pointer-events: none;
+  clip-path: polygon(7px 0%, 100% 0%, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0% 100%, 0% 7px);
+  z-index: 10;
+}
+.anatomy-hint.show { opacity: 1; }
+.anatomy-hint-title { font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 10px; margin-bottom: 4px; }
+.anatomy-hint-tests { opacity: .55; font-size: 9px; line-height: 1.5; max-width: 200px; white-space: normal; }
 
-  /* ─── SUMMARY GRID (block 01) ─── */
-  .summary-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 22px; }
-  .summary-item {
-    background: var(--bg); padding: 16px 18px;
-    border-left: 3px solid var(--line); transition: border-color 0.15s;
-  }
-  .summary-item.ok    { border-left-color: var(--green); }
-  .summary-item.warn  { border-left-color: var(--yellow); }
-  .summary-item.alert { border-left-color: var(--red); }
-  .summary-item-name  { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 7px; }
-  .summary-item-val   { font-family: var(--sans); font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
-  .summary-item-val span { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--text-dim); margin-left: 3px; }
-  .summary-item-status { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 5px; }
-  .summary-item-status.ok    { color: var(--green); }
-  .summary-item-status.warn  { color: var(--yellow); }
-  .summary-item-status.alert { color: var(--red); }
+/* Anatomy menu */
+.anatomy-menu {
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 0;
+}
+.anatomy-cat {
+  display: flex; align-items: center; gap: 12px; padding: 10px 18px;
+  border-bottom: 1px solid var(--line); text-decoration: none;
+  cursor: pointer; transition: background .12s; background: transparent;
+}
+.anatomy-cat:last-child { border-bottom: none; }
+.anatomy-cat:hover { background: var(--orange-pale); }
+.anatomy-cat.hovered { background: var(--orange-pale); }
+.anatomy-cat-icon {
+  width: 28px; height: 28px; flex-shrink: 0; background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  clip-path: var(--clip-sm); transition: background .15s;
+}
+.anatomy-cat:hover .anatomy-cat-icon, .anatomy-cat.hovered .anatomy-cat-icon { background: var(--orange); }
+.anatomy-cat-icon svg { width: 14px; height: 14px; stroke: var(--text-mid); fill: none; stroke-width: 1.8; stroke-linecap: round; transition: stroke .15s; }
+.anatomy-cat:hover .anatomy-cat-icon svg, .anatomy-cat.hovered .anatomy-cat-icon svg { stroke: #fff; }
+.anatomy-cat-info { flex: 1; min-width: 0; }
+.anatomy-cat-name { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--text); letter-spacing: 0.04em; text-transform: uppercase; }
+.anatomy-cat-warn {
+  width: 18px; height: 18px; border-radius: 50%; font-family: var(--mono); font-size: 9px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; background: transparent; color: transparent;
+}
+.anatomy-cat-warn.has-warn { background: var(--red-pale); color: var(--red); }
+.anatomy-cat-arrow { color: var(--text-dim); font-size: 16px; flex-shrink: 0; transition: color .15s; }
+.anatomy-cat:hover .anatomy-cat-arrow { color: var(--orange); }
 
-  .summary-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 18px; border-top: 1px solid var(--line); }
-  .summary-footer-text { font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.05em; }
+/* Mobile: anatomy as horizontal scroll */
+@media (max-width: 767px) {
+  .overview-block { grid-template-columns: 1fr; }
+  .overview-summary { border-right: none; border-bottom: 1px solid var(--line); }
+  .anatomy-menu { flex-direction: row; overflow-x: auto; gap: 0; padding: 0; -webkit-overflow-scrolling: touch; }
+  .anatomy-cat { flex-direction: column; align-items: center; gap: 6px; padding: 14px 12px; border-bottom: none; border-right: 1px solid var(--line); min-width: 80px; flex-shrink: 0; text-align: center; }
+  .anatomy-cat-name { font-size: 9px; }
+  .anatomy-cat-arrow { display: none; }
+  .anatomy-cat-warn { margin: 0 auto; }
+}
 
-  /* ─── ANALYSES LIST (block 02) ─── */
-  .analyses-list { display: flex; flex-direction: column; gap: 9px; }
-  .analysis-row {
-    display: flex; align-items: center; gap: 14px;
-    padding: 13px 16px; background: var(--bg);
-    transition: background 0.15s; cursor: pointer;
-  }
-  .analysis-row:hover { background: var(--bg2); }
-  .analysis-icon {
-    width: 36px; height: 36px; flex-shrink: 0;
-    background: var(--bg3); display: flex; align-items: center; justify-content: center;
-    clip-path: polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
-    transition: background 0.15s;
-  }
-  .analysis-row:hover .analysis-icon { background: var(--orange); }
-  .analysis-icon svg { width: 16px; height: 16px; stroke: var(--text-dim); fill: none; transition: stroke 0.15s; }
-  .analysis-row:hover .analysis-icon svg { stroke: var(--white); }
-  .analysis-info { flex: 1; min-width: 0; }
-  .analysis-name { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .analysis-meta { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 3px; letter-spacing: 0.03em; }
-  .analysis-arrow { color: var(--text-dim); flex-shrink: 0; }
-  .analysis-arrow svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
-  .analyses-empty { font-family: var(--mono); text-align: center; padding: 34px 18px; font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; line-height: 1.7; }
+/* ─── ANALYSES LIST ─── */
+.analyses-list { display: flex; flex-direction: column; gap: 8px; }
+.analysis-row {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  background: var(--bg); cursor: pointer; transition: background .12s;
+}
+.analysis-row:hover { background: var(--bg2); }
+.analysis-icon {
+  width: 34px; height: 34px; flex-shrink: 0; background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  clip-path: var(--clip-sm); transition: background .15s;
+}
+.analysis-row:hover .analysis-icon { background: var(--orange); }
+.analysis-icon svg { width: 15px; height: 15px; stroke: var(--text-mid); fill: none; transition: stroke .15s; }
+.analysis-row:hover .analysis-icon svg { stroke: #fff; }
+.analysis-info { flex: 1; min-width: 0; }
+.analysis-name { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.analysis-meta { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+.analysis-arrow svg { width: 13px; height: 13px; stroke: var(--text-dim); fill: none; }
+.analyses-empty { font-family: var(--mono); text-align: center; padding: 28px 16px; font-size: 11px; color: var(--text-dim); line-height: 1.7; }
 
-  /* ─── RECS LIST (block 03) ─── */
-  .recs-list { display: flex; flex-direction: column; gap: 13px; }
-  .rec-item { display: flex; gap: 14px; align-items: flex-start; padding: 15px 17px; background: var(--bg); }
-  .rec-icon { width: 34px; height: 34px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 17px; background: var(--bg2); clip-path: polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px); }
-  .rec-desc { font-family: var(--mono); font-size: 11px; color: var(--text-mid); line-height: 1.7; letter-spacing: 0.02em; }
-  .rec-tag { display: inline-block; margin-top: 7px; font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 2px 8px; background: var(--bg3); color: var(--text-dim); }
+/* ─── RECS LIST ─── */
+.recs-list { display: flex; flex-direction: column; gap: 10px; }
+.rec-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; background: var(--bg); }
+.rec-icon { width: 30px; height: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; background: var(--bg2); clip-path: var(--clip-sm); }
+.rec-desc { font-family: var(--mono); font-size: 11px; color: var(--text-mid); line-height: 1.65; }
+.rec-tag { display: inline-block; margin-top: 6px; font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 2px 7px; background: var(--bg3); color: var(--text-dim); }
 
-  /* ─── HEALTH SCORE (block 04) ─── */
-  .health-score-wrap { display: flex; align-items: center; gap: 26px; margin-bottom: 26px; }
-  .health-score-box {
-    width: 96px; height: 96px; flex-shrink: 0; background: var(--text);
-    clip-path: polygon(15px 0%,100% 0%,100% calc(100% - 15px),calc(100% - 15px) 100%,0% 100%,0% 15px);
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-  }
-  .health-score-num   { font-family: var(--sans); font-size: 30px; font-weight: 700; color: var(--white); letter-spacing: -1px; line-height: 1; }
-  .health-score-label { font-family: var(--mono); font-size: 9px; color: rgba(255,255,255,0.45); letter-spacing: 0.15em; text-transform: uppercase; }
-  .health-score-title { font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
-  .health-score-desc  { font-family: var(--mono); font-size: 11px; color: var(--text-dim); line-height: 1.7; }
+/* ─── HEALTH SCORE ─── */
+.health-score-wrap { display: flex; align-items: center; gap: 22px; margin-bottom: 22px; flex-wrap: wrap; }
+.health-score-box {
+  width: 88px; height: 88px; flex-shrink: 0;
+  background: var(--text);
+  clip-path: polygon(14px 0%, 100% 0%, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0% 100%, 0% 14px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+}
+.health-score-num  { font-family: var(--sans); font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
+.health-score-label{ font-family: var(--mono); font-size: 9px; color: rgba(255,255,255,.45); letter-spacing: 0.1em; }
+.health-score-title{ font-family: var(--sans); font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+.health-score-desc { font-family: var(--mono); font-size: 11px; color: var(--text-mid); line-height: 1.6; }
 
-  .health-bars { display: flex; flex-direction: column; gap: 12px; }
-  .health-bar-row { display: flex; flex-direction: column; gap: 5px; }
-  .health-bar-top { display: flex; justify-content: space-between; align-items: center; }
-  .health-bar-name { font-family: var(--mono); font-size: 10px; color: var(--text-mid); letter-spacing: 0.08em; text-transform: uppercase; }
-  .health-bar-val  { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--text); }
-  .health-bar-track { height: 6px; background: var(--bg3); position: relative; overflow: hidden; }
-  .health-bar-fill { position: absolute; top: 0; left: 0; height: 100%; background: var(--orange); animation: barGrow 0.9s ease both; }
-  .health-bar-fill.ok    { background: var(--green); }
-  .health-bar-fill.warn  { background: var(--yellow); }
-  .health-bar-fill.alert { background: var(--red); }
+.health-bars { display: flex; flex-direction: column; gap: 10px; }
+.health-bar-row {}
+.health-bar-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.health-bar-name { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); }
+.health-bar-val  { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--text); }
+.health-bar-track { height: 6px; background: var(--bg3); }
+.health-bar-fill  { height: 100%; transition: width .6s ease; }
+.health-bar-fill.ok   { background: var(--green); }
+.health-bar-fill.warn { background: var(--yellow); }
+.health-bar-fill.alert{ background: var(--red); }
 
-  /* ─── OVERVIEW BLOCK (00+01) ─── */
-  .overview-block {
-    display: grid;
-    grid-template-columns: 1fr 240px 1fr;
-    gap: 0;
-  }
-
-  /* LEFT — сводка отклонений */
-  .overview-summary {
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--line);
-    overflow: hidden;
-  }
-  .overview-col-label {
-    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
-    text-transform: uppercase; color: var(--text-dim);
-    padding: 18px 22px 13px;
-    border-bottom: 1px solid var(--line);
-    flex-shrink: 0;
-  }
-  .overview-indicators {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    overflow: hidden;
-  }
-  .ov-ind-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 8px 18px;
-    border-bottom: 1px solid var(--line);
-    border-left: 3px solid transparent;
-    flex: 1;
-  }
-  a.ov-ind-item { color: inherit; text-decoration: none; transition: background 0.12s; }
-  a.ov-ind-item:hover { background: var(--bg3); }
-  .ov-ind-item.warn  { border-left-color: var(--yellow); }
-  .ov-ind-item.alert { border-left-color: var(--red); }
-  .ov-ind-item-name {
-    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
-    letter-spacing: 0.05em; text-transform: uppercase; flex: 1;
-  }
-  .ov-ind-item-val {
-    font-family: var(--sans); font-size: 16px; font-weight: 700; color: var(--text);
-    letter-spacing: -0.3px; flex-shrink: 0;
-  }
-  .ov-ind-item-val span { font-family: var(--mono); font-size: 10px; font-weight: 400; color: var(--text-dim); margin-left: 3px; }
-  .ov-ind-item-status {
-    font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
-    text-transform: uppercase; flex-shrink: 0; width: 52px; text-align: right;
-  }
-  .ov-ind-item-status.warn  { color: var(--yellow); }
-  .ov-ind-item-status.alert { color: var(--red); }
-  .ov-empty {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 8px; padding: 32px;
-    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
-    letter-spacing: 0.05em; text-align: center;
-  }
-  .ov-empty svg { width: 28px; height: 28px; stroke: var(--green); fill: none; stroke-width: 1.5; }
-  .overview-summary-footer {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 22px; border-top: 1px solid var(--line);
-    flex-shrink: 0;
-  }
-
-  /* CENTER — силуэт */
-  .anatomy-silhouette {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0;
-    background: var(--bg2);
-    background-image:
-      linear-gradient(rgba(0,0,0,0.055) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,0,0,0.055) 1px, transparent 1px);
-    background-size: 28px 28px;
-    border-right: 1px solid var(--line);
-    border-left: 1px solid var(--line);
-    overflow: hidden;
-  }
-  .anatomy-silhouette-label {
-    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
-    text-transform: uppercase; color: var(--text-dim);
-    align-self: flex-start; margin-bottom: 10px; flex-shrink: 0;
-  }
-  .silhouette-wrap {
-    position: relative;
-    flex: 1;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 0 0;
-  }
-  .silhouette-svg {
-    width: 100%;
-    max-width: 240px;
-    height: auto;
-    display: block;
-    mix-blend-mode: multiply;
-    filter: invert(1) sepia(1) saturate(8) hue-rotate(345deg) brightness(0.8);
-  }
-  /* Hint — overlay поверх картинки, фиксированная высота чтобы не двигала */
-  .anatomy-hint {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: rgba(240,239,235,0.55);
-    backdrop-filter: blur(2px);
-    padding: 10px 16px 12px;
-    border-top: 2px solid var(--orange);
-    opacity: 0;
-    transition: opacity 0.22s;
-    pointer-events: none;
-  }
-  .anatomy-hint.show { opacity: 1; }
-  .anatomy-hint-title {
-    font-family: var(--mono); font-size: 10px; font-weight: 700;
-    color: var(--orange); letter-spacing: 0.12em; text-transform: uppercase;
-    margin-bottom: 4px;
-    text-shadow: 0 0 6px rgba(240,239,235,0.95), 0 1px 4px rgba(240,239,235,0.8);
-  }
-  .anatomy-hint-tests {
-    font-family: var(--mono); font-size: 10px; color: var(--text); line-height: 1.65;
-    white-space: normal; word-break: break-word;
-  }
-  /* Zone circles */
-  .body-zone {
-    position: absolute;
-    border-radius: 50%;
-    border: 1.5px dashed transparent;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    transition: border-color 0.25s, box-shadow 0.25s;
-  }
-  .body-zone.active {
-    border-color: var(--orange);
-    box-shadow: 0 0 0 4px var(--orange-glow);
-    animation: zonePulse 1.5s ease-in-out infinite;
-  }
-  @keyframes zonePulse {
-    0%,100% { opacity:1; transform:translate(-50%,-50%) scale(1); }
-    50%      { opacity:.55; transform:translate(-50%,-50%) scale(1.06); }
-  }
-  .anatomy-hint.show { opacity: 1; }
-  /* hint — see below */
-
-  /* RIGHT — меню */
-  .anatomy-menu {
-    display: flex; flex-direction: column;
-    background: var(--white);
-  }
-  .anatomy-menu-label {
-    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
-    text-transform: uppercase; color: var(--text-dim);
-    padding: 18px 22px 13px;
-    border-bottom: 1px solid var(--line);
-  }
-  .anatomy-cat {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 16px;
-    cursor: pointer;
-    border-bottom: 1px solid var(--line);
-    text-decoration: none;
-    transition: background 0.15s;
-    position: relative;
-  }
-  .anatomy-cat:hover  { background: var(--bg); }
-  .anatomy-cat.hovered { background: var(--orange-pale); }
-  .anatomy-cat.hovered::before {
-    content: '';
-    position: absolute; left: 0; top: 0; bottom: 0;
-    width: 3px; background: var(--orange);
-  }
-
-  /* SVG icon box — в стиле карточек сайта */
-  .anatomy-cat-icon {
-    width: 30px; height: 30px; flex-shrink: 0;
-    background: var(--bg3);
-    clip-path: polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s;
-  }
-  .anatomy-cat-icon svg { width: 17px; height: 17px; stroke: var(--text-mid); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.15s; }
-  .anatomy-cat:hover .anatomy-cat-icon,
-  .anatomy-cat.hovered .anatomy-cat-icon { background: var(--orange); }
-  .anatomy-cat:hover .anatomy-cat-icon svg,
-  .anatomy-cat.hovered .anatomy-cat-icon svg { stroke: var(--white); }
-
-  .anatomy-cat-info { flex: 1; min-width: 0; }
-  .anatomy-cat-name {
-    font-family: var(--mono); font-size: 12px; font-weight: 600;
-    color: var(--text); letter-spacing: 0.02em;
-  }
-  .anatomy-cat-sub { display: none; }
-
-  /* Warning triangle */
-  .anatomy-cat-warn {
-    display: none; flex-shrink: 0;
-    width: 18px; height: 18px;
-    background: var(--yellow);
-    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-    position: relative;
-  }
-  .anatomy-cat-warn::after {
-    content: '!';
-    position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
-    font-family: var(--mono); font-size: 8px; font-weight: 700; color: #000;
-  }
-  .anatomy-cat-warn.show { display: block; }
-
-  .anatomy-cat-arrow {
-    font-family: var(--mono); font-size: 14px; color: var(--text-dim); flex-shrink: 0;
-    transition: transform 0.15s, color 0.15s;
-  }
-  .anatomy-cat:hover .anatomy-cat-arrow,
-  .anatomy-cat.hovered .anatomy-cat-arrow { color: var(--orange); transform: translateX(3px); }
-
-  /* ─── RESPONSIVE ─── */
-  @media (max-width: 960px) {
-    .page { padding: 78px 28px 52px; }
-    .dashboard { grid-template-columns: 1fr; }
-    .col-full { grid-column: auto; }
-    .summary-grid { grid-template-columns: 1fr 1fr; }
-    .overview-block { grid-template-columns: 1fr; min-height: auto; }
-    .overview-summary { border-right: none; border-bottom: 1px solid var(--line); }
-    .anatomy-silhouette {
-      border-right: none; border-bottom: 1px solid var(--line);
-      padding: 20px 20px 0; min-height: 300px;
-    }
-    .silhouette-svg { max-width: 180px; }
-    .anatomy-menu { border-top: none; }
-    .anatomy-hint { height: 70px; }
-  }
-  @media (max-width: 540px) {
-    .page { padding: 72px 18px 44px; }
-    .summary-grid { grid-template-columns: 1fr; }
-    .health-score-wrap { flex-direction: column; text-align: center; }
-    .anatomy-silhouette { min-height: 240px; }
-    .silhouette-svg { max-width: 140px; }
-    .anatomy-cat { padding: 11px 14px; gap: 10px; }
-    .anatomy-cat-icon { width: 30px; height: 30px; }
-    .anatomy-cat-icon svg { width: 14px; height: 14px; }
-    .anatomy-hint { height: 64px; padding: 9px 14px 10px; }
-    .anatomy-hint-tests { font-size: 9px; }
-  }
+/* ─── NAV BTN (small, in header) ─── */
+.btn-nav-sm {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; background: var(--bg3); border: none; cursor: pointer;
+  font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-mid); text-decoration: none; transition: all .15s;
+  clip-path: var(--clip-sm);
+}
+.btn-nav-sm:hover { background: var(--text); color: #fff; }
+.btn-nav-sm.orange:hover { background: var(--orange); color: #fff; }
+.btn-nav-sm svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
 </style>
 </head>
 <body>
@@ -422,26 +271,27 @@
 <header>
   <a class="logo" href="cabinet.html">
     <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
-        <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
-      </svg>
+      <svg viewBox="0 0 24 24"><path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke-linecap="round"/></svg>
     </div>
     <div class="logo-wordmark">
       <div class="logo-text">Medeus<span>.</span></div>
       <div class="logo-sub">Medical AI</div>
     </div>
   </a>
-  <div class="header-right">
-    <a href="profile.html" class="btn-nav btn-ghost">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <span>Профиль</span>
+  <nav class="header-actions desktop-nav" id="desktopNav" style="display:flex;gap:24px;align-items:center;"></nav>
+  <div class="header-actions desktop-nav" style="gap:8px;">
+    <a href="upload.html" class="btn-nav-sm orange">
+      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Анализ
     </a>
-    <button class="btn-nav btn-danger" id="logoutBtn">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-      <span>Выйти</span>
+    <button class="btn-nav-sm" id="logoutBtn" style="cursor:pointer;">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      Выйти
     </button>
   </div>
 </header>
+
+<nav class="mobile-nav" id="mobileNav"></nav>
 
 <main class="page">
   <div class="page-header">
@@ -453,50 +303,49 @@
   </div>
 
   <div class="dashboard-error" id="dashboardError">
-    <svg class="dashboard-error-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     <div>
       <div class="dashboard-error-title">Не удалось загрузить данные</div>
-      <div class="dashboard-error-desc">Проблема с подключением к серверу. Ваши анализы в безопасности.</div>
+      <div class="dashboard-error-desc">Проблема с соединением. Анализы в безопасности.</div>
       <button class="dashboard-error-retry" onclick="location.reload()">
         <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-        Обновить страницу
+        Обновить
       </button>
     </div>
   </div>
 
   <div class="dashboard">
 
-    <!-- ─── 00+01. ТЕЛО + РАЗДЕЛЫ + СВОДКА ─── -->
+    <!-- 01. СВОДКА + КАТЕГОРИИ -->
     <div class="dash-card-wrap col-full">
       <div class="dash-card">
         <div class="dash-card-header">
           <div class="dash-card-label">01 — Сводка анализов</div>
-
+          <span class="card-badge badge-neutral" id="badge-summary">загрузка...</span>
         </div>
         <div class="dash-card-body" style="padding:0;">
           <div class="overview-block">
 
-            <!-- ── ЛЕВАЯ: Сводка отклонений ── -->
+            <!-- Отклонения -->
             <div class="overview-summary">
               <div class="overview-indicators" id="summaryGrid">
                 <div class="card-loader" id="loaderSummary">
                   <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-                  <div class="loader-text">Загрузка...</div>
+                  <div class="loader-text">Загрузка показателей...</div>
                 </div>
               </div>
-
             </div>
 
-            <!-- ── ЦЕНТР: Силуэт ── -->
+            <!-- Силуэт (desktop only) -->
             <div class="anatomy-silhouette">
-              <div class="silhouette-wrap" id="silhouetteWrap">
-                <img class="silhouette-svg" id="bodySilhouette" src="body_wireframe.png" alt="body" />
-                <div class="body-zone" id="zone-blood"    style="width:115px;height:115px;left:50%;top:38%;"></div>
-                <div class="body-zone" id="zone-hormones" style="width:75px;height:75px;left:50%;top:15%;"></div>
-                <div class="body-zone" id="zone-infect"   style="width:85px;height:85px;left:50%;top:26%;"></div>
-                <div class="body-zone" id="zone-organs"   style="width:100px;height:100px;left:50%;top:34%;"></div>
-                <div class="body-zone" id="zone-genetics" style="width:65px;height:65px;left:50%;top:11%;"></div>
-                <div class="body-zone" id="zone-diag"     style="width:130px;height:130px;left:50%;top:44%;"></div>
+              <div class="silhouette-wrap">
+                <img class="silhouette-svg" id="bodySilhouette" src="body_wireframe.png" alt="">
+                <div class="body-zone" id="zone-blood"    style="width:110px;height:110px;left:50%;top:38%;"></div>
+                <div class="body-zone" id="zone-hormones" style="width:70px;height:70px;left:50%;top:13%;"></div>
+                <div class="body-zone" id="zone-infect"   style="width:80px;height:80px;left:50%;top:24%;"></div>
+                <div class="body-zone" id="zone-organs"   style="width:95px;height:95px;left:50%;top:32%;"></div>
+                <div class="body-zone" id="zone-genetics" style="width:60px;height:60px;left:50%;top:9%;"></div>
+                <div class="body-zone" id="zone-diag"     style="width:120px;height:120px;left:50%;top:42%;"></div>
                 <div class="anatomy-hint" id="anatomyHint">
                   <div class="anatomy-hint-title" id="hintTitle"></div>
                   <div class="anatomy-hint-tests" id="hintTests"></div>
@@ -504,82 +353,33 @@
               </div>
             </div>
 
-            <!-- ── ПРАВАЯ: Меню разделов ── -->
-            <div class="anatomy-menu">
-
-              <a href="indicators.html?category=blood" class="anatomy-cat" data-zone="zone-blood" data-title="Анализы крови" data-tests="Общий анализ крови · Биохимия · Глюкоза · Холестерин · Свёртываемость · СРБ и СОЭ · Группа крови">
-                <div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg></div>
-                <div class="anatomy-cat-info"><div class="anatomy-cat-name">Анализы крови</div></div>
-                <div class="anatomy-cat-warn" id="warn-blood"></div>
-                <div class="anatomy-cat-arrow">›</div>
-              </a>
-
-              <a href="indicators.html?category=hormones" class="anatomy-cat" data-zone="zone-hormones" data-title="Гормоны" data-tests="ТТГ · Т3 · Т4 · ФСГ · ЛГ · Эстрадиол · Тестостерон · Пролактин · Кортизол · АМГ">
-                <div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="4" ry="5"/><path d="M12 11v4M8 19h8M10 15l-2 4M14 15l2 4"/><circle cx="7" cy="10" r="2"/><circle cx="17" cy="10" r="2"/></svg></div>
-                <div class="anatomy-cat-info"><div class="anatomy-cat-name">Гормоны</div></div>
-                <div class="anatomy-cat-warn" id="warn-hormones"></div>
-                <div class="anatomy-cat-arrow">›</div>
-              </a>
-
-              <a href="indicators.html?category=infections" class="anatomy-cat" data-zone="zone-infect" data-title="Инфекции и иммунитет" data-tests="ВИЧ · Гепатит B и C · ПЦР · TORCH · COVID-19 · Хеликобактер · Аллергопанель · Сифилис">
-                <div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="16.24" y2="7.76"/><line x1="7.76" y1="16.24" x2="4.93" y2="19.07"/></svg></div>
-                <div class="anatomy-cat-info"><div class="anatomy-cat-name">Инфекции и иммунитет</div></div>
-                <div class="anatomy-cat-warn" id="warn-infect"></div>
-                <div class="anatomy-cat-arrow">›</div>
-              </a>
-
-              <a href="indicators.html?category=biomaterials" class="anatomy-cat" data-zone="zone-organs" data-title="Биоматериалы" data-tests="Анализ мочи · Копрограмма · Кал на кровь · Гельминты · Нечипоренко · ПАП-тест · Слюна">
-                <div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><path d="M9 3l-6 9h6v9l6-9h-6V3z"/></svg></div>
-                <div class="anatomy-cat-info"><div class="anatomy-cat-name">Биоматериалы</div></div>
-                <div class="anatomy-cat-warn" id="warn-bio"></div>
-                <div class="anatomy-cat-arrow">›</div>
-              </a>
-
-              <a href="indicators.html?category=genetics" class="anatomy-cat" data-zone="zone-genetics" data-title="Генетика и ДНК" data-tests="НИПТ · Отцовство · Кариотип · BRCA1/2 · Тромбофилия · Лактоза · Фармакогенетика">
-                <div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><path d="M2 2c2 4 6 6 10 6S20 6 22 2"/><path d="M2 22c2-4 6-6 10-6s8 2 10 6"/><path d="M12 8v8"/><path d="M8 10c1 1 3 1.5 4 2"/><path d="M16 10c-1 1-3 1.5-4 2"/><path d="M8 14c1-1 3-1.5 4-2"/><path d="M16 14c-1-1-3-1.5-4-2"/></svg></div>
-                <div class="anatomy-cat-info"><div class="anatomy-cat-name">Генетика и ДНК</div></div>
-                <div class="anatomy-cat-warn" id="warn-genetics"></div>
-                <div class="anatomy-cat-arrow">›</div>
-              </a>
-
-              <a href="indicators.html?category=microbiome" class="anatomy-cat" data-zone="zone-diag" data-title="Микрофлора" data-tests="Посев с антибиограммой · Дисбактериоз · Посев мочи · Зев и нос · Гинекологический · Грудное молоко · Грибки">
-                <div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><circle cx="12" cy="16" r="3"/><line x1="8" y1="12" x2="12" y2="13"/><line x1="16" y1="12" x2="12" y2="13"/></svg></div>
-                <div class="anatomy-cat-info"><div class="anatomy-cat-name">Микрофлора</div></div>
-                <div class="anatomy-cat-warn" id="warn-micro"></div>
-                <div class="anatomy-cat-arrow">›</div>
-              </a>
-
-              <a href="indicators.html?category=oncology" class="anatomy-cat" data-zone="zone-organs" data-title="Онкомаркеры" data-tests="ПСА · CA-125 · CA 19-9 · РЭА · АФП · HE4 · Бета-ХГЧ">
-                <div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-                <div class="anatomy-cat-info"><div class="anatomy-cat-name">Онкомаркеры</div></div>
-                <div class="anatomy-cat-warn" id="warn-onco"></div>
-                <div class="anatomy-cat-arrow">›</div>
-              </a>
-
-              <a href="indicators.html?category=functional" class="anatomy-cat" data-zone="zone-diag" data-title="Функциональные тесты" data-tests="Глюкозотолерантный · Холтер · Спирометрия · Давление · Стресс-тест · Дыхательный · HbA1c">
-                <div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-                <div class="anatomy-cat-info"><div class="anatomy-cat-name">Функциональные тесты</div></div>
-                <div class="anatomy-cat-warn" id="warn-func"></div>
-                <div class="anatomy-cat-arrow">›</div>
-              </a>
-
-              <div class="dash-card-footer" style="margin-top:auto;">
-                <a href="indicators.html" class="btn-show-all">Все показатели<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-              </div>
+            <!-- Категории -->
+            <div class="anatomy-menu" id="anatomyMenu">
+              <a href="indicators.html?category=blood"       class="anatomy-cat" data-zone="zone-blood"    data-title="Анализы крови"         data-tests="ОАК · Биохимия · Глюкоза · Холестерин · СОЭ · CРБ"><div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg></div><div class="anatomy-cat-info"><div class="anatomy-cat-name">Анализы крови</div></div><div class="anatomy-cat-warn" id="warn-blood"></div><div class="anatomy-cat-arrow">›</div></a>
+              <a href="indicators.html?category=hormones"    class="anatomy-cat" data-zone="zone-hormones" data-title="Гормоны"               data-tests="ТТГ · Т3 · Т4 · Тестостерон · Кортизол · АМГ"><div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="4" ry="5"/><path d="M12 11v4M8 19h8M10 15l-2 4M14 15l2 4"/><circle cx="7" cy="10" r="2"/><circle cx="17" cy="10" r="2"/></svg></div><div class="anatomy-cat-info"><div class="anatomy-cat-name">Гормоны</div></div><div class="anatomy-cat-warn" id="warn-hormones"></div><div class="anatomy-cat-arrow">›</div></a>
+              <a href="indicators.html?category=infections"  class="anatomy-cat" data-zone="zone-infect"   data-title="Инфекции и иммунитет"  data-tests="ВИЧ · Гепатит B/C · ПЦР · COVID-19 · Хеликобактер"><div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg></div><div class="anatomy-cat-info"><div class="anatomy-cat-name">Инфекции</div></div><div class="anatomy-cat-warn" id="warn-infect"></div><div class="anatomy-cat-arrow">›</div></a>
+              <a href="indicators.html?category=biomaterials" class="anatomy-cat" data-zone="zone-organs"  data-title="Биоматериалы"           data-tests="Анализ мочи · Копрограмма · ПАП-тест"><div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><path d="M9 3l-6 9h6v9l6-9h-6V3z"/></svg></div><div class="anatomy-cat-info"><div class="anatomy-cat-name">Биоматериалы</div></div><div class="anatomy-cat-warn" id="warn-bio"></div><div class="anatomy-cat-arrow">›</div></a>
+              <a href="indicators.html?category=genetics"    class="anatomy-cat" data-zone="zone-genetics" data-title="Генетика"              data-tests="НИПТ · Кариотип · BRCA1/2 · Тромбофилия"><div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><path d="M2 2c2 4 6 6 10 6S20 6 22 2"/><path d="M2 22c2-4 6-6 10-6s8 2 10 6"/><path d="M12 8v8"/></svg></div><div class="anatomy-cat-info"><div class="anatomy-cat-name">Генетика</div></div><div class="anatomy-cat-warn" id="warn-genetics"></div><div class="anatomy-cat-arrow">›</div></a>
+              <a href="indicators.html?category=microbiome"  class="anatomy-cat" data-zone="zone-diag"     data-title="Микрофлора"            data-tests="Посев · Дисбактериоз · Антибиограмма"><div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><circle cx="12" cy="16" r="3"/></svg></div><div class="anatomy-cat-info"><div class="anatomy-cat-name">Микрофлора</div></div><div class="anatomy-cat-warn" id="warn-micro"></div><div class="anatomy-cat-arrow">›</div></a>
+              <a href="indicators.html?category=oncology"    class="anatomy-cat" data-zone="zone-organs"   data-title="Онкомаркеры"           data-tests="ПСА · CA-125 · РЭА · АФП · HE4"><div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="anatomy-cat-info"><div class="anatomy-cat-name">Онкомаркеры</div></div><div class="anatomy-cat-warn" id="warn-onco"></div><div class="anatomy-cat-arrow">›</div></a>
+              <a href="indicators.html?category=functional"  class="anatomy-cat" data-zone="zone-diag"     data-title="Функциональные"        data-tests="ГТТ · Холтер · Спирометрия · HbA1c"><div class="anatomy-cat-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="anatomy-cat-info"><div class="anatomy-cat-name">Функциональные</div></div><div class="anatomy-cat-warn" id="warn-func"></div><div class="anatomy-cat-arrow">›</div></a>
             </div>
 
           </div>
         </div>
+        <div class="dash-card-footer">
+          <a href="indicators.html" class="btn-show-all">Все показатели<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </div>
       </div>
     </div>
 
-    <!-- ─── 02. АНАЛИЗЫ ─── -->
+    <!-- 02. АНАЛИЗЫ -->
     <div class="dash-card-wrap">
       <div class="dash-card">
         <div class="dash-card-header">
           <div class="dash-card-label">02 — Анализы</div>
-          <a href="upload.html" class="btn-nav" style="font-size:10px;padding:7px 14px;">
-            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <a href="upload.html" class="btn-nav-sm orange">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             Загрузить
           </a>
         </div>
@@ -592,12 +392,12 @@
           </div>
         </div>
         <div class="dash-card-footer hidden" id="footerFiles">
-          <a href="all-analyses.html" class="btn-show-all">Показать все<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+          <a href="all-analyses.html" class="btn-show-all">Показать все<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
         </div>
       </div>
     </div>
 
-    <!-- ─── 03. РЕКОМЕНДАЦИИ ─── -->
+    <!-- 03. РЕКОМЕНДАЦИИ -->
     <div class="dash-card-wrap">
       <div class="dash-card">
         <div class="dash-card-header">
@@ -613,12 +413,12 @@
           </div>
         </div>
         <div class="dash-card-footer hidden" id="footerRecs">
-          <a href="all-recommendations.html" class="btn-show-all">Показать все<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+          <a href="all-recommendations.html" class="btn-show-all">Показать все<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
         </div>
       </div>
     </div>
 
-    <!-- ─── 04. СОСТОЯНИЕ ─── -->
+    <!-- 04. СОСТОЯНИЕ -->
     <div class="dash-card-wrap col-full">
       <div class="dash-card">
         <div class="dash-card-header">
@@ -626,12 +426,12 @@
           <span class="card-badge badge-neutral" id="badge-health">загрузка...</span>
         </div>
         <div class="dash-card-body">
-          <div class="health-score-wrap" id="healthScoreWrap" style="display:none">
+          <div class="health-score-wrap" id="healthScoreWrap" style="display:none;">
             <div class="health-score-box">
               <div class="health-score-num" id="healthScoreNum">—</div>
               <div class="health-score-label">из 100</div>
             </div>
-            <div class="health-score-info">
+            <div>
               <div class="health-score-title" id="healthScoreTitle"></div>
               <div class="health-score-desc" id="healthScoreDesc"></div>
             </div>
@@ -649,43 +449,60 @@
 </main>
 
 <div class="status-bar">
-  <div><span class="status-bar-dot"></span>Данные актуальны · <span id="statusDate">—</span></div>
-  <div class="status-bar-right">Medeus © 2026</div>
+  <div><span class="status-dot"></span>Данные актуальны · <span id="statusDate">—</span></div>
+  <div style="color:rgba(255,255,255,.2)">Medeus © 2026</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase.js"></script>
+<script src="nav.js"></script>
 <script>
+renderHeader('cabinet');
+
+const PAGES = [
+  {id:'cabinet',href:'cabinet.html',label:'Кабинет',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`},
+  {id:'upload',href:'upload.html',label:'Анализ',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`},
+  {id:'indicators',href:'indicators.html',label:'Данные',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`},
+  {id:'profile',href:'profile.html',label:'Профиль',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`},
+];
+
+// Render mobile nav
+document.getElementById('mobileNav').innerHTML = PAGES.map(p =>
+  `<a href="${p.href}" class="mobile-nav-item${p.id==='cabinet'?' active':''}">${p.icon}${p.label}</a>`
+).join('');
+
+// Render desktop nav
+document.getElementById('desktopNav').innerHTML = PAGES.map(p =>
+  `<a href="${p.href}" class="desk-nav-link${p.id==='cabinet'?' active':''}">${p.label}</a>`
+).join('');
+
 function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function plural(n,one,few,many){const m10=n%10,m100=n%100;if(m10===1&&m100!==11)return one;if(m10>=2&&m10<=4&&(m100<10||m100>=20))return few;return many;}
 function fmtDate(s){if(!s)return'—';const d=new Date(s);return isNaN(d)?s:d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});}
-async function apiFetch(path,session){const r=await fetch(`${API_BASE}${path}`,{headers:{'Authorization':`Bearer ${session.access_token}`}});if(r.status===401){window.location.href='auth.html';return null;}if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}
+async function apiFetch(path,session){
+  const r=await fetch(`${API_BASE}${path}`,{headers:{'Authorization':`Bearer ${session.access_token}`}});
+  if(r.status===401){window.location.href='auth.html';return null;}
+  if(!r.ok)throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
 
 document.getElementById('statusDate').textContent=new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
 
-async function loadUser(){
-  const session=await requireAuth();if(!session)return null;
-  const meta=document.getElementById('pageMeta');
-  if(meta){const now=new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'});meta.innerHTML=`Последнее обновление<br>${now}`;}
-  return session;
-}
-
 function renderHistory(rows){
   const list=document.getElementById('analysesList');
-  const loader=document.getElementById('loaderFiles');
-  const footer=document.getElementById('footerFiles');
-  if(loader)loader.classList.add('hidden');if(!list)return;
-  if(!rows.length){list.innerHTML='<div class="analyses-empty">Анализы ещё не загружены</div>';return;}
+  document.getElementById('loaderFiles').classList.add('hidden');
+  if(!rows.length){list.innerHTML='<div class="analyses-empty">Анализы ещё не загружены.<br>Нажмите «Загрузить» чтобы добавить первый.</div>';return;}
   list.innerHTML=rows.slice(0,4).map(row=>{
     const name=escHtml(row.analysis_name||row.filename||'—');
     const date=row.analysis_date?fmtDate(row.analysis_date):fmtDate(row.created_at);
     return`<div class="analysis-row" onclick="location.href='analysis.html?id=${row.id}'">
-      <div class="analysis-icon"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="analysis-icon"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
       <div class="analysis-info"><div class="analysis-name">${name}</div><div class="analysis-meta">${date}</div></div>
-      <div class="analysis-arrow"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+      <div class="analysis-arrow"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>`;
   }).join('');
-  if(footer&&rows.length>4)footer.classList.remove('hidden');
+  const footer=document.getElementById('footerFiles');
+  if(rows.length>4)footer.classList.remove('hidden');
 }
 
 function statusClass(s){return(s==='above'||s==='below')?'alert':'ok';}
@@ -694,98 +511,120 @@ function statusLabel(s){if(s==='above')return'↑ выше нормы';if(s==='b
 function renderIndicators(indicators){
   const grid=document.getElementById('summaryGrid');
   const badge=document.getElementById('badge-summary');
-  const footer=document.getElementById('summaryFooterText');
-  const loader=document.getElementById('loaderSummary');
-  if(loader)loader.classList.add('hidden');if(!grid)return;
+  document.getElementById('loaderSummary').classList.add('hidden');
   if(!indicators.length){
-    grid.innerHTML='<div class="analyses-empty" style="grid-column:1/-1;padding:26px 0;">Показатели появятся после загрузки анализов</div>';
-    if(badge){badge.textContent='нет данных';}return;
+    grid.innerHTML='<div class="ov-empty"><svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Загрузите анализы<br>для просмотра данных</div>';
+    if(badge){badge.textContent='нет данных';badge.className='card-badge badge-neutral';}return;
   }
   const abnormal=indicators.filter(i=>i.status==='above'||i.status==='below'||i.status==='deviation');
-  const shown=abnormal.slice(0,9);
-  const aboveCount=indicators.filter(i=>i.status==='above').length;
-  const belowCount=indicators.filter(i=>i.status==='below'||i.status==='deviation').length;
-  const devCount=aboveCount+belowCount;
-  if(badge) badge.textContent=devCount?devCount+' '+plural(devCount,'отклонение','отклонения','отклонений'):'всё в норме';
-  if(badge) badge.className='card-badge '+(devCount?'badge-warn':'badge-ok');
-  if(shown.length===0){
-    grid.innerHTML='<div class="ov-empty"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Все показатели<br>в норме</div>';
+  const devCount=abnormal.length;
+  if(badge){badge.textContent=devCount?devCount+' '+plural(devCount,'отклонение','отклонения','отклонений'):'всё в норме';badge.className='card-badge '+(devCount?'badge-warn':'badge-ok');}
+  if(!abnormal.length){
+    grid.innerHTML='<div class="ov-empty"><svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Все показатели<br>в норме</div>';
   } else {
-    grid.innerHTML=shown.map(ind=>{const cls=statusClass(ind.status);return`<a href="indicator.html?name=${encodeURIComponent(ind.name)}" class="ov-ind-item ${cls}"><div class="ov-ind-item-name">${escHtml(ind.name)}</div><div class="ov-ind-item-val">${escHtml(ind.value)}</div><div class="ov-ind-item-status ${cls}">${statusLabel(ind.status)}</div></a>`;}).join('');
-    syncOverviewHeight();
+    grid.innerHTML=abnormal.slice(0,8).map(ind=>{
+      const cls=statusClass(ind.status);
+      return`<a href="indicator.html?name=${encodeURIComponent(ind.name)}" class="ov-ind-item ${cls}">
+        <div class="ov-ind-item-name">${escHtml(ind.name)}</div>
+        <div class="ov-ind-item-val">${escHtml(ind.value)}</div>
+        <div class="ov-ind-item-status">${statusLabel(ind.status)}</div>
+      </a>`;
+    }).join('');
   }
-
-  if(footer&&indicators.length){const last=indicators.reduce((a,b)=>(a.date||'')>(b.date||'')?a:b);footer.textContent=`Последний: ${escHtml(last.source)} · ${fmtDate(last.date)}`;}
 }
 
 const REC_ICONS=['🩺','🥗','🏃','💊','🧪','🫀','🧘','💧'];
 function renderRecommendations(recs){
   const list=document.getElementById('recsList');
   const badge=document.getElementById('badge-recs');
-  const loader=document.getElementById('loaderRecs');
-  if(loader)loader.classList.add('hidden');if(!list)return;
-  if(!recs.length){list.innerHTML='<div class="analyses-empty">Рекомендации появятся после загрузки анализов</div>';if(badge){badge.textContent='нет данных';badge.className='card-badge badge-neutral';}return;}
+  document.getElementById('loaderRecs').classList.add('hidden');
+  if(!recs.length){list.innerHTML='<div class="analyses-empty">Рекомендации появятся<br>после загрузки анализов</div>';if(badge){badge.textContent='нет данных';badge.className='card-badge badge-neutral';}return;}
   if(badge){badge.textContent='есть рекомендации';badge.className='card-badge badge-warn';}
-  const footer=document.getElementById('footerRecs');
-  list.innerHTML=recs.slice(0,4).map((rec,i)=>`<div class="rec-item"><div class="rec-icon">${REC_ICONS[i%REC_ICONS.length]}</div><div><div class="rec-desc">${escHtml(rec.text)}</div><span class="rec-tag">${escHtml(rec.source)}</span></div></div>`).join('');
-  if(footer&&recs.length>4)footer.classList.remove('hidden');
+  list.innerHTML=recs.slice(0,4).map((rec,i)=>`
+    <div class="rec-item">
+      <div class="rec-icon">${REC_ICONS[i%REC_ICONS.length]}</div>
+      <div><div class="rec-desc">${escHtml(rec.text)}</div><span class="rec-tag">${escHtml(rec.source)}</span></div>
+    </div>`).join('');
+  if(recs.length>4)document.getElementById('footerRecs').classList.remove('hidden');
 }
 
 function renderHealthScore(indicators){
-  const scoreEl=document.getElementById('healthScoreNum'),titleEl=document.getElementById('healthScoreTitle'),descEl=document.getElementById('healthScoreDesc'),badgeEl=document.getElementById('badge-health'),barsEl=document.getElementById('healthBars'),loaderEl=document.getElementById('loaderHealth'),wrapEl=document.getElementById('healthScoreWrap');
-  if(loaderEl)loaderEl.classList.add('hidden');if(wrapEl)wrapEl.style.display='';
-  if(!indicators.length){if(scoreEl)scoreEl.textContent='—';if(titleEl)titleEl.textContent='Нет данных';if(descEl)descEl.textContent='Загрузите анализы.';if(badgeEl){badgeEl.textContent='нет данных';badgeEl.className='card-badge badge-neutral';}return;}
-  const total=indicators.length,normalCnt=indicators.filter(i=>i.status==='normal').length,score=Math.round(normalCnt/total*100);
+  const scoreEl=document.getElementById('healthScoreNum'),titleEl=document.getElementById('healthScoreTitle');
+  const descEl=document.getElementById('healthScoreDesc'),badgeEl=document.getElementById('badge-health');
+  const barsEl=document.getElementById('healthBars'),wrapEl=document.getElementById('healthScoreWrap');
+  document.getElementById('loaderHealth').classList.add('hidden');
+  wrapEl.style.display='';
+  if(!indicators.length){
+    if(scoreEl)scoreEl.textContent='—';if(titleEl)titleEl.textContent='Нет данных';
+    if(descEl)descEl.textContent='Загрузите анализы.';
+    if(badgeEl){badgeEl.textContent='нет данных';badgeEl.className='card-badge badge-neutral';}return;
+  }
+  const total=indicators.length,normalCnt=indicators.filter(i=>i.status==='normal').length;
+  const score=Math.round(normalCnt/total*100);
   if(scoreEl)scoreEl.textContent=score;
   if(score>=80){if(titleEl)titleEl.textContent='Хорошее состояние';if(descEl)descEl.textContent=`${normalCnt} из ${total} показателей в норме.`;if(badgeEl){badgeEl.textContent='хорошо';badgeEl.className='card-badge badge-ok';}}
-  else if(score>=55){if(titleEl)titleEl.textContent='Удовлетворительно';if(descEl)descEl.textContent=`${normalCnt} из ${total} в норме. Рекомендуется консультация.`;if(badgeEl){badgeEl.textContent='удовлетворительно';badgeEl.className='card-badge badge-warn';}}
+  else if(score>=55){if(titleEl)titleEl.textContent='Удовлетворительно';if(descEl)descEl.textContent=`${normalCnt} из ${total} в норме. Рекомендована консультация.`;if(badgeEl){badgeEl.textContent='удовлетворительно';badgeEl.className='card-badge badge-warn';}}
   else{if(titleEl)titleEl.textContent='Требует внимания';if(descEl)descEl.textContent=`${normalCnt} из ${total} в норме. Обратитесь к врачу.`;if(badgeEl){badgeEl.textContent='требует внимания';badgeEl.className='card-badge badge-alert';}}
-  const groups={'Кровь':['гемоглобин','лейкоцит','тромбоцит','соэ','эритроцит'],'Обмен веществ':['глюкоза','холестерин','триглицерид','инсулин','мочевин','креатинин'],'Печень':['алт','аст','билирубин','щелочная','alt','ast'],'Иммунитет':['лимфоцит','моноцит','нейтрофил'],'Гормоны':['ттг','т3','т4','кортизол','тестостерон','эстрадиол']};
+  const groups={'Кровь':['гемоглобин','лейкоцит','тромбоцит','соэ','эритроцит'],'Обмен':['глюкоза','холестерин','триглицерид','инсулин','мочевин','креатинин'],'Печень':['алт','аст','билирубин','alt','ast'],'Иммунитет':['лимфоцит','моноцит','нейтрофил'],'Гормоны':['ттг','т3','т4','кортизол','тестостерон']};
   if(!barsEl)return;
-  const rows=Object.entries(groups).map(([label,keys])=>{const g=indicators.filter(ind=>keys.some(k=>ind.name.toLowerCase().includes(k)));if(!g.length)return null;const pct=Math.round(g.filter(i=>i.status==='normal').length/g.length*100);const fc=pct>=80?'ok':pct>=55?'warn':'alert';return`<div class="health-bar-row"><div class="health-bar-top"><span class="health-bar-name">${label}</span><span class="health-bar-val">${pct}%</span></div><div class="health-bar-track"><div class="health-bar-fill ${fc}" style="--w:${pct}%;width:${pct}%;"></div></div></div>`;}).filter(Boolean);
-  barsEl.innerHTML=rows.length?rows.join(''):'<div class="analyses-empty">Недостаточно данных</div>';
+  const rows=Object.entries(groups).map(([label,keys])=>{
+    const g=indicators.filter(ind=>keys.some(k=>ind.name.toLowerCase().includes(k)));
+    if(!g.length)return null;
+    const pct=Math.round(g.filter(i=>i.status==='normal').length/g.length*100);
+    const fc=pct>=80?'ok':pct>=55?'warn':'alert';
+    return`<div class="health-bar-row"><div class="health-bar-top"><span class="health-bar-name">${label}</span><span class="health-bar-val">${pct}%</span></div><div class="health-bar-track"><div class="health-bar-fill ${fc}" style="width:${pct}%"></div></div></div>`;
+  }).filter(Boolean);
+  barsEl.innerHTML=rows.length?rows.join(''):'<div class="analyses-empty" style="padding:16px 0">Недостаточно данных</div>';
 }
 
-document.getElementById('logoutBtn')?.addEventListener('click',async e=>{e.preventDefault();await signOut();});
+document.getElementById('logoutBtn').addEventListener('click', async () => { await signOut(); });
 
-function syncOverviewHeight(){
-  const menu=document.querySelector('.anatomy-menu');
-  const summary=document.querySelector('.overview-summary');
-  const block=document.querySelector('.overview-block');
-  const items=document.querySelectorAll('.ov-ind-item');
-  if(!menu||!summary||!block||!items.length) return;
-  const menuH=menu.offsetHeight;
-  if(menuH<=0) return;
-  block.style.height=menuH+'px';
-  summary.style.height=menuH+'px';
-  const itemH=Math.floor(menuH/items.length);
-  items.forEach(el=>{el.style.height=itemH+'px';el.style.flex='none';});
-}
-window.addEventListener('load', syncOverviewHeight);
-window.addEventListener('resize', syncOverviewHeight);
+// Anatomy hover
+(function(){
+  const cats=document.querySelectorAll('.anatomy-cat');
+  const hint=document.getElementById('anatomyHint');
+  let activeZone=null;
+  cats.forEach(cat=>{
+    cat.addEventListener('mouseenter',()=>{
+      if(activeZone)activeZone.classList.remove('active');
+      cats.forEach(c=>c.classList.remove('hovered'));
+      const z=document.getElementById(cat.dataset.zone);
+      if(z){z.classList.add('active');activeZone=z;}
+      cat.classList.add('hovered');
+      document.getElementById('hintTitle').textContent=cat.dataset.title;
+      document.getElementById('hintTests').textContent=cat.dataset.tests;
+      hint.classList.add('show');
+    });
+    cat.addEventListener('mouseleave',()=>{
+      if(activeZone){activeZone.classList.remove('active');activeZone=null;}
+      cat.classList.remove('hovered');hint.classList.remove('show');
+    });
+  });
+})();
 
-const CACHE_KEY='medeus_dashboard_cache',CACHE_TTL=5*60*1000;
-function saveCache(uid,data){try{localStorage.setItem(CACHE_KEY,JSON.stringify({userId:uid,data,ts:Date.now()}));}catch(e){}}
+// Cache
+const CACHE_KEY='medeus_dash_v3',CACHE_TTL=5*60*1000;
+function saveCache(uid,d){try{localStorage.setItem(CACHE_KEY,JSON.stringify({userId:uid,data:d,ts:Date.now()}));}catch(e){}}
 function loadCache(uid){try{const r=localStorage.getItem(CACHE_KEY);if(!r)return null;const c=JSON.parse(r);if(c.userId!==uid||Date.now()-c.ts>CACHE_TTL)return null;return c.data;}catch(e){return null;}}
 
 (async()=>{
-  const session=await loadUser();if(!session)return;
+  const session=await requireAuth();if(!session)return;
   const uid=session.user.id;
+  const meta=document.getElementById('pageMeta');
+  if(meta)meta.innerHTML=`Последнее обновление<br>${new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'})}`;
 
-  // Смена силуэта по полу
+  // Load gender for silhouette
   try{
-    const _sc=getSupabase();
-    const {data:prof}=await _sc.from('profiles').select('gender').eq('id',uid).maybeSingle();
-    console.log('gender from profile:', prof?.gender);
+    const {data:prof}=await getSupabase().from('profiles').select('gender').eq('id',uid).maybeSingle();
     const s=document.getElementById('bodySilhouette');
-    if(s){
-      s.src = prof?.gender==='женский' ? 'body_wireframe_female.png' : 'body_wireframe.png';
-    }
-  }catch(e){ console.warn('gender fetch:',e); }
+    if(s&&prof?.gender==='женский')s.src='body_wireframe_female.png';
+  }catch(e){}
+
   const cached=loadCache(uid);
   if(cached){renderHistory(cached.history||[]);renderIndicators(cached.indicators||[]);renderRecommendations(cached.recommendations||[]);renderHealthScore(cached.indicators||[]);}
+
   try{
-    const data=await apiFetch('/dashboard',session);if(!data){if(!cached)['loaderSummary','loaderFiles','loaderRecs','loaderHealth'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});return;}
+    const data=await apiFetch('/dashboard',session);if(!data)return;
     saveCache(uid,data);
     renderHistory(data.history||[]);renderIndicators(data.indicators||[]);renderRecommendations(data.recommendations||[]);renderHealthScore(data.indicators||[]);
   }catch(e){
@@ -796,32 +635,3 @@ function loadCache(uid){try{const r=localStorage.getItem(CACHE_KEY);if(!r)return
 </script>
 </body>
 </html>
-<script>
-// ─── ANATOMY HOVER ───
-(function(){
-  const cats = document.querySelectorAll('.anatomy-cat');
-  const hint = document.getElementById('anatomyHint');
-  const hintTitle = document.getElementById('hintTitle');
-  const hintTests = document.getElementById('hintTests');
-  let activeZone = null;
-
-  cats.forEach(cat => {
-    cat.addEventListener('mouseenter', () => {
-      if (activeZone) activeZone.classList.remove('active');
-      cats.forEach(c => c.classList.remove('hovered'));
-      const zoneId = cat.dataset.zone;
-      activeZone = document.getElementById(zoneId);
-      if (activeZone) activeZone.classList.add('active');
-      cat.classList.add('hovered');
-      hintTitle.textContent = cat.dataset.title;
-      hintTests.textContent = cat.dataset.tests;
-      hint.classList.add('show');
-    });
-    cat.addEventListener('mouseleave', () => {
-      if (activeZone) { activeZone.classList.remove('active'); activeZone = null; }
-      cat.classList.remove('hovered');
-      hint.classList.remove('show');
-    });
-  });
-})();
-</script>

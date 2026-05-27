@@ -4,65 +4,118 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // Показатель</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="global.css">
 <style>
-  body { display: flex; flex-direction: column; }
-  .page { flex:1; padding:88px 52px 64px; max-width:1100px; margin:0 auto; width:100%; position:relative; z-index:1; }
+body { display: flex; flex-direction: column; min-height: 100vh; }
 
-  /* ─── CARD ─── */
-  .a-card-wrap { background:var(--text); clip-path:polygon(20px 0%,100% 0%,100% calc(100% - 20px),calc(100% - 20px) 100%,0% 100%,0% 20px); padding:2px; margin-bottom:24px; animation:fadeUp 0.35s ease both; }
-  .a-card-wrap:nth-child(2){animation-delay:.07s}
-  .a-card-wrap:nth-child(3){animation-delay:.14s}
-  .a-card { background:var(--white); clip-path:polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px); }
-  .a-card-header { display:flex; align-items:center; justify-content:space-between; padding:18px 26px 16px; border-bottom:1px solid var(--line); background:var(--bg2); }
-  .a-card-label { font-family:var(--mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-dim); display:flex; align-items:center; gap:7px; }
-  .a-card-label::before { content:'/'; color:var(--orange); font-weight:700; font-size:13px; }
-  .a-card-body { padding:26px; }
+.desk-nav-link {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-mid);
+  text-decoration: none; padding: 6px 0; border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+.desk-nav-link:hover { color: var(--text); }
+.desk-nav-link.active { color: var(--orange); border-bottom-color: var(--orange); }
+.btn-nav-sm {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+  background: var(--bg3); border: none; cursor: pointer;
+  font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-mid); text-decoration: none;
+  transition: all .15s; clip-path: var(--clip-sm);
+}
+.btn-nav-sm:hover { background: var(--text); color: #fff; }
 
-  /* ─── CURRENT VALUE ─── */
-  .current-val-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-  @media(max-width:700px){ .current-val-grid { grid-template-columns:1fr 1fr; } }
-  .cv-block { background:var(--bg2); padding:20px 22px; position:relative; }
-  .cv-label { font-family:var(--mono); font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px; }
-  .cv-value { font-family:var(--sans); font-size:28px; font-weight:700; letter-spacing:-1px; color:var(--text); line-height:1; }
-  .cv-value.ok { color:var(--green); }
-  .cv-value.warn { color:var(--red); }
-  .cv-value.low  { color:#f59e0b; }
-  .cv-sub { font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-top:5px; }
+/* ─── STATES ─── */
+.state-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 100px 20px; }
+.state-error  { padding: 60px 20px; text-align: center; font-family: var(--mono); font-size: 13px; color: var(--red); }
 
-  /* ─── CHART ─── */
-  .chart-wrap { position:relative; width:100%; height:220px; }
-  canvas#historyChart { width:100%!important; height:100%!important; }
+/* ─── CARD ─── */
+.ind-card-outer {
+  background: var(--text);
+  clip-path: polygon(18px 0%, 100% 0%, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0% 100%, 0% 18px);
+  padding: 2px; margin-bottom: 16px; animation: fadeUp .35s ease both;
+}
+.ind-card-outer:nth-child(2){animation-delay:.06s}
+.ind-card-outer:nth-child(3){animation-delay:.12s}
+.ind-card-outer:nth-child(4){animation-delay:.18s}
+.ind-card {
+  background: var(--white);
+  clip-path: polygon(16px 0%, 100% 0%, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0% 100%, 0% 16px);
+}
+.ind-card-head {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  padding: 14px 22px 12px; border-bottom: 1px solid var(--line); background: var(--bg2);
+}
+.ind-card-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-dim); display: flex; align-items: center; gap: 6px;
+}
+.ind-card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
+.ind-card-body { padding: 22px; }
 
-  /* ─── HISTORY TABLE ─── */
-  .hist-table { width:100%; border-collapse:collapse; }
-  .hist-table thead th { font-family:var(--mono); font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-dim); padding:10px 16px; text-align:left; border-bottom:1px solid var(--line-mid); background:var(--bg3); font-weight:700; }
-  .hist-table thead th:first-child::before { content:'/ '; color:var(--orange); }
-  .hist-table tbody tr { border-bottom:1px solid var(--line); transition:background 0.12s; }
-  .hist-table tbody tr:last-child { border-bottom:none; }
-  .hist-table tbody td { padding:10px 16px; font-family:var(--mono); font-size:13px; color:var(--text-mid); }
-  .hist-table .col-val { color:var(--text); font-weight:600; }
-  .tag-high { color:#f59e0b; font-weight:700; }
-  .tag-low  { color:#f59e0b; font-weight:700; }
-  .tag-ok   { color:var(--green); font-weight:700; }
-  .tag-dev  { color:#f59e0b; font-weight:700; }
+/* ─── CURRENT VALUE GRID ─── */
+.cv-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--line-mid); border: 1px solid var(--line-mid); margin-bottom: 0; }
+.cv-block { background: var(--bg); padding: 16px 18px; text-align: center; }
+.cv-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
+.cv-value {
+  font-family: var(--sans); font-size: 26px; font-weight: 800; color: var(--text); line-height: 1;
+  margin-bottom: 4px;
+}
+.cv-value.ok   { color: var(--green); }
+.cv-value.warn { color: var(--red); }
+.cv-value.low  { color: #3b82f6; }
+.cv-sub  { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
 
-  /* ─── STATE MSGS ─── */
-  .state-loader { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding:80px 24px; }
-  .state-error  { text-align:center; padding:60px 24px; color:var(--red); font-family:var(--mono); font-size:13px; }
-  .no-history   { text-align:center; padding:40px 24px; color:var(--text-dim); font-family:var(--mono); font-size:12px; line-height:1.9; }
-  .no-history strong { display:block; color:var(--text-mid); margin-bottom:8px; }
-  .hist-row-link { cursor:pointer; transition:background 0.12s; }
-  .hist-row-link:hover { background:var(--orange-pale); }
-  .hist-row-link:hover td:first-child { color:var(--orange); }
+@media (max-width: 480px) {
+  .cv-grid { grid-template-columns: 1fr 1fr; }
+  .cv-block:last-child { grid-column: span 2; }
+  .cv-value { font-size: 22px; }
+}
 
-  /* ─── TREND BADGE ─── */
-  .trend-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.08em; }
-  .trend-up   { background:var(--red-pale);    color:var(--red);   border:1px solid var(--red-border); }
-  .trend-down { background:#fffbeb; color:#d97706; border:1px solid #fcd34d; }
-  .trend-stable { background:var(--green-pale); color:var(--green); border:1px solid var(--green-border); }
+/* ─── TREND BADGE ─── */
+.trend-badge {
+  font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px;
+}
+.trend-up     { background: var(--red-pale);    color: var(--red); }
+.trend-down   { background: var(--yellow-pale);  color: var(--yellow); }
+.trend-stable { background: var(--green-pale);   color: var(--green); }
 
-  @media(max-width:600px){ .page { padding:78px 20px 52px; } }
+/* ─── CHART ─── */
+.chart-wrap { padding: 22px; }
+.chart-container { position: relative; height: 240px; }
+@media (min-width: 600px) { .chart-container { height: 300px; } }
+
+/* ─── HISTORY TABLE ─── */
+.hist-table { width: 100%; border-collapse: collapse; }
+.hist-table thead th {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--text-dim); padding: 10px 14px; text-align: left;
+  border-bottom: 1px solid var(--line-mid); background: var(--bg2); font-weight: 700; white-space: nowrap;
+}
+.hist-table thead th:first-child::before { content: '/ '; color: var(--orange); }
+.hist-table tbody tr { border-bottom: 1px solid var(--line); transition: background .1s; }
+.hist-table tbody tr.link-row { cursor: pointer; }
+.hist-table tbody tr.link-row:hover { background: var(--orange-pale); }
+.hist-table tbody tr:last-child { border-bottom: none; }
+.hist-table tbody td { padding: 9px 14px; font-family: var(--mono); font-size: 12px; color: var(--text-mid); }
+.col-val { color: var(--text); font-weight: 700; font-size: 13px; }
+.tag-ok  { color: var(--green);  font-weight: 700; font-size: 10px; }
+.tag-high{ color: var(--red);    font-weight: 700; font-size: 10px; }
+.tag-low { color: #3b82f6;       font-weight: 700; font-size: 10px; }
+.tag-dev { color: var(--yellow); font-weight: 700; font-size: 10px; }
+.link-icon { display: inline-block; margin-left: 4px; vertical-align: middle; opacity: .35; }
+
+.no-history { padding: 40px 22px; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--text-dim); line-height: 1.8; }
+.no-history strong { display: block; color: var(--text); font-size: 13px; margin-bottom: 8px; }
+
+/* ─── PILL ─── */
+.pill { display: inline-flex; align-items: center; font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; padding: 4px 10px; }
+.pill-green { background: var(--green-pale); color: var(--green); }
+.pill-red   { background: var(--red-pale);   color: var(--red); }
+.pill-yellow{ background: var(--yellow-pale); color: var(--yellow); }
 </style>
 </head>
 <body>
@@ -70,27 +123,23 @@
 <header>
   <a class="logo" href="cabinet.html">
     <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
-        <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
-      </svg>
+      <svg viewBox="0 0 24 24"><path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke-linecap="round"/></svg>
     </div>
     <div class="logo-wordmark">
       <div class="logo-text">Medeus<span>.</span></div>
       <div class="logo-sub">Medical AI</div>
     </div>
   </a>
-  <div class="header-right">
-    <a href="javascript:history.back()" class="btn-nav btn-ghost">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-      Назад
+  <nav class="header-actions desktop-nav" id="desktopNav" style="display:flex;gap:24px;align-items:center;"></nav>
+  <div class="header-actions desktop-nav">
+    <a href="indicators.html" class="btn-nav-sm">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="13" height="13"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Все показатели
     </a>
-    <a href="cabinet.html" class="btn-nav btn-ghost">Кабинет</a>
-    <button class="btn-nav btn-danger" id="logoutBtn">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-      Выйти
-    </button>
   </div>
 </header>
+
+<nav class="mobile-nav" id="mobileNav"></nav>
 
 <main class="page" id="mainContent">
   <div class="state-loader">
@@ -100,253 +149,202 @@
 </main>
 
 <div class="status-bar">
-  <div><span class="status-bar-dot"></span>Динамика показателя</div>
-  <div class="status-bar-right">Medeus © 2026</div>
+  <div><span class="status-dot"></span>Динамика показателя</div>
+  <div style="color:rgba(255,255,255,.2)">Medeus © 2026</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="supabase.js"></script>
 <script>
+const PAGES=[
+  {id:'cabinet',href:'cabinet.html',label:'Кабинет',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`},
+  {id:'upload',href:'upload.html',label:'Анализ',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`},
+  {id:'indicators',href:'indicators.html',label:'Данные',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`},
+  {id:'profile',href:'profile.html',label:'Профиль',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`},
+];
+document.getElementById('mobileNav').innerHTML=PAGES.map(p=>`<a href="${p.href}" class="mobile-nav-item${p.id==='indicators'?' active':''}">${p.icon}${p.label}</a>`).join('');
+document.getElementById('desktopNav').innerHTML=PAGES.map(p=>`<a href="${p.href}" class="desk-nav-link${p.id==='indicators'?' active':''}">${p.label}</a>`).join('');
+
 function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function fmtDate(s){if(!s)return'—';const d=new Date(s);return isNaN(d)?s:d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});}
 
 const params=new URLSearchParams(location.search);
-const _rawName=params.get('name')||'';let indicatorName='';try{indicatorName=decodeURIComponent(_rawName);}catch(e){indicatorName=_rawName;}
+let indicatorName='';
+try{indicatorName=decodeURIComponent(params.get('name')||'');}catch(e){indicatorName=params.get('name')||'';}
 
-document.getElementById('logoutBtn')?.addEventListener('click',async e=>{e.preventDefault();await signOut();});
-
-async function loadIndicator(){
-  const session=await requireAuth();if(!session)return;
-  if(!indicatorName){
-    document.getElementById('mainContent').innerHTML='<div class="state-error">Название показателя не указано</div>';
-    return;
-  }
-  try{
-    const r=await fetch(`${API_BASE}/indicator-history?name=${encodeURIComponent(indicatorName)}`,{
-      headers:{'Authorization':`Bearer ${session.access_token}`}
-    });
-    if(r.status===401){window.location.href='auth.html';return;}
-    if(!r.ok)throw new Error(`HTTP ${r.status}`);
-    const data=await r.json();
-    render(data.name||indicatorName, data.history||[]);
-  }catch(e){
-    document.getElementById('mainContent').innerHTML=`<div class="state-error">Ошибка загрузки: ${escHtml(e.message)}</div>`;
-  }
-}
-
-function parseFltVal(v){
-  if(!v)return NaN;
-  const m=String(v).match(/[\d.,]+/);
-  if(!m)return NaN;
-  return parseFloat(m[0].replace(',','.'));
-}
+function parseFltVal(v){if(!v)return NaN;const m=String(v).match(/[\d.,]+/);if(!m)return NaN;return parseFloat(m[0].replace(',','.'));}
 
 function calcTrend(history){
   if(history.length<2)return'stable';
-  const last=parseFltVal(history[history.length-1].value);
-  const prev=parseFltVal(history[history.length-2].value);
+  const last=parseFltVal(history[history.length-1].value),prev=parseFltVal(history[history.length-2].value);
   if(isNaN(last)||isNaN(prev))return'stable';
   const diff=(last-prev)/Math.abs(prev||1)*100;
-  if(diff>5)return'up';
-  if(diff<-5)return'down';
-  return'stable';
+  if(diff>5)return'up';if(diff<-5)return'down';return'stable';
 }
 
 function render(name, history){
   const mc=document.getElementById('mainContent');
-  // сортируем по дате: старые → новые; latest = самый новый
   history=[...history].sort((a,b)=>new Date(a.date)-new Date(b.date));
   const latest=history.length?history[history.length-1]:null;
-  const latestVal=latest?latest.value:'—';
-  const latestDate=latest?fmtDate(latest.date):'—';
+  const latestVal=latest?latest.value:'—',latestDate=latest?fmtDate(latest.date):'—';
   const latestStatus=latest?latest.status:'normal';
   const valCls=latestStatus==='above'?'warn':latestStatus==='below'?'low':'ok';
-
   const trend=calcTrend(history);
   const trendLabel=trend==='up'?'↑ Растёт':trend==='down'?'↓ Снижается':'→ Стабильно';
   const trendCls=trend==='up'?'trend-up':trend==='down'?'trend-down':'trend-stable';
-
   const totalOk=history.filter(h=>h.status==='normal').length;
   const pct=history.length?Math.round(totalOk/history.length*100):0;
+  const pillCls=latestStatus==='normal'?'pill-green':latestStatus==='above'?'pill-red':'pill-yellow';
+  const pillLabel=latestStatus==='normal'?'Норма':latestStatus==='above'?'Выше нормы':'Ниже нормы';
 
   mc.innerHTML=`
-    <div class="page-header">
-      <div>
-        <div class="page-title-label">Показатель</div>
-        <div class="page-title">${escHtml(name)}<span class="cursor-blink"></span></div>
+  <div class="page-header" style="animation:fadeUp .35s ease both;">
+    <div>
+      <div class="breadcrumb">
+        <a href="indicators.html">Показатели</a><span class="sep">/</span>
+        <span>${escHtml(name)}</span>
       </div>
-      <div style="align-self:center;">
-        <span class="trend-badge ${trendCls}">${trendLabel}</span>
-      </div>
+      <div class="page-title">${escHtml(name)}<span class="cursor-blink"></span></div>
     </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span class="trend-badge ${trendCls}">${trendLabel}</span>
+    </div>
+  </div>
 
-    <div class="a-card-wrap">
-      <div class="a-card">
-        <div class="a-card-header">
-          <div class="a-card-label">Текущее значение</div>
-          <div class="pill ${latestStatus==='normal'?'pill-green':latestStatus==='above'?'pill-red':'pill-yellow'}"><span class="pill-inner">${latestStatus==='normal'?'Норма':latestStatus==='above'?'Выше нормы':'Ниже нормы'}</span></div>
-        </div>
-        <div class="a-card-body">
-          <div class="current-val-grid">
-            <div class="cv-block">
-              <div class="cv-label">Последнее значение</div>
-              <div class="cv-value ${valCls}">${escHtml(latestVal)}</div>
-              <div class="cv-sub">${latestDate}</div>
-            </div>
-            <div class="cv-block">
-              <div class="cv-label">Всего измерений</div>
-              <div class="cv-value">${history.length}</div>
-              <div class="cv-sub">за все время</div>
-            </div>
-            <div class="cv-block">
-              <div class="cv-label">В норме</div>
-              <div class="cv-value ok">${pct}%</div>
-              <div class="cv-sub">${totalOk} из ${history.length}</div>
-            </div>
+  <!-- Current value -->
+  <div class="ind-card-outer">
+    <div class="ind-card">
+      <div class="ind-card-head">
+        <div class="ind-card-label">Текущее значение</div>
+        <span class="pill ${pillCls}">${pillLabel}</span>
+      </div>
+      <div class="ind-card-body" style="padding:0;">
+        <div class="cv-grid">
+          <div class="cv-block">
+            <div class="cv-label">Последнее</div>
+            <div class="cv-value ${valCls}">${escHtml(latestVal)}</div>
+            <div class="cv-sub">${latestDate}</div>
+          </div>
+          <div class="cv-block">
+            <div class="cv-label">Измерений</div>
+            <div class="cv-value">${history.length}</div>
+            <div class="cv-sub">за всё время</div>
+          </div>
+          <div class="cv-block">
+            <div class="cv-label">В норме</div>
+            <div class="cv-value ok">${pct}%</div>
+            <div class="cv-sub">${totalOk} из ${history.length}</div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    ${history.length>=2?`
-    <div class="a-card-wrap">
-      <div class="a-card">
-        <div class="a-card-header">
-          <div class="a-card-label">Динамика</div>
-        </div>
-        <div class="a-card-body">
-          <div class="chart-wrap"><canvas id="historyChart"></canvas></div>
+  ${history.length>=2?`
+  <!-- Chart -->
+  <div class="ind-card-outer">
+    <div class="ind-card">
+      <div class="ind-card-head">
+        <div class="ind-card-label">Динамика</div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-container">
+          <canvas id="historyChart"></canvas>
         </div>
       </div>
     </div>
-    `:''}
+  </div>`:''}
 
-    <div class="a-card-wrap">
-      <div class="a-card">
-        <div class="a-card-header">
-          <div class="a-card-label">История измерений</div>
-        </div>
-        <div class="a-card-body" style="padding:0;">
-          ${history.length?`
-          <table class="hist-table">
-            <thead><tr><th>Дата</th><th>Значение</th><th>Статус</th><th>Источник</th></tr></thead>
-            <tbody>
-              ${[...history].reverse().map(h=>{
-                const sc=h.status==='above'?'tag-high':h.status==='below'?'tag-low':h.status==='deviation'?'tag-dev':'tag-ok';
-                const sl=h.status==='above'?'↑ выше нормы':h.status==='below'?'↓ ниже нормы':h.status==='deviation'?'⚠ отклонение':'✓ норма';
-                const href=h.analysis_id?`analysis.html?id=${encodeURIComponent(h.analysis_id)}`:null;
-                const rowAttr=href?`class="hist-row-link" onclick="window.location.href='${href}'" title="Открыть анализ"`:`class=""`;
-                return`<tr ${rowAttr}>
-                  <td>${fmtDate(h.date)}${href?'<svg style="margin-left:5px;vertical-align:middle;opacity:0.4;" viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>':''}</td>
-                  <td class="col-val">${escHtml(h.value)}</td>
-                  <td><span class="${sc}">${sl}</span></td>
-                  <td>${escHtml(h.source||'—')}</td>
-                </tr>`;
-              }).join('')}
-            </tbody>
-          </table>`:`
-          <div class="no-history">
-            <strong>Нет истории</strong>
-            Показатель найден в одном анализе. Загружайте анализы регулярно, чтобы отслеживать динамику.
-          </div>`}
-        </div>
+  <!-- History table -->
+  <div class="ind-card-outer">
+    <div class="ind-card">
+      <div class="ind-card-head">
+        <div class="ind-card-label">История измерений</div>
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        ${history.length?`
+        <table class="hist-table">
+          <thead><tr><th>Дата</th><th>Значение</th><th>Статус</th><th>Источник</th></tr></thead>
+          <tbody>
+            ${[...history].reverse().map(h=>{
+              const sc=h.status==='above'?'tag-high':h.status==='below'?'tag-low':h.status==='deviation'?'tag-dev':'tag-ok';
+              const sl=h.status==='above'?'↑ выше нормы':h.status==='below'?'↓ ниже нормы':h.status==='deviation'?'⚠ отклонение':'✓ норма';
+              const href=h.analysis_id?`analysis.html?id=${encodeURIComponent(h.analysis_id)}`:null;
+              return`<tr${href?` class="link-row" onclick="window.location.href='${href}'"`:''}>
+                <td>${fmtDate(h.date)}${href?`<svg class="link-icon" viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`:''}</td>
+                <td class="col-val">${escHtml(h.value)}</td>
+                <td><span class="${sc}">${sl}</span></td>
+                <td>${escHtml(h.source||'—')}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`:`
+        <div class="no-history">
+          <strong>История недоступна</strong>
+          Показатель найден в одном анализе. Загружайте анализы регулярно, чтобы видеть динамику.
+        </div>`}
       </div>
     </div>
-  `;
+  </div>`;
 
-  // Draw chart if enough data
+  // Draw chart
   if(history.length>=2){
     const labels=history.map(h=>fmtDate(h.date));
     const values=history.map(h=>parseFltVal(h.value));
-    // не-норма → жёлтый
-    const colors=history.map(h=>h.status==='normal'?'#22c55e':'#f59e0b');
+    const pointColors=history.map(h=>h.status==='normal'?'#1EA856':'#FF5A00');
 
-    const isDark=document.documentElement.getAttribute('data-theme')==='dark'||
-      window.matchMedia('(prefers-color-scheme: dark)').matches;
-    // явные hex-цвета вместо CSS-переменных — Chart.js их не резолвит
-    const lineColor='#ff8a00';
-    const fillColor='rgba(255,138,0,0.10)';
-    const gridColor=isDark?'rgba(255,255,255,0.20)':'rgba(0,0,0,0.15)';
-    const textColor=isDark?'#888':'#999';
-
-    // кастомный плагин сетки — рисуем сами, не полагаясь на Chart.js
     const gridPlugin={
       id:'customGrid',
       afterDraw(chart){
         try{
-          const {ctx,chartArea,scales}=chart;
+          const{ctx,chartArea,scales}=chart;
           if(!chartArea||!scales.x||!scales.y)return;
-          const {left,right,top,bottom}=chartArea;
-          const {x,y}=scales;
+          const{left,right,top,bottom}=chartArea;
           ctx.save();
-          ctx.strokeStyle=isDark?'rgba(255,138,0,0.35)':'rgba(255,138,0,0.30)';
-          ctx.lineWidth=1;
-          ctx.setLineDash([]);
-          y.ticks.forEach((_,i)=>{
-            const yp=y.getPixelForTick(i);
-            if(yp<top||yp>bottom)return;
-            ctx.beginPath();ctx.moveTo(left,yp);ctx.lineTo(right,yp);ctx.stroke();
-          });
-          x.ticks.forEach((_,i)=>{
-            const xp=x.getPixelForTick(i);
-            if(xp<left||xp>right)return;
-            ctx.beginPath();ctx.moveTo(xp,top);ctx.lineTo(xp,bottom);ctx.stroke();
-          });
+          ctx.strokeStyle='rgba(255,90,0,0.15)';ctx.lineWidth=1;ctx.setLineDash([3,4]);
+          scales.y.ticks.forEach((_,i)=>{const yp=scales.y.getPixelForTick(i);if(yp>=top&&yp<=bottom){ctx.beginPath();ctx.moveTo(left,yp);ctx.lineTo(right,yp);ctx.stroke();}});
           ctx.restore();
         }catch(e){}
       }
     };
 
     new Chart(document.getElementById('historyChart'),{
-      type:'line',
-      plugins:[gridPlugin],
-      data:{
-        labels,
-        datasets:[{
-          data:values,
-          borderColor:lineColor,
-          backgroundColor:fillColor,
-          fill:true,
-          tension:0.3,
-          pointRadius:5,
-          pointHoverRadius:7,
-          pointBackgroundColor:colors,
-          pointBorderColor:'#fff',
-          pointBorderWidth:2,
-          borderWidth:2,
-        }]
-      },
+      type:'line',plugins:[gridPlugin],
+      data:{labels,datasets:[{
+        data:values,borderColor:'#FF5A00',backgroundColor:'rgba(255,90,0,0.08)',
+        fill:true,tension:0.32,
+        pointRadius:6,pointHoverRadius:8,
+        pointBackgroundColor:pointColors,pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5,
+      }]},
       options:{
-        responsive:true,
-        maintainAspectRatio:false,
+        responsive:true,maintainAspectRatio:false,
         plugins:{
           legend:{display:false},
-          tooltip:{
-            callbacks:{
-              label:ctx=>{
-                const h=history[ctx.dataIndex];
-                const sl=h.status==='above'?'↑ выше нормы':h.status==='below'?'↓ ниже нормы':h.status==='deviation'?'⚠ отклонение':'✓ норма';
-                return` ${ctx.parsed.y} — ${sl}`;
-              }
-            }
-          }
+          tooltip:{callbacks:{label:ctx=>{const h=history[ctx.dataIndex];const sl=h.status==='above'?'↑ выше нормы':h.status==='below'?'↓ ниже нормы':'✓ норма';return` ${ctx.parsed.y} — ${sl}`;}}}
         },
         scales:{
-          x:{
-            grid:{display:false},
-            ticks:{color:textColor,font:{family:'monospace',size:11}}
-          },
-          y:{
-            grid:{display:false},
-            ticks:{color:textColor,font:{family:'monospace',size:11}}
-          }
+          x:{grid:{display:false},ticks:{color:'#888480',font:{family:'IBM Plex Mono, monospace',size:10},maxRotation:45,minRotation:0}},
+          y:{grid:{display:false},ticks:{color:'#888480',font:{family:'IBM Plex Mono, monospace',size:10}}}
         }
       }
     });
   }
 }
 
+async function loadIndicator(){
+  const session=await requireAuth();if(!session)return;
+  if(!indicatorName){document.getElementById('mainContent').innerHTML='<div class="state-error">Название показателя не указано</div>';return;}
+  try{
+    const r=await fetch(`${API_BASE}/indicator-history?name=${encodeURIComponent(indicatorName)}`,{headers:{'Authorization':`Bearer ${session.access_token}`}});
+    if(r.status===401){window.location.href='auth.html';return;}
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    const data=await r.json();
+    render(data.name||indicatorName,data.history||[]);
+  }catch(e){
+    document.getElementById('mainContent').innerHTML=`<div class="state-error">Ошибка загрузки: ${escHtml(e.message)}</div>`;
+  }
+}
 loadIndicator();
 </script>
 </body>

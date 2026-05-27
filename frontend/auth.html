@@ -3,120 +3,108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Medeus // Авторизация</title>
+<title>Medeus // Вход</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="global.css">
 <style>
-  body { display: flex; flex-direction: column; overflow: hidden; }
+body { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
 
-  main {
-    flex: 1; display: flex; align-items: center; justify-content: center;
-    padding: 80px 24px; position: relative; z-index: 1;
-  }
+main {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: calc(var(--header-h) + 32px) 20px 60px;
+  position: relative; z-index: 1;
+}
 
-  .auth-wrap {
-    width: 100%; max-width: 460px;
-    filter: var(--shadow-drop);
-  }
-  /* Dark border via clip */
-  .auth-outer {
-    background: var(--text);
-    clip-path: polygon(40px 0%,100% 0%,100% calc(100% - 40px),calc(100% - 40px) 100%,0% 100%,0% 40px);
-    padding: 2px;
-  }
-  .auth-card {
-    background: var(--white);
-    clip-path: polygon(38px 0%,100% 0%,100% calc(100% - 38px),calc(100% - 38px) 100%,0% 100%,0% 38px);
-  }
+.auth-wrap { width: 100%; max-width: 440px; animation: fadeUp .4s ease both; }
 
-  .card-header {
-    padding: 30px 38px 26px;
-    border-bottom: 1px solid var(--line);
-    background: var(--bg2);
-  }
-  .card-label {
-    font-family: var(--mono); font-size: 9px; font-weight: 400;
-    letter-spacing: 0.26em; text-transform: uppercase; color: var(--orange);
-    margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
-  }
-  .card-label::before { content: '/'; font-weight: 700; }
-  .card-title {
-    font-family: var(--sans); font-size: 24px; font-weight: 700; color: var(--text);
-    display: flex; align-items: center; gap: 9px;
-  }
+.auth-card-outer {
+  background: var(--text);
+  clip-path: polygon(36px 0%, 100% 0%, 100% calc(100% - 36px), calc(100% - 36px) 100%, 0% 100%, 0% 36px);
+  padding: 2px;
+}
+.auth-card {
+  background: var(--white);
+  clip-path: polygon(34px 0%, 100% 0%, 100% calc(100% - 34px), calc(100% - 34px) 100%, 0% 100%, 0% 34px);
+}
+.auth-card-header {
+  padding: 28px 32px 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg2);
+}
+.auth-card-label {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 10px; display: flex; align-items: center; gap: 7px;
+}
+.auth-card-label::before { content: '/'; font-weight: 700; }
+.auth-card-title {
+  font-family: var(--sans); font-size: 22px; font-weight: 700; color: var(--text);
+}
 
-  .card-body { padding: 34px 38px 38px; }
+.auth-card-body { padding: 30px 32px 34px; }
 
-  .form-group { display: flex; flex-direction: column; gap: 7px; margin-bottom: 20px; }
+.auth-tabs {
+  display: flex; gap: 0; margin-bottom: 28px;
+  border: 1px solid var(--line-mid); overflow: hidden;
+}
+.auth-tab {
+  flex: 1; padding: 10px 16px; background: transparent; border: none; cursor: pointer;
+  font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-dim); transition: all .18s;
+}
+.auth-tab.active { background: var(--text); color: #fff; }
+.auth-tab:not(.active):hover { background: var(--bg3); }
 
-  .field-label {
-    font-family: var(--mono); font-size: 9px; font-weight: 400;
-    letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-dim);
-    display: flex; align-items: center; gap: 6px;
-  }
-  .field-label::before { content: '/'; font-weight: 700; }
+.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.field-label {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-dim); display: flex; align-items: center; gap: 5px;
+}
+.field-label::before { content: '/'; font-weight: 700; }
 
-  .input-wrap { position: relative; display: flex; align-items: center; }
-  .input-wrap > .input-icon {
-    position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
-    width: 16px; height: 16px; stroke: var(--text-dim); fill: none; pointer-events: none;
-    transition: stroke 0.15s;
-  }
-  .input-wrap:focus-within > .input-icon { stroke: var(--orange); }
+.input-wrap { position: relative; display: flex; align-items: center; }
+.input-wrap .input-icon {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  width: 15px; height: 15px; stroke: var(--text-dim); fill: none; pointer-events: none;
+  transition: stroke .15s;
+}
+.input-wrap:focus-within .input-icon { stroke: var(--orange); }
+.input-wrap input { padding-left: 40px; }
 
-  input[type="text"], input[type="password"], input[type="email"] {
-    width: 100%; padding: 14px 15px 14px 44px; height: 50px;
-  }
+.pw-toggle {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; padding: 5px;
+  display: flex; align-items: center; color: var(--text-dim); transition: color .15s;
+}
+.pw-toggle:hover { color: var(--text); }
+.pw-toggle svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
 
-  .pw-toggle {
-    position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; cursor: pointer; padding: 5px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text-dim); transition: color 0.15s; z-index: 2;
-  }
-  .pw-toggle:hover { color: var(--text); }
-  .pw-toggle svg { width: 17px; height: 17px; stroke: currentColor; fill: none; display: block; pointer-events: none; }
+.auth-error {
+  display: none; padding: 10px 14px; margin-bottom: 14px;
+  background: var(--red-pale); border: 1px solid var(--red-border);
+  color: var(--red); font-family: var(--mono); font-size: 12px;
+  animation: shake .35s ease;
+}
+.auth-error.show { display: block; }
 
-  .divider { display: flex; align-items: center; gap: 14px; margin: 28px 0; }
-  .divider-line { flex: 1; height: 1px; background: var(--line); }
-  .divider-text { font-family: var(--mono); font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-dim); }
+.btn-auth {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  width: 100%; padding: 15px 24px; margin-top: 8px;
+  background: var(--text); color: #fff; border: none;
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.09em; text-transform: uppercase; cursor: pointer;
+  transition: background .18s; line-height: 1;
+  clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+}
+.btn-auth:hover:not(:disabled) { background: var(--orange); }
+.btn-auth:disabled { opacity: .4; cursor: not-allowed; }
+.btn-auth svg { width: 16px; height: 16px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
-  .btn-auth-primary {
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    width: 100%; padding: 17px 28px; margin-bottom: 12px;
-    background: var(--text); color: #fff;
-    border: none; font-family: var(--mono); font-size: 13px; font-weight: 700;
-    letter-spacing: 0.09em; text-transform: uppercase; cursor: pointer;
-    transition: background 0.18s; line-height: 1;
-    clip-path: polygon(11px 0%,100% 0%,100% calc(100% - 11px),calc(100% - 11px) 100%,0% 100%,0% 11px);
-  }
-  .btn-auth-primary:hover { background: var(--orange); }
-  .btn-auth-primary svg { width: 17px; height: 17px; stroke: currentColor; fill: none; flex-shrink: 0; }
-
-  .btn-auth-secondary {
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    width: 100%; padding: 16px 28px;
-    background: transparent; color: var(--text);
-    border: 1px solid var(--line-strong); font-family: var(--mono); font-size: 13px; font-weight: 700;
-    letter-spacing: 0.09em; text-transform: uppercase; cursor: pointer;
-    transition: all 0.18s; line-height: 1; text-decoration: none;
-    clip-path: polygon(11px 0%,100% 0%,100% calc(100% - 11px),calc(100% - 11px) 100%,0% 100%,0% 11px);
-  }
-  .btn-auth-secondary:hover { background: var(--bg2); border-color: var(--orange); color: var(--orange); }
-  .btn-auth-secondary svg { width: 17px; height: 17px; stroke: currentColor; fill: none; flex-shrink: 0; }
-
-  .auth-error {
-    display: none; padding: 11px 15px; margin-bottom: 16px;
-    background: var(--red-pale); border: 1px solid var(--red-border);
-    color: var(--red); font-family: var(--mono); font-size: 12px; letter-spacing: 0.03em;
-    animation: shake 0.35s ease;
-  }
-  .auth-error.show { display: block; }
-
-  @media (max-width: 480px) {
-    .card-header { padding: 24px 24px 22px; }
-    .card-body { padding: 28px 24px 30px; }
-    .auth-outer, .auth-card { clip-path: none; }
-  }
+@media (max-width: 480px) {
+  .auth-card-outer, .auth-card { clip-path: none; }
+  .auth-card-header { padding: 22px 22px 20px; }
+  .auth-card-body { padding: 24px 22px 28px; }
+}
 </style>
 </head>
 <body>
@@ -124,76 +112,90 @@
 <header>
   <a class="logo" href="index.html">
     <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
-        <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
-      </svg>
+      <svg viewBox="0 0 24 24"><path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke-linecap="round"/></svg>
     </div>
     <div class="logo-wordmark">
       <div class="logo-text">Medeus<span>.</span></div>
       <div class="logo-sub">Medical AI</div>
     </div>
   </a>
-  <div class="header-tag">Авторизация</div>
+  <div class="header-tag">Вход / Регистрация</div>
 </header>
 
 <main>
   <div class="auth-wrap">
-    <div class="auth-outer">
+    <div class="auth-card-outer">
       <div class="auth-card">
-
-        <div class="card-header">
-          <div class="card-label">Вход в систему</div>
-          <div class="card-title">Добро пожаловать<span class="cursor-blink"></span></div>
+        <div class="auth-card-header">
+          <div class="auth-card-label">Система доступа</div>
+          <div class="auth-card-title">Добро пожаловать<span class="cursor-blink"></span></div>
         </div>
+        <div class="auth-card-body">
 
-        <div class="card-body">
+          <div class="auth-tabs">
+            <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Вход</button>
+            <button class="auth-tab" id="tabReg" onclick="switchTab('register')">Регистрация</button>
+          </div>
+
           <div class="auth-error" id="authError"></div>
 
-          <div class="form-group">
-            <label class="field-label" for="login">Email / Логин</label>
-            <div class="input-wrap">
-              <svg class="input-icon" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
-              </svg>
-              <input type="text" id="login" placeholder="your@email.com" autocomplete="username">
+          <!-- LOGIN -->
+          <div id="loginForm">
+            <div class="form-group">
+              <label class="field-label" for="loginEmail">Email</label>
+              <div class="input-wrap">
+                <svg class="input-icon" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
+              </div>
             </div>
-          </div>
-
-          <div class="form-group">
-            <label class="field-label" for="password">Пароль</label>
-            <div class="input-wrap">
-              <svg class="input-icon" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
-              </svg>
-              <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" style="padding-right:44px;">
-              <button class="pw-toggle" type="button" id="pwToggle" title="Показать пароль" tabindex="-1">
-                <svg id="eyeIcon" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                </svg>
-              </button>
+            <div class="form-group">
+              <label class="field-label" for="loginPw">Пароль</label>
+              <div class="input-wrap">
+                <svg class="input-icon" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password" style="padding-right:42px;">
+                <button class="pw-toggle" type="button" id="pwToggle1">
+                  <svg id="eyeIcon1" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
             </div>
+            <button class="btn-auth" id="loginBtn">
+              <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+              <span>Войти</span>
+            </button>
           </div>
 
-          <button class="btn-auth-primary" type="button" id="loginBtn">
-            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
-            </svg>
-            <span>Войти</span>
-          </button>
-
-          <div class="divider">
-            <div class="divider-line"></div>
-            <div class="divider-text">или</div>
-            <div class="divider-line"></div>
+          <!-- REGISTER -->
+          <div id="registerForm" style="display:none;">
+            <div class="form-group">
+              <label class="field-label" for="regName">Имя</label>
+              <div class="input-wrap">
+                <svg class="input-icon" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" id="regName" placeholder="Ваше имя" autocomplete="name">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="field-label" for="regEmail">Email</label>
+              <div class="input-wrap">
+                <svg class="input-icon" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <input type="email" id="regEmail" placeholder="your@email.com" autocomplete="email">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="field-label" for="regPw">Пароль</label>
+              <div class="input-wrap">
+                <svg class="input-icon" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <input type="password" id="regPw" placeholder="Минимум 6 символов" autocomplete="new-password" style="padding-right:42px;">
+                <button class="pw-toggle" type="button" id="pwToggle2">
+                  <svg id="eyeIcon2" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <button class="btn-auth" id="registerBtn">
+              <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+              <span>Создать аккаунт</span>
+            </button>
           </div>
 
-          <button class="btn-auth-secondary" type="button" id="registerBtn">
-            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
-              <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
-            </svg>
-            <span>Регистрация</span>
-          </button>
         </div>
       </div>
     </div>
@@ -201,30 +203,26 @@
 </main>
 
 <div class="status-bar">
-  <div><span class="status-bar-dot"></span>Система активна</div>
-  <div class="status-bar-right">Medeus © 2026</div>
+  <div><span class="status-dot"></span>Система активна</div>
+  <div style="color:rgba(255,255,255,.2)">Medeus © 2026</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase.js"></script>
 <script>
-(async () => {
-  const session = await getCurrentSession();
-  if (session) window.location.href = 'cabinet.html';
-})();
-
-const pwToggle = document.getElementById('pwToggle');
-const pwInput  = document.getElementById('password');
-const eyeIcon  = document.getElementById('eyeIcon');
 const EYE_OPEN   = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
 const EYE_CLOSED = `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
 
-pwToggle.addEventListener('click', () => {
-  const isHidden = pwInput.type === 'password';
-  pwInput.type = isHidden ? 'text' : 'password';
-  eyeIcon.innerHTML = isHidden ? EYE_CLOSED : EYE_OPEN;
-  pwToggle.title = isHidden ? 'Скрыть пароль' : 'Показать пароль';
-});
+function makePwToggle(btnId, inputId, iconId) {
+  document.getElementById(btnId).addEventListener('click', () => {
+    const inp = document.getElementById(inputId);
+    const hidden = inp.type === 'password';
+    inp.type = hidden ? 'text' : 'password';
+    document.getElementById(iconId).innerHTML = hidden ? EYE_CLOSED : EYE_OPEN;
+  });
+}
+makePwToggle('pwToggle1','loginPw','eyeIcon1');
+makePwToggle('pwToggle2','regPw','eyeIcon2');
 
 function showError(msg) {
   const el = document.getElementById('authError');
@@ -232,27 +230,64 @@ function showError(msg) {
 }
 function hideError() { document.getElementById('authError').classList.remove('show'); }
 
-document.getElementById('loginBtn').addEventListener('click', async () => {
-  const email    = document.getElementById('login').value.trim();
-  const password = pwInput.value;
-  if (!email || !password) { showError('Введите email и пароль'); return; }
+function switchTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('tabLogin').classList.toggle('active', isLogin);
+  document.getElementById('tabReg').classList.toggle('active', !isLogin);
+  document.getElementById('loginForm').style.display = isLogin ? '' : 'none';
+  document.getElementById('registerForm').style.display = isLogin ? 'none' : '';
+  hideError();
+}
 
+// Auto-redirect if already logged in
+(async () => {
+  const s = await getCurrentSession();
+  if (s) window.location.href = 'cabinet.html';
+})();
+
+// LOGIN
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPw').value;
+  if (!email || !pw) { showError('Введите email и пароль'); return; }
   const btn = document.getElementById('loginBtn');
   btn.disabled = true; btn.querySelector('span').textContent = 'Вхожу...'; hideError();
-
   try {
-    const client = getSupabase();
-    const { error } = await client.auth.signInWithPassword({ email, password });
+    const { error } = await getSupabase().auth.signInWithPassword({ email, password: pw });
     if (error) throw error;
     window.location.href = 'cabinet.html';
-  } catch (err) {
-    showError(err.message === 'Invalid login credentials' ? 'Неверный email или пароль' : err.message || 'Ошибка входа');
+  } catch (e) {
+    showError(e.message === 'Invalid login credentials' ? 'Неверный email или пароль' : (e.message || 'Ошибка входа'));
     btn.disabled = false; btn.querySelector('span').textContent = 'Войти';
   }
 });
 
-document.getElementById('password').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginBtn').click(); });
-document.getElementById('registerBtn').addEventListener('click', () => { window.location.href = 'register.html'; });
+document.getElementById('loginPw').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginBtn').click(); });
+
+// REGISTER
+document.getElementById('registerBtn').addEventListener('click', async () => {
+  const name  = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pw    = document.getElementById('regPw').value;
+  if (!name)  { showError('Введите ваше имя'); return; }
+  if (!email) { showError('Введите email'); return; }
+  if (pw.length < 6) { showError('Пароль минимум 6 символов'); return; }
+  const btn = document.getElementById('registerBtn');
+  btn.disabled = true; btn.querySelector('span').textContent = 'Создаю...'; hideError();
+  try {
+    const { data, error } = await getSupabase().auth.signUp({ email, password: pw, options: { data: { full_name: name } } });
+    if (error) throw error;
+    if (data.session) {
+      window.location.href = 'cabinet.html';
+    } else {
+      showError('Проверьте почту для подтверждения аккаунта');
+      btn.disabled = false; btn.querySelector('span').textContent = 'Создать аккаунт';
+    }
+  } catch (e) {
+    showError(e.message || 'Ошибка регистрации');
+    btn.disabled = false; btn.querySelector('span').textContent = 'Создать аккаунт';
+  }
+});
 </script>
 </body>
 </html>
