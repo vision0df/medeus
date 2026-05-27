@@ -22,7 +22,7 @@ html { overflow-x: hidden; }
 .desk-nav-link.active { color: var(--orange); border-bottom-color: var(--orange); }
 
 /* ─── DASHBOARD GRID ─── */
-.dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; overflow: hidden; }
 .col-full { grid-column: 1 / -1; }
 
 /* Блок 01 — содержимое ограничено, кнопка всегда видна */
@@ -47,6 +47,7 @@ html { overflow-x: hidden; }
   background: var(--text);
   clip-path: polygon(18px 0%, 100% 0%, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0% 100%, 0% 18px);
   padding: 2px; animation: fadeUp .4s ease both;
+  overflow: hidden;
 }
 .dash-card-wrap:nth-child(2){animation-delay:.05s}
 .dash-card-wrap:nth-child(3){animation-delay:.1s}
@@ -57,6 +58,7 @@ html { overflow-x: hidden; }
   background: var(--white);
   clip-path: polygon(16px 0%, 100% 0%, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0% 100%, 0% 16px);
   display: flex; flex-direction: column; height: 100%;
+  overflow: hidden;
 }
 .dash-card-header {
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
