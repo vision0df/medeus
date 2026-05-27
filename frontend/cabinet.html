@@ -211,11 +211,17 @@ html { overflow-x: hidden; }
 .anatomy-cat-info { flex: 1; min-width: 0; }
 .anatomy-cat-name { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--text); letter-spacing: 0.04em; text-transform: uppercase; }
 .anatomy-cat-warn {
-  width: 18px; height: 18px; border-radius: 50%; font-family: var(--mono); font-size: 9px; font-weight: 700;
+  width: 20px; height: 20px; border-radius: 50%; font-family: var(--mono); font-size: 9px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; background: transparent; color: transparent;
+  transition: background .15s, color .15s;
 }
-.anatomy-cat-warn.has-warn { background: var(--red-pale); color: var(--red); }
+.anatomy-cat-warn.has-warn {
+  background: var(--yellow-pale);
+  color: var(--yellow);
+  border: 1.5px solid rgba(184,126,0,0.3);
+  font-size: 11px;
+}
 .anatomy-cat-arrow { color: var(--text-dim); font-size: 16px; flex-shrink: 0; transition: color .15s; }
 .anatomy-cat:hover .anatomy-cat-arrow { color: var(--orange); }
 
@@ -609,6 +615,35 @@ function renderIndicators(indicators){
   const grid=document.getElementById('summaryGrid');
   const badge=document.getElementById('badge-summary');
   document.getElementById('loaderSummary').classList.add('hidden');
+
+  // Обновляем значки предупреждений по категориям
+  const warnIds = ['blood','hormones','infect','bio','genetics','micro','onco','func'];
+  const groupKeyMap = {
+    blood:'warn-blood', hormones:'warn-hormones', infections:'warn-infect',
+    biomaterials:'warn-bio', genetics:'warn-genetics', microbiome:'warn-micro',
+    oncology:'warn-onco', functional:'warn-func'
+  };
+  // Сбрасываем все значки
+  Object.values(groupKeyMap).forEach(id => {
+    const el = document.getElementById(id);
+    if(el){ el.className='anatomy-cat-warn'; el.textContent=''; }
+  });
+  // Считаем отклонения по категориям
+  const catAbnormal = {};
+  indicators.forEach(ind => {
+    if(ind.status==='above'||ind.status==='below'||ind.status==='deviation'){
+      const gk = ind.group_key || 'blood';
+      catAbnormal[gk] = (catAbnormal[gk]||0) + 1;
+    }
+  });
+  // Проставляем значки
+  Object.entries(catAbnormal).forEach(([gk, cnt]) => {
+    const warnId = groupKeyMap[gk];
+    if(!warnId) return;
+    const el = document.getElementById(warnId);
+    if(el){ el.className='anatomy-cat-warn has-warn'; el.textContent='!'; }
+  });
+
   if(!indicators.length){
     grid.innerHTML='<div class="ov-empty"><svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Загрузите анализы<br>для просмотра данных</div>';
     if(badge){badge.textContent='нет данных';badge.className='card-badge badge-neutral';}return;
