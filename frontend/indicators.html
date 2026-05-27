@@ -39,7 +39,11 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
   clip-path: polygon(8px 0%,100% 0%,100% calc(100% - 8px),calc(100% - 8px) 100%,0% 100%,0% 8px);
   padding: 2px;
   min-width: 0;
+  cursor: pointer;
+  transition: opacity .15s;
 }
+.stat-card:not(.active) { opacity: .55; }
+.stat-card:hover { opacity: 1; }
 .stat-card-inner {
   background: var(--white);
   clip-path: polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
@@ -268,21 +272,22 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 
   <!-- Stats -->
   <div class="stats-row">
-    <div class="stat-card"><div class="stat-card-inner">
+    <div class="stat-card active" data-filter="all" onclick="setFilter(this)"><div class="stat-card-inner">
       <div class="stat-icon"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
       <div><div class="stat-num" id="statTotal">—</div><div class="stat-lbl">Всего</div></div>
     </div></div>
-    <div class="stat-card ok"><div class="stat-card-inner">
+    <div class="stat-card ok" data-filter="normal" onclick="setFilter(this)"><div class="stat-card-inner">
       <div class="stat-icon"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
       <div><div class="stat-num" id="statNormal">—</div><div class="stat-lbl">В норме</div></div>
     </div></div>
-    <div class="stat-card warn"><div class="stat-card-inner">
+    <div class="stat-card warn" data-filter="deviation" onclick="setFilter(this)"><div class="stat-card-inner">
       <div class="stat-icon"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
       <div><div class="stat-num" id="statDeviation">—</div><div class="stat-lbl">Отклонения</div></div>
     </div></div>
   </div>
 
   <!-- Category tabs -->
+
   <div class="cat-scroll" id="catScroll">
     <button class="cat-btn active" data-cat=""><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div><div class="cat-btn-label">Все группы</div></div></button>
     <button class="cat-btn" data-cat="blood"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg></div><div class="cat-btn-label">Анализы крови</div></div></button>
@@ -293,15 +298,6 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
     <button class="cat-btn" data-cat="biomaterials"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><path d="M9 3l-6 9h6v9l6-9h-6V3z"/></svg></div><div class="cat-btn-label">Биоматериалы</div></div></button>
     <button class="cat-btn" data-cat="microbiome"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><circle cx="12" cy="16" r="3"/></svg></div><div class="cat-btn-label">Микрофлора</div></div></button>
     <button class="cat-btn" data-cat="genetics"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><path d="M2 2c2 4 6 6 10 6S20 6 22 2"/><path d="M2 22c2-4 6-6 10-6s8 2 10 6"/><path d="M12 8v8"/></svg></div><div class="cat-btn-label">Генетика</div></div></button>
-  </div>
-
-  <!-- Status filter -->
-  <div class="filter-bar">
-    <span class="filter-lbl">Статус:</span>
-    <button class="filter-btn active" data-filter="all"><span class="fdot fdot-all"></span>Все</button>
-    <button class="filter-btn" data-filter="normal"><span class="fdot fdot-ok"></span>Норма</button>
-    <button class="filter-btn" data-filter="above"><span class="fdot fdot-warn"></span>Выше нормы</button>
-    <button class="filter-btn" data-filter="below"><span class="fdot fdot-alert"></span>Ниже нормы</button>
   </div>
 
   <!-- Search -->
@@ -401,13 +397,12 @@ document.querySelectorAll('.cat-btn').forEach(btn=>btn.addEventListener('click',
   renderStats(allIndicators); renderAll();
 }));
 
-document.querySelectorAll('.filter-btn').forEach(btn=>btn.addEventListener('click',()=>{
-  currentFilter=btn.dataset.filter;
-  const map={all:'active',normal:'active-ok',above:'active-warn',below:'active-alert'};
-  document.querySelectorAll('.filter-btn').forEach(b=>{b.className='filter-btn';});
-  btn.classList.add(map[currentFilter]||'active');
+function setFilter(card){
+  currentFilter=card.dataset.filter;
+  document.querySelectorAll('.stat-card').forEach(c=>c.classList.remove('active'));
+  card.classList.add('active');
   renderAll();
-}));
+}
 
 document.getElementById('searchInput').addEventListener('input',e=>{searchQuery=e.target.value.trim();renderAll();});
 
@@ -431,7 +426,8 @@ function statusMeta(s){
 
 function getFiltered(){
   let f=allIndicators.filter(matchesCategory);
-  if(currentFilter!=='all')f=f.filter(i=>i.status===currentFilter);
+  if(currentFilter==='deviation')f=f.filter(i=>i.status==='above'||i.status==='below'||i.status==='deviation');
+  else if(currentFilter!=='all')f=f.filter(i=>i.status===currentFilter);
   if(searchQuery){const q=searchQuery.toLowerCase();f=f.filter(i=>i.name.toLowerCase().includes(q));}
   return f;
 }
