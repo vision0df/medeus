@@ -102,20 +102,53 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .fdot-warn { background: var(--yellow); }
 .fdot-alert{ background: var(--red); }
 
-/* ─── CATEGORY SCROLL ─── */
+/* ─── CATEGORY GRID ─── */
 .cat-scroll {
-  display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch;
-  margin-bottom: 16px; padding-bottom: 4px; animation: fadeUp .45s ease both;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 16px;
+  animation: fadeUp .45s ease both;
 }
-.cat-scroll::-webkit-scrollbar { height: 3px; }
-.cat-scroll::-webkit-scrollbar-thumb { background: var(--bg4); }
+@media (min-width: 480px) { .cat-scroll { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 768px) { .cat-scroll { grid-template-columns: repeat(5, 1fr); gap: 8px; } }
+
 .cat-btn {
-  padding: 6px 12px; background: var(--bg3); border: 1px solid var(--line-mid); cursor: pointer;
-  font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--text-dim); white-space: nowrap; flex-shrink: 0; transition: all .15s;
+  background: var(--text);
+  clip-path: polygon(8px 0%,100% 0%,100% calc(100% - 8px),calc(100% - 8px) 100%,0% 100%,0% 8px);
+  padding: 2px;
+  border: none;
+  cursor: pointer;
 }
-.cat-btn:hover { border-color: var(--text); color: var(--text); }
-.cat-btn.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+.cat-btn-inner {
+  background: var(--white);
+  clip-path: polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; padding: 12px 8px 10px;
+  transition: background .15s;
+}
+.cat-btn:hover .cat-btn-inner,
+.cat-btn.active .cat-btn-inner { background: var(--orange-pale); }
+
+.cat-btn-icon {
+  width: 28px; height: 28px; flex-shrink: 0; background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  clip-path: var(--clip-sm); transition: background .15s;
+}
+.cat-btn:hover .cat-btn-icon,
+.cat-btn.active .cat-btn-icon { background: var(--orange); }
+
+.cat-btn-icon svg { width: 13px; height: 13px; stroke: var(--text-mid); fill: none; stroke-width: 1.8; stroke-linecap: round; transition: stroke .15s; }
+.cat-btn:hover .cat-btn-icon svg,
+.cat-btn.active .cat-btn-icon svg { stroke: #fff; }
+
+.cat-btn-label {
+  font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-dim); text-align: center; line-height: 1.3;
+  transition: color .15s;
+}
+.cat-btn:hover .cat-btn-label,
+.cat-btn.active .cat-btn-label { color: var(--orange); }
 
 /* ─── SEARCH ─── */
 .search-row { position: relative; margin-bottom: 18px; animation: fadeUp .5s ease both; }
@@ -252,15 +285,15 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 
   <!-- Category tabs -->
   <div class="cat-scroll" id="catScroll">
-    <button class="cat-btn active" data-cat="">Все группы</button>
-    <button class="cat-btn" data-cat="blood">Анализы крови</button>
-    <button class="cat-btn" data-cat="hormones">Гормоны</button>
-    <button class="cat-btn" data-cat="functional">Биохимия</button>
-    <button class="cat-btn" data-cat="oncology">Онкомаркеры</button>
-    <button class="cat-btn" data-cat="infections">Иммунитет</button>
-    <button class="cat-btn" data-cat="biomaterials">Биоматериалы</button>
-    <button class="cat-btn" data-cat="microbiome">Микрофлора</button>
-    <button class="cat-btn" data-cat="genetics">Генетика</button>
+    <button class="cat-btn active" data-cat=""><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div><div class="cat-btn-label">Все группы</div></div></button>
+    <button class="cat-btn" data-cat="blood"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg></div><div class="cat-btn-label">Анализы крови</div></div></button>
+    <button class="cat-btn" data-cat="hormones"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="4" ry="5"/><path d="M12 11v4M8 19h8M10 15l-2 4M14 15l2 4"/><circle cx="7" cy="10" r="2"/><circle cx="17" cy="10" r="2"/></svg></div><div class="cat-btn-label">Гормоны</div></div></button>
+    <button class="cat-btn" data-cat="functional"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="cat-btn-label">Биохимия</div></div></button>
+    <button class="cat-btn" data-cat="oncology"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="cat-btn-label">Онкомаркеры</div></div></button>
+    <button class="cat-btn" data-cat="infections"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg></div><div class="cat-btn-label">Иммунитет</div></div></button>
+    <button class="cat-btn" data-cat="biomaterials"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><path d="M9 3l-6 9h6v9l6-9h-6V3z"/></svg></div><div class="cat-btn-label">Биоматериалы</div></div></button>
+    <button class="cat-btn" data-cat="microbiome"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><circle cx="12" cy="16" r="3"/></svg></div><div class="cat-btn-label">Микрофлора</div></div></button>
+    <button class="cat-btn" data-cat="genetics"><div class="cat-btn-inner"><div class="cat-btn-icon"><svg viewBox="0 0 24 24"><path d="M2 2c2 4 6 6 10 6S20 6 22 2"/><path d="M2 22c2-4 6-6 10-6s8 2 10 6"/><path d="M12 8v8"/></svg></div><div class="cat-btn-label">Генетика</div></div></button>
   </div>
 
   <!-- Status filter -->
@@ -362,8 +395,7 @@ function applyCategoryUI(cat){
 }
 applyCategoryUI(categoryFilter);
 
-// Scroll active cat into view
-setTimeout(()=>{const a=document.querySelector('.cat-btn.active');if(a)a.scrollIntoView({block:'nearest',inline:'center'});},100);
+// Grid layout - no scroll needed
 
 document.querySelectorAll('.cat-btn').forEach(btn=>btn.addEventListener('click',()=>{
   categoryFilter=btn.dataset.cat; applyCategoryUI(categoryFilter);
