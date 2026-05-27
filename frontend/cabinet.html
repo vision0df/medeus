@@ -222,12 +222,29 @@ html { overflow-x: hidden; }
 /* Mobile: anatomy as horizontal scroll */
 @media (max-width: 767px) {
   .overview-block { grid-template-columns: 1fr; }
-  .overview-summary { border-right: none; border-bottom: 1px solid var(--line); }
-  .anatomy-menu { flex-direction: row; overflow-x: auto; gap: 0; padding: 0; -webkit-overflow-scrolling: touch; max-width: 100%; }
-  .anatomy-cat { flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border-bottom: none; border-right: 1px solid var(--line); min-width: 0; width: calc(100% / 4); flex-shrink: 0; text-align: center; }
-  .anatomy-cat-name { font-size: 9px; }
-  .anatomy-cat-arrow { display: none; }
-  .anatomy-cat-warn { margin: 0 auto; }
+  .overview-summary { display: none; }
+  .overview-indicators { display: none; }
+  .anatomy-menu {
+    flex-direction: column;
+    overflow: hidden;
+    gap: 0; padding: 0;
+  }
+  .anatomy-cat {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    height: 48px;
+    border-bottom: 1px solid var(--line);
+    border-right: none;
+    min-width: 0;
+    width: 100%;
+    text-align: left;
+  }
+  .anatomy-cat:last-child { border-bottom: none; }
+  .anatomy-cat-name { font-size: 11px; }
+  .anatomy-cat-arrow { display: block; }
+  .anatomy-cat-warn { margin: 0; }
 }
 
 /* ─── ANALYSES LIST ─── */
