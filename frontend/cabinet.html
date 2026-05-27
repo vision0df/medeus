@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="global.css">
 <style>
 body { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
-*, *::before, *::after { box-sizing: border-box; }
+html { overflow-x: hidden; }
 
 /* ─── NAV LINKS (desktop) ─── */
 .desk-nav-link {
@@ -221,8 +221,8 @@ body { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hid
 @media (max-width: 767px) {
   .overview-block { grid-template-columns: 1fr; }
   .overview-summary { border-right: none; border-bottom: 1px solid var(--line); }
-  .anatomy-menu { flex-direction: row; overflow-x: auto; gap: 0; padding: 0; -webkit-overflow-scrolling: touch; }
-  .anatomy-cat { flex-direction: column; align-items: center; gap: 6px; padding: 14px 12px; border-bottom: none; border-right: 1px solid var(--line); min-width: 80px; flex-shrink: 0; text-align: center; }
+  .anatomy-menu { flex-direction: row; overflow-x: auto; gap: 0; padding: 0; -webkit-overflow-scrolling: touch; max-width: 100%; }
+  .anatomy-cat { flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border-bottom: none; border-right: 1px solid var(--line); min-width: 0; width: calc(100% / 4); flex-shrink: 0; text-align: center; }
   .anatomy-cat-name { font-size: 9px; }
   .anatomy-cat-arrow { display: none; }
   .anatomy-cat-warn { margin: 0 auto; }
@@ -294,20 +294,9 @@ body { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hid
 
 /* ─── MOBILE: DASHBOARD ─── */
 @media (max-width: 767px) {
-  /* Убираем clip-path, заменяем на border-radius чтобы не вылезало за экран */
-  .dash-card-wrap {
-    clip-path: none !important;
-    border-radius: 4px;
-    max-width: 100%;
-    width: 100%;
-  }
-  .dash-card {
-    clip-path: none !important;
-    border-radius: 2px;
-    min-width: 0;
-  }
-
   .dashboard { grid-template-columns: 1fr; gap: 12px; }
+  .dash-card-wrap { width: 100%; }
+  .dash-card { min-width: 0; overflow: hidden; }
 
   /* Карточка 01 — без фиксированной высоты на мобиле */
   .dash-card-wrap.col-full:first-child .dash-card { height: auto !important; }
