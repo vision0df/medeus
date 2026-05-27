@@ -24,15 +24,18 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .col-full { grid-column: 1 / -1; }
 
-/* Блок 01 — фиксированная высота, кнопка всегда видна */
-.dash-card-wrap.col-full:first-child .dash-card { height: 440px; }
-.dash-card-wrap.col-full:first-child .overview-summary { overflow: hidden; }
-.dash-card-wrap.col-full:first-child .anatomy-menu { overflow: hidden; }
+/* Блок 01 — содержимое ограничено, кнопка всегда видна */
+.dash-card-wrap.col-full:first-child .dash-card { display: flex; flex-direction: column; }
+.dash-card-wrap.col-full:first-child .dash-card-body { padding: 0; overflow: hidden; }
+.dash-card-wrap.col-full:first-child .overview-block { height: 370px; }
+.dash-card-wrap.col-full:first-child .overview-summary { overflow-y: auto; }
+.dash-card-wrap.col-full:first-child .anatomy-menu { overflow-y: auto; }
 
 /* На мобиле — в столбик */
 @media (max-width: 767px) {
   .dashboard { grid-template-columns: 1fr; }
-  .dash-card-wrap.col-full:first-child .dash-card { height: auto; }
+  .dash-card-wrap.col-full:first-child .overview-block { height: auto; }
+  .dash-card-wrap.col-full:first-child .overview-summary { max-height: 260px; }
 }
 
 /* ─── DASH CARD ─── */
