@@ -370,10 +370,14 @@ document.querySelectorAll('.filter-btn').forEach(btn=>btn.addEventListener('clic
 document.getElementById('searchInput').addEventListener('input',e=>{searchQuery=e.target.value.trim();renderAll();});
 
 function matchesCategory(ind){
-  if(!categoryFilter||!CATEGORY_MAP[categoryFilter])return true;
-  const keys=CATEGORY_MAP[categoryFilter].keys;
-  const n=ind.name.toLowerCase();
-  return keys.some(k=>n.includes(k));
+  if(!categoryFilter) return true;
+  // Сначала по group_key (точно)
+  if(ind.group_key) return ind.group_key === categoryFilter;
+  // Fallback по ключевым словам если group_key нет
+  const catData = CATEGORY_MAP[categoryFilter];
+  if(!catData) return false;
+  const n = ind.name.toLowerCase();
+  return catData.keys.some(k => n.includes(k));
 }
 
 function statusMeta(s){
