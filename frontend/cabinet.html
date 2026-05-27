@@ -8,7 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="global.css">
 <style>
-body { display: flex; flex-direction: column; min-height: 100vh; }
+body { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+*, *::before, *::after { box-sizing: border-box; }
 
 /* ─── NAV LINKS (desktop) ─── */
 .desk-nav-link {
@@ -293,36 +294,37 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 
 /* ─── MOBILE: DASHBOARD ─── */
 @media (max-width: 767px) {
-  /* Сетка в один столбец */
-  .dashboard { grid-template-columns: 1fr; gap: 14px; }
+  /* Предотвращаем выход за экран */
+  .dashboard { grid-template-columns: 1fr; gap: 12px; }
+  .dash-card-wrap { max-width: 100%; width: 100%; }
+  .dash-card { min-width: 0; }
 
-  /* Карточки без фиксированной высоты */
+  /* Карточка 01 — без фиксированной высоты на мобиле */
   .dash-card-wrap.col-full:first-child .dash-card { height: auto !important; }
-  .dash-card-wrap { padding: 2px; }
+  .dash-card-wrap.col-full:first-child .dash-card-body { overflow: visible; }
+  .dash-card-wrap.col-full:first-child .anatomy-cat { height: 44px; }
+  .dash-card-wrap.col-full:first-child .ov-ind-item { height: 44px; }
 
-  /* Шапка карточки — компактнее */
-  .dash-card-header { padding: 12px 16px 10px; }
+  /* Шапка карточки */
+  .dash-card-header { padding: 11px 14px 10px; flex-wrap: wrap; gap: 6px; }
 
-  /* Тело карточки */
-  .dash-card-body { padding: 16px; }
+  /* Тело карточки 02–04 */
+  .dash-card-body { padding: 14px; }
 
-  /* Показатели в строку — сжатые на мобиле */
-  .ov-ind-item { height: 42px; padding: 0 14px; }
-  .ov-ind-item-name { font-size: 9px; }
-  .ov-ind-item-val  { font-size: 13px; padding: 0 8px; }
-  .ov-ind-item-status { font-size: 8px; min-width: 70px; }
+  /* Показатели: убираем жёсткий min-width, всё в строку */
+  .ov-ind-item { padding: 0 12px; gap: 6px; }
+  .ov-ind-item-name { font-size: 9px; letter-spacing: 0.04em; }
+  .ov-ind-item-val  { font-size: 13px; font-weight: 700; padding: 0 6px; }
+  .ov-ind-item-status { font-size: 8px; min-width: 0; letter-spacing: 0.06em; }
 
-  /* Блок сводки — без правой границы на мобиле */
-  .overview-summary { border-right: none; border-bottom: 1px solid var(--line); min-height: 0; }
-
-  /* Health score компактнее */
+  /* Health score */
   .health-score-wrap { gap: 14px; margin-bottom: 16px; }
   .health-score-box { width: 72px; height: 72px; }
   .health-score-num { font-size: 22px; }
   .health-score-title { font-size: 14px; }
   .health-score-desc { font-size: 10px; }
 
-  /* Кнопка "Все показатели" */
+  /* Кнопка "Все" */
   .btn-show-all { padding: 12px 16px; font-size: 10px; }
 
   /* Анализы */
@@ -334,13 +336,12 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
   .rec-item { padding: 10px 12px; gap: 10px; }
   .rec-desc  { font-size: 10px; }
 
-  /* Скрыть page-meta на очень маленьких */
+  /* page-meta убираем */
   .page-meta { display: none; }
 }
 
 @media (max-width: 480px) {
-  .dash-card-header { flex-wrap: wrap; gap: 6px; }
-  .ov-ind-item-status { min-width: 60px; font-size: 7.5px; }
+  .dash-card-header { gap: 6px; }
 }
 </style>
 </head>
