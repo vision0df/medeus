@@ -2,7 +2,7 @@
    MEDEUS — Design System v3 (Mobile-first, Unified)
    ═══════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syne:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 
 /* ─── VARIABLES ─── */
 :root {
@@ -38,7 +38,7 @@
   --yellow-pale:  rgba(184,126,0,0.08);
 
   --mono: 'IBM Plex Mono', monospace;
-  --sans: 'Syne', sans-serif;
+  --sans: 'IBM Plex Mono', monospace;
 
   --header-h: 58px;
   --nav-h: 62px; /* mobile bottom nav */
