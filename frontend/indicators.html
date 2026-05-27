@@ -29,10 +29,10 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 
 /* ─── STATS ROW ─── */
 .stats-row {
-  display: grid; grid-template-columns: repeat(2,1fr); gap: 10px;
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;
   margin-bottom: 24px; animation: fadeUp .35s ease both;
 }
-@media (min-width: 600px) { .stats-row { grid-template-columns: repeat(4,1fr); } }
+@media (min-width: 600px) { .stats-row { grid-template-columns: repeat(3,1fr); } }
 
 .stat-card {
   background: var(--text);
@@ -220,7 +220,7 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
   </div>
 
   <!-- Stats -->
-  <div class=\"stats-row\" style=\"grid-template-columns: repeat(3,1fr);\">
+  <div class="stats-row">
     <div class="stat-card"><div class="stat-card-inner">
       <div class="stat-icon"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
       <div><div class="stat-num" id="statTotal">—</div><div class="stat-lbl">Всего</div></div>
