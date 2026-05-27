@@ -24,8 +24,8 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .col-full { grid-column: 1 / -1; }
 
-/* Блок 01 — фиксированная высота, без скролла */
-.dash-card-wrap.col-full:first-child .dash-card { height: 504px; }
+/* Блок 01 — фиксированная высота, кнопка всегда видна */
+.dash-card-wrap.col-full:first-child .dash-card { height: 440px; }
 .dash-card-wrap.col-full:first-child .overview-summary { overflow: hidden; }
 .dash-card-wrap.col-full:first-child .anatomy-menu { overflow: hidden; }
 
@@ -121,18 +121,28 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
   height: 100%;
 }
 
-/* Overview indicator items */
+/* Overview indicator items — горизонтальная строка */
 .ov-ind-item {
-  display: flex; flex-direction: column; justify-content: center;
+  display: flex; flex-direction: row; align-items: center;
   padding: 0 18px; border-bottom: 1px solid var(--line);
   text-decoration: none; transition: background .12s;
-  height: 56px; flex-shrink: 0;
+  height: 48px; flex-shrink: 0; gap: 0;
 }
 .ov-ind-item:last-child { border-bottom: none; }
 .ov-ind-item:hover { background: var(--orange-pale); }
-.ov-ind-item-name { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 3px; }
-.ov-ind-item-val  { font-family: var(--sans); font-size: 16px; font-weight: 700; color: var(--text); }
-.ov-ind-item-status { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+.ov-ind-item-name {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-dim); flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ov-ind-item-val {
+  font-family: var(--sans); font-size: 14px; font-weight: 700; color: var(--text);
+  flex-shrink: 0; padding: 0 12px;
+}
+.ov-ind-item-status {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  flex-shrink: 0; min-width: 90px; text-align: right;
+}
 .ov-ind-item.ok .ov-ind-item-status  { color: var(--green); }
 .ov-ind-item.alert .ov-ind-item-status { color: var(--red); }
 .ov-empty {
@@ -275,6 +285,58 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .btn-nav-sm:hover { background: var(--text); color: #fff; }
 .btn-nav-sm.orange:hover { background: var(--orange); color: #fff; }
 .btn-nav-sm svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
+
+/* ─── MOBILE: DASHBOARD ─── */
+@media (max-width: 767px) {
+  /* Сетка в один столбец */
+  .dashboard { grid-template-columns: 1fr; gap: 14px; }
+
+  /* Карточки без фиксированной высоты */
+  .dash-card-wrap.col-full:first-child .dash-card { height: auto !important; }
+  .dash-card-wrap { padding: 2px; }
+
+  /* Шапка карточки — компактнее */
+  .dash-card-header { padding: 12px 16px 10px; }
+
+  /* Тело карточки */
+  .dash-card-body { padding: 16px; }
+
+  /* Показатели в строку — сжатые на мобиле */
+  .ov-ind-item { height: 42px; padding: 0 14px; }
+  .ov-ind-item-name { font-size: 9px; }
+  .ov-ind-item-val  { font-size: 13px; padding: 0 8px; }
+  .ov-ind-item-status { font-size: 8px; min-width: 70px; }
+
+  /* Блок сводки — без правой границы на мобиле */
+  .overview-summary { border-right: none; border-bottom: 1px solid var(--line); min-height: 0; }
+
+  /* Health score компактнее */
+  .health-score-wrap { gap: 14px; margin-bottom: 16px; }
+  .health-score-box { width: 72px; height: 72px; }
+  .health-score-num { font-size: 22px; }
+  .health-score-title { font-size: 14px; }
+  .health-score-desc { font-size: 10px; }
+
+  /* Кнопка "Все показатели" */
+  .btn-show-all { padding: 12px 16px; font-size: 10px; }
+
+  /* Анализы */
+  .analysis-row { padding: 10px 12px; gap: 10px; }
+  .analysis-icon { width: 30px; height: 30px; }
+  .analysis-name { font-size: 11px; }
+
+  /* Рекомендации */
+  .rec-item { padding: 10px 12px; gap: 10px; }
+  .rec-desc  { font-size: 10px; }
+
+  /* Скрыть page-meta на очень маленьких */
+  .page-meta { display: none; }
+}
+
+@media (max-width: 480px) {
+  .dash-card-header { flex-wrap: wrap; gap: 6px; }
+  .ov-ind-item-status { min-width: 60px; font-size: 7.5px; }
+}
 </style>
 </head>
 <body>
