@@ -24,17 +24,15 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .col-full { grid-column: 1 / -1; }
 
-/* Блок 01 — фиксированная высота */
-.dash-card-wrap.col-full:first-child .dash-card { height: 520px; }
-.dash-card-wrap.col-full:first-child .overview-block { height: calc(520px - 45px - 48px); }
-.dash-card-wrap.col-full:first-child .overview-summary { overflow-y: auto; }
-.dash-card-wrap.col-full:first-child .anatomy-menu { overflow-y: auto; }
+/* Блок 01 — фиксированная высота, без скролла */
+.dash-card-wrap.col-full:first-child .dash-card { height: 504px; }
+.dash-card-wrap.col-full:first-child .overview-summary { overflow: hidden; }
+.dash-card-wrap.col-full:first-child .anatomy-menu { overflow: hidden; }
 
 /* На мобиле — в столбик */
 @media (max-width: 767px) {
   .dashboard { grid-template-columns: 1fr; }
   .dash-card-wrap.col-full:first-child .dash-card { height: auto; }
-  .dash-card-wrap.col-full:first-child .overview-block { height: auto; }
 }
 
 /* ─── DASH CARD ─── */
@@ -126,9 +124,9 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 /* Overview indicator items */
 .ov-ind-item {
   display: flex; flex-direction: column; justify-content: center;
-  padding: 12px 18px; border-bottom: 1px solid var(--line);
-  text-decoration: none; transition: background .12s; flex: 1;
-  min-height: 56px;
+  padding: 0 18px; border-bottom: 1px solid var(--line);
+  text-decoration: none; transition: background .12s;
+  height: 56px; flex-shrink: 0;
 }
 .ov-ind-item:last-child { border-bottom: none; }
 .ov-ind-item:hover { background: var(--orange-pale); }
