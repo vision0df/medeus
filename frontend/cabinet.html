@@ -520,46 +520,12 @@ html { overflow-x: hidden; }
       </div>
     </div>
 
-    <!-- 04. ЭКСПОРТ PDF -->
-    <div class="dash-card-wrap">
-      <div class="dash-card">
-        <div class="dash-card-header">
-          <div class="dash-card-label">04 — Экспорт</div>
-          <span class="card-badge badge-neutral">PDF</span>
-        </div>
-        <div class="dash-card-body" style="display:flex;flex-direction:column;gap:14px;">
-          <div style="font-family:var(--mono);font-size:11px;color:var(--text-mid);line-height:1.75;">
-            Выгрузи показатели в PDF-отчёт: выбери группы, период, источники и состав данных.
-          </div>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <div style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--text-dim);">
-              <div style="width:5px;height:5px;background:var(--green);border-radius:50%;flex-shrink:0;"></div>
-              Актуальные или все результаты
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--text-dim);">
-              <div style="width:5px;height:5px;background:var(--green);border-radius:50%;flex-shrink:0;"></div>
-              Фильтр по группам и периоду
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--text-dim);">
-              <div style="width:5px;height:5px;background:var(--green);border-radius:50%;flex-shrink:0;"></div>
-              Только отклонения от нормы
-            </div>
-          </div>
-        </div>
-        <div class="dash-card-footer">
-          <a href="export.html" class="btn-show-all">
-            Экспорт в PDF
-            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          </a>
-        </div>
-      </div>
-    </div>
+    <!-- 04. СОСТОЯНИЕ -->
 
-    <!-- 05. СОСТОЯНИЕ -->
     <div class="dash-card-wrap col-full">
       <div class="dash-card">
         <div class="dash-card-header">
-          <div class="dash-card-label">05 — Общее состояние</div>
+          <div class="dash-card-label">04 — Общее состояние</div>
           <span class="card-badge badge-neutral" id="badge-health">загрузка...</span>
         </div>
         <div class="dash-card-body">
@@ -600,6 +566,7 @@ const PAGES = [
   {id:'cabinet',href:'cabinet.html',label:'Кабинет',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`},
   {id:'upload',href:'upload.html',label:'Анализ',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`},
   {id:'indicators',href:'indicators.html',label:'Данные',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`},
+  {id:'export',href:'export.html',label:'Экспорт',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`},
   {id:'profile',href:'profile.html',label:'Профиль',icon:`<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`},
 ];
 
