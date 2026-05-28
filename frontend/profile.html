@@ -303,7 +303,7 @@ async function loadProfile(){
   document.getElementById('avatarBig').textContent=email.slice(0,2).toUpperCase();
   document.getElementById('profileEmail').textContent=email;
   document.getElementById('displayEmail').textContent=email;
-  document.getElementById('pageMeta').innerHTML=`Последнее обновление<br>${new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'})}`;
+  const _pmEl=document.getElementById('pageMeta');if(_pmEl)_pmEl.innerHTML=`Последнее обновление<br>${new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'})}`;
   const{data:profile}=await getSupabase().from('profiles').select('full_name,gender,birth_date').eq('id',session.user.id).maybeSingle();
   const fullName=profile?.full_name||'',gender=profile?.gender||'',birthDate=profile?.birth_date||'';
   document.getElementById('profileName').textContent=fullName||email.split('@')[0];

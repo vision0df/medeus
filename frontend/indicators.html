@@ -390,10 +390,10 @@ function applyCategoryUI(cat){
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));
   const catData=CATEGORY_MAP[cat];
   if(catData){
-    document.getElementById('pageLabel').textContent='Показатели';
+    (document.getElementById('pageLabel')||{textContent:''}).textContent='Показатели';
     document.getElementById('pageTitle').innerHTML=catData.label+'<span class="cursor-blink"></span>';
   } else {
-    document.getElementById('pageLabel').textContent='Все показатели';
+    (document.getElementById('pageLabel')||{textContent:''}).textContent='Все показатели';
     document.getElementById('pageTitle').innerHTML='Мои показатели<span class="cursor-blink"></span>';
   }
 }
@@ -491,7 +491,7 @@ function renderStats(indicators){
   document.getElementById('statTotal').textContent=cf.length;
   document.getElementById('statNormal').textContent=cf.filter(i=>i.status==='normal').length;
   document.getElementById('statDeviation').textContent=cf.filter(i=>i.status==='above'||i.status==='below'||i.status==='deviation').length;
-  document.getElementById('pageMeta').innerHTML=`Всего показателей<br><strong style="color:var(--text);font-size:14px;">${cf.length}</strong>`;
+  (document.getElementById('pageMeta')||{innerHTML:''}).innerHTML=`Всего показателей<br><strong style="color:var(--text);font-size:14px;">${cf.length}</strong>`;
 }
 
 (async()=>{
