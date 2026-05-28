@@ -637,18 +637,100 @@ footer {
   .status-bar { padding: 0 52px; }
 }
 
-/* ─── MOBILE NAV SHOW ─── */
+/* ─── MOBILE ─── */
 @media (max-width: 767px) {
+  html, body { max-width: 100%; overflow-x: hidden; }
+
   .mobile-nav { display: flex; }
   .desktop-nav { display: none !important; }
-  .page { padding-bottom: calc(var(--nav-h) + 20px); }
   .toast { bottom: calc(var(--nav-h) + 16px); }
   .form-row { grid-template-columns: 1fr; }
   .card-body { padding: 24px 18px; }
   footer { flex-direction: column; align-items: flex-start; gap: 12px; }
   .footer-disclaimer { text-align: left; }
 
-  /* Уменьшенные паддинги инпутов на мобильном */
+  /* ── Убираем боковые паддинги у .page, возвращаем их заголовку ── */
+  .page {
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: calc(var(--nav-h) + 20px);
+  }
+  .page-header {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  /* Степпер тоже с отступами */
+  .stepper {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  /* ── Все карточки/панели — на всю ширину, без скошенных углов ── */
+  /* Универсальный паттерн: *-wrap / *-outer — внешняя рамка */
+  .dash-card-wrap,
+  .a-card-outer,
+  .ind-card-outer,
+  .aside-card-outer,
+  .section-card-outer,
+  .step-wrap,
+  .r3-card-outer,
+  .auth-card-outer,
+  .list-outer {
+    clip-path: none !important;
+    border-radius: 0;
+    border-top: 2px solid var(--text);
+    border-bottom: 2px solid var(--text);
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Внутренняя карточка — убираем clip-path, оставляем фон */
+  .dash-card,
+  .a-card,
+  .ind-card-outer > .ind-card,
+  .aside-card,
+  .section-card,
+  .step-panel,
+  .r3-card-inner,
+  .auth-card {
+    clip-path: none !important;
+    border-radius: 0;
+  }
+
+  /* Карточки с gap между собой — убираем вертикальный зазор-рамку */
+  .dash-card-wrap + .dash-card-wrap,
+  .a-card-outer + .a-card-outer,
+  .ind-card-outer + .ind-card-outer,
+  .section-card-outer + .section-card-outer,
+  .r3-card + .r3-card {
+    border-top: none;
+  }
+
+  /* auth/register — по центру, чуть отступы */
+  .auth-wrap {
+    max-width: 100%;
+    padding: 0 20px;
+  }
+  .auth-outer,
+  .auth-card-outer {
+    clip-path: none !important;
+    border: none;
+    border-top: 2px solid var(--text);
+    border-bottom: 2px solid var(--text);
+  }
+  .auth-card {
+    clip-path: none !important;
+  }
+
+  /* all-analyses / all-recommendations — .list-outer */
+  .list-outer {
+    border-left: none;
+    border-right: none;
+  }
+
+  /* ── Уменьшенные паддинги инпутов ── */
   input[type="text"],
   input[type="email"],
   input[type="password"],

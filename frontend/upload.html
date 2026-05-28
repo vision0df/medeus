@@ -118,61 +118,7 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 
 @media (max-width: 480px) { .res-table { font-size: 11px; } .res-table tbody td { padding: 6px 8px; } }
 
-/* ─── MOBILE: full-width steps ─── */
-@media (max-width: 767px) {
-  html, body { max-width: 100%; overflow-x: hidden; }
-
-  .page {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
-  .page-header,
-  .page .stepper,
-  .page .page-title-label,
-  .page .page-title {
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-  .page-header {
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-  .step-wrap {
-    clip-path: none !important;
-    border-top: 2px solid var(--text);
-    border-bottom: 2px solid var(--text);
-    padding: 2px 0;
-    margin-bottom: 16px;
-  }
-  .step-panel {
-    clip-path: none !important;
-    padding: 24px 20px;
-  }
-  /* result cards step 3 */
-  .r3-card { margin-left: 0; margin-right: 0; }
-  .r3-card-outer {
-    clip-path: none !important;
-    padding: 2px 0;
-    border-top: 2px solid var(--text);
-    border-bottom: 2px solid var(--text);
-  }
-  .r3-card-inner { clip-path: none !important; }
-  #step3Panel > .r3-card { margin-bottom: 0; border-bottom: none; }
-  #step3Panel > .r3-card + .r3-card { border-top: none; }
-
-  /* inputs */
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="number"],
-  input[type="date"],
-  select,
-  textarea {
-    padding: 10px 10px;
-    height: 42px;
-    font-size: 12px;
-  }
-}
+/* mobile styles moved to global.css */
 </style>
 </head>
 <body>
