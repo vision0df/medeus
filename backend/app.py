@@ -1114,6 +1114,203 @@ def route_recommendations():
 
 
 # ──────────────────────────────────────────────
+# Background: auto-fill descriptions for indicators
+# ──────────────────────────────────────────────
+
+def _fetch_indicator_no_description() -> dict | None:
+    """
+    Возвращает один показатель у которого description IS NULL или пустое,
+    либо None если таких нет.
+    """
+    h = _supa_headers()
+    for flt in ("is.null", "eq."):
+        resp = httpx.get(
+            f"{SUPABASE_URL}/rest/v1/indicators",
+            headers=h,
+            params={
+                "select": "id,name,group_key",
+                flt if flt == "is.null" else "description": flt,
+                "limit":  "1",
+                "order":  "created_at.asc",
+            },
+            timeout=10,
+        )
+        # PostgREST не принимает "is.null" как ключ params — используем правильный синтаксис
+        # Повторим через корректный URL-параметр
+        break
+
+    # Корректный запрос через два отдельных вызова
+    for flt_val in ("is.null", "eq."):
+        r = httpx.get(
+            f"{SUPABASE_URL}/rest/v1/indicators",
+            headers=h,
+            params={"select": "id,name,group_key", "description": flt_val,
+                    "limit": "1", "order": "created_at.asc"},
+            timeout=10,
+        )
+        if r.status_code == 200:
+            rows = r.json()
+            if rows:
+                return rows[0]
+    return None
+
+
+def _fetch_analysis_names_for_indicator(indicator_id: str) -> list[str]:
+    """
+    Возвращает до 3 последних уникальных названий анализов,
+    в которых встречался данный показатель.
+    """
+    try:
+        rows = _get(
+            "/rest/v1/user_indicators",
+            params={
+                "select":       "analyses(analysis_name)",
+                "indicator_id": f"eq.{indicator_id}",
+                "order":        "created_at.desc",
+                "limit":        "20",
+            },
+        )
+    except Exception:
+        return []
+
+    seen: list[str] = []
+    for row in (rows if isinstance(rows, list) else []):
+        analysis = row.get("analyses") or {}
+        name = analysis.get("analysis_name", "").strip()
+        if name and name not in seen:
+            seen.append(name)
+        if len(seen) >= 3:
+            break
+    return seen
+
+
+def _build_description_prompt(indicator_name: str, analysis_names: list[str]) -> str:
+    analyses_str = ", ".join(analysis_names) if analysis_names else "неизвестно"
+    return (
+        f"Показатель: {indicator_name} из анализов: {analyses_str}\n\n"
+        "Ответь строго в формате JSON (без markdown, только объект):\n"
+        "{\n"
+        '  "about": "1-3 предложения — что это за показатель",\n'
+        '  "norms": "норма для разных групп: мужчины, женщины, дети",\n'
+        '  "deviations": "с чем могут быть связаны отклонения",\n'
+        '  "improvement": "как можно улучшить состояние"\n'
+        "}\n\n"
+        "Язык: русский. Каждое поле — одно-два предложения, чистый текст без списков."
+    )
+
+
+def _parse_description_response(raw: str) -> str | None:
+    """
+    Разбирает JSON-ответ Gemini и собирает финальный текст описания.
+    Возвращает None если структура невалидна.
+    """
+    try:
+        # Убираем возможные markdown-обёртки
+        clean = raw.strip()
+        if clean.startswith("```"):
+            clean = clean.split("\n", 1)[-1]
+            clean = clean.rsplit("```", 1)[0]
+        data = json.loads(clean)
+    except Exception:
+        log.warning("[desc-worker] не удалось распарсить JSON: %s", raw[:200])
+        return None
+
+    required = ("about", "norms", "deviations", "improvement")
+    if not all(k in data and isinstance(data[k], str) and data[k].strip() for k in required):
+        log.warning("[desc-worker] JSON неполный: %s", list(data.keys()))
+        return None
+
+    parts = [
+        data["about"].strip(),
+        "Нормы: " + data["norms"].strip(),
+        "Отклонения: " + data["deviations"].strip(),
+        "Улучшение: " + data["improvement"].strip(),
+    ]
+    return "\n\n".join(parts)
+
+
+def _patch_indicator_description(indicator_id: str, description: str | None) -> None:
+    """
+    Обновляет поле description (и сбрасывает в NULL при description=None).
+    """
+    h = _supa_headers()
+    h["Prefer"] = "return=minimal"
+    resp = httpx.patch(
+        f"{SUPABASE_URL}/rest/v1/indicators",
+        headers=h,
+        params={"id": f"eq.{indicator_id}"},
+        json={"description": description},
+        timeout=15,
+    )
+    if resp.status_code not in (200, 204):
+        raise RuntimeError(
+            f"PATCH indicators {indicator_id} → {resp.status_code}: {resp.text}"
+        )
+
+
+def _description_worker() -> None:
+    """
+    Фоновый поток:
+    - Стартует через 40 сек
+    - Раз в минуту берёт 1 показатель без описания
+    - Запрашивает у Gemini структурированный JSON-ответ
+    - При невалидном ответе/ошибке — оставляет NULL и ждёт 10 мин
+    - Если все показатели заполнены — ждёт 10 мин
+    """
+    import time
+
+    log.info("[desc-worker] запущен, старт через 40 сек")
+    time.sleep(40)
+
+    while True:
+        wait_next = 60  # стандартный интервал — 1 минута
+
+        try:
+            ind = _fetch_indicator_no_description()
+
+            if ind is None:
+                log.info("[desc-worker] все показатели заполнены, жду 10 мин")
+                time.sleep(600)
+                continue
+
+            ind_id   = ind["id"]
+            ind_name = ind["name"]
+
+            log.info("[desc-worker] обрабатываю: '%s'", ind_name)
+
+            try:
+                analysis_names = _fetch_analysis_names_for_indicator(ind_id)
+                prompt = _build_description_prompt(ind_name, analysis_names)
+                raw = _gemini_call(MODELS_ANALYZE, [prompt])
+                description = _parse_description_response(raw)
+
+                if description is None:
+                    # Невалидный ответ — оставляем NULL, ждём 10 мин
+                    log.warning(
+                        "[desc-worker] невалидный ответ для '%s', жду 10 мин", ind_name
+                    )
+                    wait_next = 600
+                else:
+                    _patch_indicator_description(ind_id, description[:1500])
+                    log.info("[desc-worker] сохранено: '%s'", ind_name)
+
+            except Exception as e:
+                log.error("[desc-worker] ошибка для '%s': %s", ind_name, e)
+                wait_next = 600  # при любой ошибке — 10 мин
+
+        except Exception as e:
+            log.error("[desc-worker] критическая ошибка: %s", e)
+            wait_next = 600
+
+        time.sleep(wait_next)
+
+
+# Запускаем воркер при старте приложения
+_desc_thread = threading.Thread(target=_description_worker, daemon=True, name="desc-worker")
+_desc_thread.start()
+
+
+# ──────────────────────────────────────────────
 # Entry point (dev only)
 # ──────────────────────────────────────────────
 if __name__ == "__main__":
