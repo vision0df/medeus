@@ -301,18 +301,16 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
           <span class="pill pill-green" style="font-size:10px;padding:3px 10px;font-family:var(--mono);font-weight:700;letter-spacing:.1em;text-transform:uppercase;">Готово</span>
         </div>
         <div class="r3-card-body">
-          <div class="result-block">
-            <div class="result-block-title">Общее состояние и рекомендации</div>
-            <div id="summaryBlock"></div>
-          </div>
           <div class="result-block" style="margin-bottom:0;">
-            <div class="result-block-title">Показатели</div>
             <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
               <table class="res-table">
                 <thead><tr><th>Показатель</th><th>Значение</th><th>Статус</th></tr></thead>
                 <tbody id="resultTableBody"></tbody>
               </table>
             </div>
+          </div>
+          <div class="result-block" style="margin-bottom:0;">
+            <div id="summaryBlock"></div>
           </div>
         </div>
       </div></div>

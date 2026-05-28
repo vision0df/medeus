@@ -114,8 +114,7 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .file-open-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
 
 /* ─── RESULT TWO-COL ─── */
-.result-two-col { display: grid; grid-template-columns: 1fr; gap: 16px; }
-@media (min-width: 768px) { .result-two-col { grid-template-columns: 1fr 1fr; } }
+.result-two-col { display: flex; flex-direction: column; gap: 16px; }
 .result-block { background: var(--bg); border: 1px solid var(--line-mid); padding: 18px; }
 .result-block-label {
   font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
@@ -375,11 +374,9 @@ function renderAnalysis(a){
       <div class="a-card-body">
         <div class="result-two-col">
           <div class="result-block">
-            <div class="result-block-label">Состояние и рекомендации</div>
             <div id="summaryBlock"></div>
           </div>
           <div class="result-block">
-            <div class="result-block-label">Показатели</div>
             <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
               <table class="ind-res-table">
                 <thead><tr><th>Показатель</th><th>Значение</th><th>Статус</th></tr></thead>
