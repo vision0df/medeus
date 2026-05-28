@@ -627,7 +627,7 @@ document.getElementById('statusDate').textContent=new Date().toLocaleDateString(
 
 function renderHistory(rows){
   const list=document.getElementById('analysesList');
-  document.getElementById('loaderFiles').classList.add('hidden');
+  document.getElementById('loaderFiles')?.classList.add('hidden');
   if(!rows.length){list.innerHTML='<div class="analyses-empty">Анализы ещё не загружены.<br>Нажмите «Загрузить» чтобы добавить первый.</div>';return;}
   list.innerHTML=rows.slice(0,4).map(row=>{
     const name=escHtml(row.analysis_name||row.filename||'—');
@@ -648,7 +648,7 @@ function statusLabel(s){if(s==='above')return'↑ выше нормы';if(s==='b
 function renderIndicators(indicators){
   const grid=document.getElementById('summaryGrid');
   const badge=document.getElementById('badge-summary');
-  document.getElementById('loaderSummary').classList.add('hidden');
+  document.getElementById('loaderSummary')?.classList.add('hidden');
 
   // Обновляем значки предупреждений по категориям
   const warnIds = ['blood','hormones','infect','bio','genetics','micro','onco','func'];
@@ -703,7 +703,7 @@ const REC_ICONS=['🩺','🥗','🏃','💊','🧪','🫀','🧘','💧'];
 function renderRecommendations(recs){
   const list=document.getElementById('recsList');
   const badge=document.getElementById('badge-recs');
-  document.getElementById('loaderRecs').classList.add('hidden');
+  document.getElementById('loaderRecs')?.classList.add('hidden');
   if(!recs.length){list.innerHTML='<div class="analyses-empty">Рекомендации появятся<br>после загрузки анализов</div>';if(badge){badge.textContent='нет данных';badge.className='card-badge badge-neutral';}return;}
   if(badge){badge.textContent='есть рекомендации';badge.className='card-badge badge-warn';}
   list.innerHTML=recs.slice(0,4).map((rec,i)=>`
@@ -718,7 +718,7 @@ function renderHealthScore(indicators){
   const scoreEl=document.getElementById('healthScoreNum'),titleEl=document.getElementById('healthScoreTitle');
   const descEl=document.getElementById('healthScoreDesc'),badgeEl=document.getElementById('badge-health');
   const barsEl=document.getElementById('healthBars'),wrapEl=document.getElementById('healthScoreWrap');
-  document.getElementById('loaderHealth').classList.add('hidden');
+  document.getElementById('loaderHealth')?.classList.add('hidden');
   wrapEl.style.display='';
   if(!indicators.length){
     if(scoreEl)scoreEl.textContent='—';if(titleEl)titleEl.textContent='Нет данных';
