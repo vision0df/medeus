@@ -71,6 +71,40 @@ body { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hid
 }
 @media (min-width: 768px) { .step-panel { padding: 36px 40px; } }
 
+/* ─── MOBILE: full-width steps ─── */
+@media (max-width: 767px) {
+  .main-section {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .main-section .section-label,
+  .main-section .section-title,
+  .main-section #stepper {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .step-wrap {
+    clip-path: none !important;
+    border-top: 2px solid var(--text);
+    border-bottom: 2px solid var(--text);
+    padding: 2px 0;
+  }
+  .step-panel {
+    clip-path: none !important;
+    padding: 24px 20px;
+  }
+  /* step 3 result cards */
+  .r3-card { margin-left: 0; margin-right: 0; }
+  .r3-card-outer {
+    clip-path: none !important;
+    padding: 2px 0;
+    border-top: 2px solid var(--text);
+    border-bottom: 2px solid var(--text);
+  }
+  .r3-card-inner { clip-path: none !important; }
+  #step3Panel > .btn-row { padding: 0 20px; }
+}
+
 /* meta row */
 .meta-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
 @media (min-width: 600px) { .meta-row { grid-template-columns: 1fr auto; } }
