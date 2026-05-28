@@ -641,7 +641,19 @@ footer {
 @media (max-width: 767px) {
   .mobile-nav { display: flex; }
   .desktop-nav { display: none !important; }
-  .page { padding-bottom: calc(var(--nav-h) + 20px); }
+  .page {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: calc(var(--nav-h) + 20px);
+  }
+  .page-header {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .stepper {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
   .toast { bottom: calc(var(--nav-h) + 16px); }
   .form-row { grid-template-columns: 1fr; }
   .card-body { padding: 24px 18px; }
