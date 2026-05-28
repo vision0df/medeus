@@ -92,7 +92,10 @@ body::before {
 header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 300;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 24px; height: var(--header-h);
+  padding: 0 24px;
+  /* Safe area для iOS notch / Dynamic Island */
+  padding-top: env(safe-area-inset-top);
+  height: calc(var(--header-h) + env(safe-area-inset-top));
   background: var(--white);
   border-bottom: 1.5px solid var(--text);
 }
@@ -126,8 +129,13 @@ header {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
   background: var(--white);
   border-top: 1.5px solid var(--text);
-  height: var(--nav-h);
+  /* Safe area для iPhone с вырезом / home bar */
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom));
   padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom);
+  /* PWA standalone: убираем белую полосу снизу */
+  padding-left: max(8px, env(safe-area-inset-left));
+  padding-right: max(8px, env(safe-area-inset-right));
 }
 .mobile-nav-inner {
   display: flex; align-items: stretch; height: 100%;
@@ -278,7 +286,7 @@ header {
 
 /* ─── PAGE LAYOUT ─── */
 .page {
-  flex: 1; padding: calc(var(--header-h) + 24px) 20px 80px;
+  flex: 1; padding: calc(var(--header-h) + env(safe-area-inset-top) + 24px) 20px 80px;
   max-width: 1200px; margin: 0 auto; width: 100%;
   position: relative; z-index: 1;
 }
@@ -643,7 +651,7 @@ footer {
 
   .mobile-nav { display: flex; }
   .desktop-nav { display: none !important; }
-  .toast { bottom: calc(var(--nav-h) + 16px); }
+  .toast { bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px); }
   .form-row { grid-template-columns: 1fr; }
   .card-body { padding: 24px 18px; }
   footer { flex-direction: column; align-items: flex-start; gap: 12px; }
@@ -653,7 +661,7 @@ footer {
   .page {
     padding-left: 0;
     padding-right: 0;
-    padding-bottom: calc(var(--nav-h) + 20px);
+    padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 20px);
   }
   .page-header {
     padding-left: 20px;
