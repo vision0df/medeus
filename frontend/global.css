@@ -135,13 +135,13 @@ header {
 .mobile-nav-item {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 4px; text-decoration: none;
+  gap: 3px; text-decoration: none;
   color: var(--text-dim); font-family: var(--mono);
-  font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
-  transition: color .15s; position: relative; padding: 8px 4px;
+  font-size: 8px; letter-spacing: 0.10em; text-transform: uppercase;
+  transition: color .15s; position: relative; padding: 6px 2px;
   background: none; border: none; cursor: pointer;
 }
-.mobile-nav-item svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+.mobile-nav-item svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
 .mobile-nav-item.active { color: var(--orange); }
 .mobile-nav-item.active svg { stroke: var(--orange); }
 .mobile-nav-item:active { background: var(--orange-pale); }
