@@ -56,43 +56,37 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .ind-card-body { padding: 22px; }
 
 /* ─── CURRENT VALUE GRID ─── */
-.cv-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--line-mid); border: 1px solid var(--line-mid); margin-bottom: 0; }
-.cv-block { background: var(--bg); padding: 16px 18px; text-align: center; }
+.cv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line-mid); border: 1px solid var(--line-mid); margin-bottom: 0; }
+.cv-block { background: var(--bg); padding: 14px 16px; text-align: center; }
 .cv-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
 .cv-value {
-  font-family: var(--sans); font-size: 26px; font-weight: 800; color: var(--text); line-height: 1;
-  margin-bottom: 4px;
+  font-family: var(--sans); font-size: 22px; font-weight: 800; color: var(--text); line-height: 1;
+  margin-bottom: 4px; word-break: break-all;
 }
 .cv-value.ok   { color: var(--green); }
 .cv-value.warn { color: var(--red); }
 .cv-value.low  { color: #3b82f6; }
 .cv-sub  { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
 
-@media (max-width: 480px) {
-  .cv-grid { grid-template-columns: 1fr 1fr; }
-  .cv-block:last-child { grid-column: span 2; }
-  .cv-value { font-size: 22px; }
-}
-
 /* ─── TREND BADGE ─── */
 .trend-badge {
-  font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-  padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 5px 10px; display: inline-flex; align-items: center; gap: 6px;
 }
 .trend-up     { background: var(--red-pale);    color: var(--red); }
 .trend-down   { background: var(--yellow-pale);  color: var(--yellow); }
 .trend-stable { background: var(--green-pale);   color: var(--green); }
 
 /* ─── CHART ─── */
-.chart-wrap { padding: 22px; }
-.chart-container { position: relative; height: 240px; }
-@media (min-width: 600px) { .chart-container { height: 300px; } }
+.chart-wrap { padding: 16px; }
+.chart-container { position: relative; height: 200px; }
+@media (min-width: 600px) { .chart-container { height: 280px; } .chart-wrap { padding: 22px; } }
 
 /* ─── HISTORY TABLE ─── */
 .hist-table { width: 100%; border-collapse: collapse; }
 .hist-table thead th {
-  font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--text-dim); padding: 10px 14px; text-align: left;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-dim); padding: 9px 10px; text-align: left;
   border-bottom: 1px solid var(--line-mid); background: var(--bg2); font-weight: 700; white-space: nowrap;
 }
 .hist-table thead th:first-child::before { content: '/ '; color: var(--orange); }
@@ -100,33 +94,55 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .hist-table tbody tr.link-row { cursor: pointer; }
 .hist-table tbody tr.link-row:hover { background: var(--orange-pale); }
 .hist-table tbody tr:last-child { border-bottom: none; }
-.hist-table tbody td { padding: 9px 14px; font-family: var(--mono); font-size: 12px; color: var(--text-mid); }
-.col-val { color: var(--text); font-weight: 700; font-size: 13px; }
+.hist-table tbody td { padding: 8px 10px; font-family: var(--mono); font-size: 11px; color: var(--text-mid); }
+.col-val { color: var(--text); font-weight: 700; font-size: 12px; }
 .tag-ok  { color: var(--green);  font-weight: 700; font-size: 10px; }
 .tag-high{ color: var(--red);    font-weight: 700; font-size: 10px; }
 .tag-low { color: #3b82f6;       font-weight: 700; font-size: 10px; }
 .tag-dev { color: var(--yellow); font-weight: 700; font-size: 10px; }
 .link-icon { display: inline-block; margin-left: 4px; vertical-align: middle; opacity: .35; }
 
-.no-history { padding: 40px 22px; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--text-dim); line-height: 1.8; }
+/* Скрываем колонку Источник на узких экранах */
+@media (max-width: 480px) {
+  .hist-col-source { display: none; }
+  .hist-table thead th:last-child { display: none; }
+}
+
+.no-history { padding: 32px 16px; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--text-dim); line-height: 1.8; }
 .no-history strong { display: block; color: var(--text); font-size: 13px; margin-bottom: 8px; }
 
 /* ─── DESCRIPTION BLOCK ─── */
 .desc-text {
-  font-family: var(--mono); font-size: 13px; color: var(--text-mid);
+  font-family: var(--mono); font-size: 12px; color: var(--text-mid);
   line-height: 1.75; white-space: pre-wrap;
 }
 
-/* ─── BOTTOM GRID (with description) ─── */
+/* ─── BOTTOM GRID ─── */
+/* Десктоп: 2 колонки */
 .bottom-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0 16px;
   align-items: start;
 }
-.bottom-grid > .ind-card-outer {
+.bottom-grid > div > .ind-card-outer {
   margin-bottom: 16px;
   animation: none !important;
+}
+/* Мобильный: одна колонка, всё в столбик */
+@media (max-width: 640px) {
+  .bottom-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+/* ─── PAGE HEADER мобильный ─── */
+@media (max-width: 480px) {
+  .page-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .page-title  { font-size: clamp(18px, 5vw, 28px); }
+  .ind-card-head { padding: 10px 14px 10px; }
+  .ind-card-body { padding: 14px; }
 }
 
 /* ─── PILL ─── */
@@ -210,7 +226,7 @@ function buildHistoryCard(history){
       <td>${fmtDate(h.date)}${href?`<svg class="link-icon" viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`:''}</td>
       <td class="col-val">${escHtml(h.value)}</td>
       <td><span class="${sc}">${sl}</span></td>
-      <td>${escHtml(h.source||'—')}</td>
+      <td class="hist-col-source">${escHtml(h.source||'—')}</td>
     </tr>`;
   }).join('');
   return`<div class="ind-card-outer">
