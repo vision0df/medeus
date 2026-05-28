@@ -5,248 +5,178 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medeus // AI Analyzer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="global.css">
 <style>
-  /* ─── INDEX-SPECIFIC ─── */
-  body { overflow-x: hidden; }
+body { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
 
-  /* ─── HERO ─── */
-  .hero {
-    min-height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center; text-align: center;
-    padding: 140px 52px 100px;
-    position: relative; z-index: 1;
-    max-width: 900px; margin: 0 auto;
-  }
+/* ─── HERO ─── */
+.hero {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  padding: 120px 24px 80px; position: relative; z-index: 1;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase;
+  color: var(--orange); border: 1px solid var(--orange-border);
+  padding: 7px 18px; margin-bottom: 36px;
+  animation: fadeUp .5s ease both;
+}
+.hero-tag::before { content: '>'; animation: blink 1s step-end infinite; }
 
-  .hero-tag {
-    display: inline-flex; align-items: center; gap: 10px;
-    font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--orange);
-    border: 1px solid var(--orange-border);
-    padding: 7px 18px; margin-bottom: 38px;
-    animation: fadeUp 0.5s ease both;
-  }
-  .hero-tag::before { content: '>'; animation: blink 1s step-end infinite; }
+.hero h1 {
+  font-family: var(--mono); font-weight: 700; line-height: 1.06; letter-spacing: -1px;
+  font-size: clamp(34px, 5.5vw, 68px);
+  color: var(--text); margin-bottom: 28px;
+  animation: fadeUp .5s .08s ease both;
+}
+.hero h1 .accent {
+  color: var(--orange); position: relative; display: inline-block;
+}
+.hero h1 .accent::after {
+  content: ''; position: absolute;
+  bottom: 2px; left: 0; right: 0; height: 3px; background: var(--orange);
+}
 
-  .hero h1 {
-    font-family: var(--sans);
-    font-size: clamp(38px, 5.5vw, 72px);
-    font-weight: 700; line-height: 1.05; letter-spacing: -1.5px; color: var(--text);
-    margin-bottom: 30px;
-    animation: fadeUp 0.5s 0.08s ease both;
-  }
-  .hero h1 .accent {
-    color: var(--orange); position: relative; display: inline-block;
-  }
-  .hero h1 .accent::after {
-    content: ''; position: absolute;
-    bottom: 3px; left: 0; right: 0; height: 3px;
-    background: var(--orange);
-  }
+.hero-sub {
+  font-family: var(--mono); font-size: 13px; line-height: 1.9; color: var(--text-mid);
+  max-width: 520px; margin: 0 auto 48px;
+  animation: fadeUp .5s .16s ease both;
+}
+.hero-sub::before { content: '// '; color: var(--text-dim); }
 
-  .hero-sub {
-    font-family: var(--mono); font-size: 14px; line-height: 1.9; color: var(--text-mid);
-    max-width: 540px; margin-bottom: 52px;
-    animation: fadeUp 0.5s 0.16s ease both; letter-spacing: 0.02em;
-  }
-  .hero-sub::before { content: '// '; color: var(--text-dim); }
+.hero-cta {
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+  animation: fadeUp .5s .24s ease both;
+}
 
-  .hero-cta {
-    animation: fadeUp 0.5s 0.24s ease both;
-  }
+/* ─── SECTION ─── */
+.main-section {
+  padding: 80px 24px 100px; max-width: 1100px; margin: 0 auto;
+  width: 100%; position: relative; z-index: 1;
+}
+@media (min-width: 768px) { .main-section { padding: 80px 52px 100px; } }
 
-  /* ─── ANALYZER SECTION ─── */
-  .main-section {
-    padding: 90px 52px 110px;
-    max-width: 1140px; margin: 0 auto;
-    position: relative; z-index: 1;
-  }
+/* ─── STEP PANEL ─── */
+.step-wrap {
+  background: var(--text);
+  clip-path: polygon(18px 0%, 100% 0%, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0% 100%, 0% 18px);
+  padding: 2px; animation: fadeUp .35s ease both;
+}
+.step-panel {
+  background: var(--white);
+  clip-path: polygon(16px 0%, 100% 0%, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0% 100%, 0% 16px);
+  padding: 28px 24px; position: relative;
+}
+@media (min-width: 768px) { .step-panel { padding: 36px 40px; } }
 
-  /* ─── MULTI-PANEL (two cols on desktop) ─── */
-  .analyzer-grid-wrap {
-    background: var(--text);
-    clip-path: polygon(24px 0%,100% 0%,100% calc(100% - 24px),calc(100% - 24px) 100%,0% 100%,0% 24px);
-    padding: 2px;
-  }
-  .analyzer-panels {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
-    background: var(--line-mid);
-    clip-path: polygon(22px 0%,100% 0%,100% calc(100% - 22px),calc(100% - 22px) 100%,0% 100%,0% 22px);
-  }
-  .a-panel { background: var(--bg2); padding: 44px; }
-  .a-panel-full { grid-column: 1/-1; }
-  .analyzer-panels--single { grid-template-columns: 1fr; background: var(--bg2); }
+/* meta row */
+.meta-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
+@media (min-width: 600px) { .meta-row { grid-template-columns: 1fr auto; } }
 
-  /* ─── CATEGORY SELECTOR (upload page version, reused here) ─── */
-  .category-grid { display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
-  .cat-row { display: flex; align-items: stretch; gap: 3px; position: relative; }
-  .cat-card {
-    flex: 1; display: flex; align-items: center; gap: 10px;
-    padding: 8px 12px 8px 10px;
-    background: var(--bg); border: 1px solid var(--line-mid); border-right: none;
-    clip-path: polygon(7px 0%,100% 0%,100% 100%,0% 100%,0% 7px);
-    font-family: var(--mono); text-align: left; cursor: pointer; outline: none;
-    transition: background 0.15s, border-color 0.15s;
-  }
-  .cat-card:hover { background: var(--bg3); border-color: var(--text-mid); }
-  .cat-card.selected { background: var(--text); border-color: var(--text); }
-  .cat-icon {
-    width: 22px; height: 22px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-    background: var(--bg3);
-    clip-path: polygon(4px 0%,100% 0%,100% calc(100% - 4px),calc(100% - 4px) 100%,0% 100%,0% 4px);
-    transition: background 0.15s;
-  }
-  .cat-card:hover .cat-icon { background: var(--line-mid); }
-  .cat-card.selected .cat-icon { background: rgba(255,255,255,0.12); }
-  .cat-icon svg { width: 11px; height: 11px; stroke: var(--text-mid); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.15s; }
-  .cat-card.selected .cat-icon svg { stroke: rgba(255,255,255,0.7); }
-  .cat-name { font-size: 11px; font-weight: 700; color: var(--text); letter-spacing: 0.09em; text-transform: uppercase; line-height: 1; transition: color 0.15s; }
-  .cat-card.selected .cat-name { color: #fff; }
+/* ─── RESULT CARDS ─── */
+.r3-card { margin-bottom: 16px; animation: fadeUp .35s ease both; }
+.r3-card:nth-child(2){animation-delay:.07s}
+.r3-card-outer {
+  background: var(--text);
+  clip-path: polygon(14px 0%, 100% 0%, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0% 100%, 0% 14px);
+  padding: 2px;
+}
+.r3-card-inner {
+  background: var(--white);
+  clip-path: polygon(12px 0%, 100% 0%, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0% 100%, 0% 12px);
+}
+.r3-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px 12px; border-bottom: 1px solid var(--line); background: var(--bg2);
+  flex-wrap: wrap; gap: 8px;
+}
+.r3-card-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-dim); display: flex; align-items: center; gap: 6px;
+}
+.r3-card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
+.r3-card-body { padding: 20px; }
+.meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (min-width: 600px) { .meta-grid { grid-template-columns: repeat(4, 1fr); } }
+.meta-item { background: var(--bg); padding: 12px 14px; }
+.meta-item-key { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 5px; }
+.meta-item-val { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text); word-break: break-all; }
 
-  /* ─── RESULT SECTION ─── */
-  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-  .result-title { font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--text); }
-  .result-box { min-height: 340px; position: relative; }
-  .empty-state {
-    position: absolute; inset: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 14px; color: var(--text-dim); text-align: center; padding: 28px;
-  }
-  .empty-icon {
-    width: 60px; height: 60px; position: relative;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .empty-icon::before {
-    content: ''; position: absolute; inset: 0;
-    background: var(--line-mid);
-    clip-path: polygon(9px 0%,100% 0%,100% calc(100% - 9px),calc(100% - 9px) 100%,0% 100%,0% 9px);
-  }
-  .empty-icon::after {
-    content: ''; position: absolute; inset: 1px;
-    background: var(--bg3);
-    clip-path: polygon(8px 0%,100% 0%,100% calc(100% - 8px),calc(100% - 8px) 100%,0% 100%,0% 8px);
-  }
-  .empty-icon svg { position: relative; z-index: 1; width: 26px; height: 26px; stroke: var(--text-dim); fill: none; }
-  .empty-text { font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
-  .empty-sub  { font-family: var(--mono); font-size: 11px; color: var(--text-dim); line-height: 1.7; }
+/* result summary */
+.result-block { background: var(--bg); padding: 18px; border: 1px solid var(--line-mid); margin-bottom: 14px; }
+.result-block-title {
+  font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--text-dim); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line-mid);
+  display: flex; align-items: center; gap: 7px;
+}
+.result-block-title::before { content:''; display:inline-block; width:5px; height:5px; background:var(--orange); flex-shrink:0; }
+.summary-status { font-family: var(--mono); font-size: 13px; color: var(--text); line-height: 1.7; margin-bottom: 14px; }
+.rec-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.rec-item { display: flex; gap: 8px; font-family: var(--mono); font-size: 12px; color: var(--text-mid); line-height: 1.6; }
+.rec-item::before { content: '→'; color: var(--orange); flex-shrink: 0; }
+.rec-all-good { display: flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 12px; color: var(--green); }
+.rec-all-good::before { content: '✓'; font-weight: 700; }
 
-  .loader-abs {
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    position: absolute; inset: 0; gap: 22px; background: var(--bg);
-  }
-  .loader-abs.show { display: flex; }
-  .result-content { display: none; animation: fadeUp 0.3s ease both; }
-  .result-content.show { display: block; }
+.res-table { width: 100%; border-collapse: collapse; }
+.res-table thead th { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line-mid); background: var(--bg3); font-weight: 700; white-space: nowrap; }
+.res-table thead th:first-child::before { content: '/ '; color: var(--orange); }
+.res-table tbody tr { border-bottom: 1px solid var(--line); }
+.res-table tbody td { padding: 7px 12px; font-family: var(--mono); font-size: 12px; color: var(--text-mid); }
+.col-name { color: var(--text); font-weight: 600; }
+.tag-ok   { color: var(--green);  font-weight: 700; font-size: 10px; }
+.tag-high { color: var(--red);    font-weight: 700; font-size: 10px; }
+.tag-low  { color: #3b82f6;       font-weight: 700; font-size: 10px; }
 
-  /* ─── STEP 3 RESULT — mirrors analysis.html layout ─── */
-  .r3-card-wrap { background:var(--text); clip-path:polygon(20px 0%,100% 0%,100% calc(100% - 20px),calc(100% - 20px) 100%,0% 100%,0% 20px); padding:2px; margin-bottom:20px; animation:fadeUp 0.35s ease both; }
-  .r3-card-wrap:nth-child(2){animation-delay:.07s}
-  .r3-card { background:var(--white); clip-path:polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px); }
-  .r3-card-header { display:flex; align-items:center; justify-content:space-between; padding:14px 22px 12px; border-bottom:1px solid var(--line); background:var(--bg2); }
-  .r3-card-label { font-family:var(--mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-dim); display:flex; align-items:center; gap:7px; }
-  .r3-card-label::before { content:'/'; color:var(--orange); font-weight:700; font-size:13px; }
-  .r3-info-grid { display:grid; grid-template-columns:200px 1fr; }
-  .r3-thumb-wrap { border-right:1px solid var(--line); padding:22px; display:flex; align-items:flex-start; justify-content:center; }
-  .r3-thumb-pdf { width:160px; height:160px; background:var(--bg3); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:var(--text-dim); }
-  .r3-thumb-pdf svg { width:44px; height:44px; stroke:var(--text-dim); fill:none; }
-  .r3-thumb-pdf span { font-family:var(--mono); font-size:10px; text-align:center; letter-spacing:0.05em; word-break:break-all; padding:0 8px; }
-  .r3-thumb-img { width:160px; height:160px; object-fit:cover; display:block; }
-  .r3-meta-panel { padding:18px 20px; display:flex; flex-direction:column; }
-  .r3-meta-item { padding:9px 0; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:14px; }
-  .r3-meta-item:last-child { border-bottom:none; }
-  .r3-meta-key { font-family:var(--mono); font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-dim); min-width:100px; flex-shrink:0; }
-  .r3-meta-val { font-family:var(--mono); font-size:13px; color:var(--text); font-weight:500; }
-  .r3-result-body { padding:22px; display:flex; flex-direction:column; gap:18px; }
-  .r3-block { background:var(--bg2); padding:20px; border:1px solid var(--line-mid); }
-  .r3-block-label { font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-dim); margin-bottom:14px; padding-bottom:7px; border-bottom:1px solid var(--line-mid); display:flex; align-items:center; gap:8px; }
-  .r3-block-label::before { content:''; display:inline-block; width:5px; height:5px; background:var(--orange); flex-shrink:0; }
-  .summary-type { font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--orange); margin-bottom:8px; }
-  .summary-status { font-family:var(--sans); font-size:13px; color:var(--text); line-height:1.65; margin-bottom:14px; }
-  .rec-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:7px; }
-  .rec-item { display:flex; gap:8px; font-family:var(--mono); font-size:11px; color:var(--text-mid); line-height:1.6; }
-  .rec-item::before { content:'→'; color:var(--orange); flex-shrink:0; }
-  .rec-all-good { font-family:var(--mono); font-size:11px; color:var(--green); display:flex; align-items:center; gap:8px; }
-  .rec-all-good::before { content:'✓'; font-weight:700; }
-  .ind-res-table { width:100%; border-collapse:collapse; }
-  .ind-res-table thead th { font-family:var(--mono); font-size:9px; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim); padding:6px 10px; text-align:left; border-bottom:1px solid var(--line-mid); background:var(--bg3); font-weight:700; }
-  .ind-res-table tbody tr { border-bottom:1px solid var(--line); }
-  .ind-res-table tbody tr:last-child { border-bottom:none; }
-  .ind-res-table tbody td { padding:6px 10px; font-family:var(--mono); font-size:11px; color:var(--text-mid); }
-  .ind-res-table .col-name { color:var(--text); font-weight:600; }
-  .tag-high { color:var(--red); font-weight:700; }
-  .tag-low  { color:#3b82f6; font-weight:700; }
-  .tag-ok   { color:var(--green); font-weight:700; }
-  @media(max-width:680px){ .r3-info-grid { grid-template-columns:1fr; } .r3-thumb-wrap { border-right:none; border-bottom:1px solid var(--line); } }
+.pill-green { display:inline-flex;align-items:center;background:var(--green-pale);color:var(--green);font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px; }
 
-  /* ─── HOW IT WORKS ─── */
-  .steps-section {
-    background: var(--white);
-    padding: 88px 52px;
-    border-top: 2px solid var(--text); border-bottom: 2px solid var(--text);
-    position: relative; z-index: 1;
-  }
-  .steps-inner { max-width: 1140px; margin: 0 auto; }
-  .steps-grid-wrap {
-    margin-top: 52px; padding: 2px;
-    background: var(--text);
-    clip-path: polygon(20px 0%,100% 0%,100% calc(100% - 20px),calc(100% - 20px) 100%,0% 100%,0% 20px);
-  }
-  .steps-grid {
-    display: grid; grid-template-columns: repeat(3,1fr);
-    gap: 2px; background: var(--text);
-    clip-path: polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px);
-  }
-  .step-card {
-    background: var(--white); padding: 40px 34px;
-    position: relative; overflow: hidden; transition: background 0.18s;
-  }
-  .step-card:hover { background: var(--bg); }
-  .step-bg-num {
-    position: absolute; top: -8px; right: 14px;
-    font-family: var(--sans); font-size: 84px; font-weight: 700;
-    color: rgba(255,90,0,0.04); line-height: 1; pointer-events: none; letter-spacing: -4px;
-  }
-  .step-num-label {
-    font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--orange);
-    letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 22px;
-    display: flex; align-items: center; gap: 9px;
-  }
-  .step-num-label::before { content: ''; width: 18px; height: 1px; background: var(--orange); }
-  .step-icon-wrap {
-    width: 46px; height: 46px; position: relative;
-    display: flex; align-items: center; justify-content: center; margin-bottom: 18px;
-  }
-  .step-icon-wrap::before {
-    content: ''; position: absolute; inset: 0; background: var(--line-mid);
-    clip-path: polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
-  }
-  .step-icon-wrap::after {
-    content: ''; position: absolute; inset: 1px; background: var(--bg);
-    clip-path: polygon(5px 0%,100% 0%,100% calc(100% - 5px),calc(100% - 5px) 100%,0% 100%,0% 5px);
-    transition: background 0.18s;
-  }
-  .step-card:hover .step-icon-wrap::after { background: var(--orange); }
-  .step-icon-wrap svg { position: relative; z-index: 1; width: 21px; height: 21px; stroke: var(--orange); fill: none; transition: stroke 0.18s; }
-  .step-card:hover .step-icon-wrap svg { stroke: #fff; }
-  .step-title { font-family: var(--sans); font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
-  .step-desc  { font-family: var(--mono); font-size: 12px; color: var(--text-dim); line-height: 1.75; }
-
-  /* ─── RESPONSIVE ─── */
-  @media (max-width: 960px) {
-    .analyzer-panels { grid-template-columns: 1fr; }
-    .analyzer-grid-wrap { clip-path: none; }
-    .analyzer-panels { clip-path: none; }
-    .main-section { padding: 70px 28px 90px; }
-    .steps-section { padding: 70px 28px; }
-    .steps-grid { grid-template-columns: 1fr; clip-path: none; }
-  }
-  @media (max-width: 640px) {
-    .hero { padding: 110px 20px 80px; }
-    .hero h1 { font-size: 32px; }
-  }
+/* ─── HOW IT WORKS ─── */
+.how-section {
+  background: var(--white); padding: 80px 24px;
+  border-top: 2px solid var(--text); border-bottom: 2px solid var(--text);
+  position: relative; z-index: 1;
+}
+@media (min-width: 768px) { .how-section { padding: 88px 52px; } }
+.how-inner { max-width: 1100px; margin: 0 auto; }
+.how-grid-outer {
+  margin-top: 48px; padding: 2px; background: var(--text);
+  clip-path: polygon(18px 0%,100% 0%,100% calc(100% - 18px),calc(100% - 18px) 100%,0% 100%,0% 18px);
+}
+.how-grid {
+  display: grid; grid-template-columns: 1fr; gap: 2px;
+  background: var(--text);
+  clip-path: polygon(16px 0%,100% 0%,100% calc(100% - 16px),calc(100% - 16px) 100%,0% 100%,0% 16px);
+}
+@media (min-width: 640px) { .how-grid { grid-template-columns: repeat(3,1fr); } }
+.how-card {
+  background: var(--white); padding: 36px 30px; position: relative;
+  overflow: hidden; transition: background .18s;
+}
+.how-card:hover { background: var(--bg); }
+.how-bg-num {
+  position: absolute; top: -10px; right: 12px;
+  font-family: var(--mono); font-size: 80px; font-weight: 700;
+  color: rgba(255,90,0,0.045); line-height: 1; pointer-events: none;
+}
+.how-num {
+  font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--orange);
+  letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 9px;
+}
+.how-num::before { content: ''; width: 16px; height: 1px; background: var(--orange); }
+.how-icon {
+  width: 44px; height: 44px; position: relative;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 18px;
+  background: var(--bg2);
+  clip-path: polygon(7px 0%,100% 0%,100% calc(100% - 7px),calc(100% - 7px) 100%,0% 100%,0% 7px);
+  transition: background .18s;
+}
+.how-card:hover .how-icon { background: var(--orange); }
+.how-icon svg { width: 20px; height: 20px; stroke: var(--text-mid); fill: none; stroke-width: 2; stroke-linecap: round; transition: stroke .18s; }
+.how-card:hover .how-icon svg { stroke: #fff; }
+.how-title { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; letter-spacing: 0.04em; }
+.how-desc  { font-family: var(--mono); font-size: 11px; color: var(--text-dim); line-height: 1.8; }
 </style>
 </head>
 <body>
@@ -254,150 +184,138 @@
 <header>
   <a class="logo" href="index.html">
     <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
-        <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/>
-      </svg>
+      <svg viewBox="0 0 24 24"><path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke-linecap="round"/></svg>
     </div>
     <div class="logo-wordmark">
       <div class="logo-text">Medeus<span>.</span></div>
       <div class="logo-sub">Medical AI</div>
     </div>
   </a>
-  <div class="header-right">
+  <div class="header-actions">
     <span class="nav-badge"><span class="nav-dot"></span>AI · Beta</span>
-    <a href="auth.html" class="btn-nav">
-      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
-      </svg>
-      <span>Войти</span>
+    <a href="auth.html" class="btn btn-primary" style="padding:10px 20px;font-size:11px;">
+      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+      Войти
     </a>
   </div>
 </header>
 
+<!-- HERO -->
 <section class="hero">
   <div class="hero-tag">Медицинский ИИ-ассистент</div>
   <h1>Понять свои анализы<br>за <span class="accent">секунды</span><span class="cursor-blink"></span></h1>
-  <p class="hero-sub">Загрузите фото или скан результатов — наш ИИ расшифрует каждый показатель и даст персональные рекомендации.</p>
+  <p class="hero-sub">Загрузите фото или скан результатов — ИИ расшифрует каждый показатель и даст персональные рекомендации.</p>
   <div class="hero-cta">
-    <a href="#analyzer" class="btn-primary">
-      <span>Начать анализ</span>
-      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M5 12h14M12 5l7 7-7 7"/>
-      </svg>
+    <a href="#analyzer" class="btn btn-primary btn-primary-lg">
+      <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="17" height="17"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      Начать анализ
+    </a>
+    <a href="auth.html" class="btn btn-secondary btn-primary-lg">
+      Войти в кабинет
     </a>
   </div>
 </section>
 
+<!-- ANALYZER -->
 <section class="main-section" id="analyzer">
   <div class="section-label">01 — Анализатор</div>
   <div class="section-title">Загрузите ваши анализы</div>
 
-  <!-- STEPPER -->
+  <!-- Stepper -->
   <div class="stepper" id="stepper">
-    <div class="step-item active" id="si1">
-      <div class="step-num-badge">1</div>
-      <span>Загрузка</span>
-    </div>
+    <div class="step-item active" id="si1"><div class="step-num">1</div><span>Загрузка</span></div>
     <div class="step-line"></div>
-    <div class="step-item" id="si2">
-      <div class="step-num-badge">2</div>
-      <span>Показатели</span>
-    </div>
+    <div class="step-item" id="si2"><div class="step-num">2</div><span>Показатели</span></div>
     <div class="step-line"></div>
-    <div class="step-item" id="si3">
-      <div class="step-num-badge">3</div>
-      <span>Результат</span>
-    </div>
+    <div class="step-item" id="si3"><div class="step-num">3</div><span>Результат</span></div>
   </div>
 
   <!-- ═══ STEP 1 ═══ -->
   <div id="step1Panel">
-    <div class="analyzer-grid-wrap">
-      <div class="analyzer-panels analyzer-panels--single">
+    <div class="step-wrap">
+      <div class="step-panel">
+        <div class="loader-overlay" id="step1Loader">
+          <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="loader-text">Извлекаем показатели...<br><span style="opacity:.6;font-size:10px;">Обычно 5–15 секунд</span></div>
+        </div>
 
-        <!-- Document + data -->
-        <div class="a-panel" style="position:relative;">
-          <div class="loader-overlay" id="step1Loader">
-            <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-            <div class="loader-text">Извлекаем показатели...<br><span>Обычно 5–15 секунд</span></div>
+        <div class="panel-label">Документ с результатами</div>
+
+        <div class="error-banner" id="step1Error">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="step1ErrorText"></span>
+        </div>
+
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="fileInput" accept="image/*,.pdf" style="display:none;">
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           </div>
+          <div class="upload-title">Загрузите результаты анализов</div>
+          <div class="upload-sub">Перетащите файл или нажмите для выбора</div>
+          <div class="upload-formats">Форматы: <span>PNG</span>·<span>JPG</span>·<span>PDF</span> · Макс. 10 МБ</div>
+        </div>
 
-          <div class="panel-label">Документ и данные</div>
-
-          <div class="error-banner" id="step1Error">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span id="step1ErrorText">Ошибка</span>
+        <div class="file-preview" id="filePreview">
+          <div class="file-preview-icon"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <div class="file-preview-info">
+            <div class="file-preview-name" id="fileName">—</div>
+            <div class="file-preview-size" id="fileSize">—</div>
           </div>
-
-          <div class="upload-zone" id="uploadZone">
-            <input type="file" id="fileInput" accept="image/*,.pdf" style="display:none;">
-            <div class="upload-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            </div>
-            <div class="upload-title">Загрузите результаты анализов</div>
-            <div class="upload-sub">Перетащите файл или нажмите для выбора</div>
-            <div class="upload-formats"><span>PNG</span>·<span>JPG</span>·<span>PDF</span></div>
-          </div>
-
-          <div class="file-preview" id="filePreview">
-            <div class="file-preview-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-            <div class="file-preview-info">
-              <div class="file-preview-name" id="fileName">—</div>
-              <div class="file-preview-size" id="fileSize">—</div>
-            </div>
-            <button class="file-remove" id="fileRemove" type="button">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-
-          <div class="form-row" style="margin-bottom:22px;">
-            <div class="form-group">
-              <label for="age">Возраст</label>
-              <input type="number" id="age" placeholder="30" min="1" max="120">
-            </div>
-            <div class="form-group">
-              <label for="gender">Пол</label>
-              <div class="select-wrap">
-                <select id="gender">
-                  <option value="">— выберите —</option>
-                  <option value="мужской">Мужской</option>
-                  <option value="женский">Женский</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <button id="extractBtn" disabled type="button" class="btn-primary btn-full">
-            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <span>Извлечь показатели</span>
+          <button class="file-remove" id="fileRemove" type="button">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
 
+        <div class="meta-row">
+          <div class="form-group">
+            <label for="age">Возраст</label>
+            <input type="number" id="age" placeholder="30" min="1" max="120">
+          </div>
+          <div class="form-group">
+            <label for="gender">Пол</label>
+            <div class="select-wrap">
+              <select id="gender">
+                <option value="">— выберите —</option>
+                <option value="мужской">Мужской</option>
+                <option value="женский">Женский</option>
+              </select>
+            </div>
+          </div>
+        </div>
 
-
+        <div class="btn-row">
+          <button id="extractBtn" disabled type="button" class="btn btn-primary btn-primary-lg" style="flex:1;">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="17" height="17"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <span>Извлечь показатели</span>
+          </button>
+          <button id="manualBtn" type="button" class="btn btn-secondary btn-primary-lg">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="17" height="17"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span>Вручную</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- ═══ STEP 2 ═══ -->
   <div id="step2Panel" style="display:none;">
-    <div class="card-wrap">
-      <div class="card-inner" style="min-height:auto;">
+    <div class="step-wrap">
+      <div class="step-panel">
         <div class="loader-overlay" id="step2Loader">
           <div class="loader-px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-          <div class="loader-text">ИИ анализирует показатели...<br><span>До 30 секунд</span></div>
+          <div class="loader-text">ИИ анализирует показатели...<br><span style="opacity:.6;font-size:10px;">Обычно 15–30 секунд</span></div>
         </div>
 
         <div class="panel-label">Проверка показателей</div>
 
         <div class="error-banner" id="step2Error">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span id="step2ErrorText">Ошибка</span>
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="step2ErrorText"></span>
         </div>
 
-        <p style="font-family:var(--mono);font-size:12px;color:var(--text-mid);line-height:1.75;margin-bottom:20px;">
-          <strong style="color:var(--text);">Проверьте и при необходимости отредактируйте показатели.</strong><br>
-          ИИ извлёк их из документа. Исправьте ошибки, удалите лишнее или добавьте пропущенное.
+        <p style="font-family:var(--mono);font-size:12px;color:var(--text-mid);line-height:1.8;margin-bottom:16px;">
+          <strong style="color:var(--text);">Проверьте показатели перед анализом.</strong> Исправьте ошибки, удалите лишнее или добавьте пропущенное.
         </p>
 
         <div class="ind-table-wrap">
@@ -407,20 +325,20 @@
           </table>
         </div>
 
-        <div class="add-indicator-row">
-          <input type="text" id="newIndName" placeholder="Название показателя">
-          <input type="text" id="newIndValue" placeholder="Значение" style="max-width:110px;">
-          <input type="text" id="newIndUnit" placeholder="Ед." style="max-width:90px;">
+        <div class="add-ind-row">
+          <input type="text" id="newIndName" placeholder="Название показателя" style="flex:2;">
+          <input type="text" id="newIndValue" placeholder="Значение" style="flex:1;max-width:110px;">
+          <input type="text" id="newIndUnit" placeholder="Ед." style="flex:0;max-width:80px;">
           <button class="btn-add-row" id="addIndBtn" type="button">+ Добавить</button>
         </div>
 
-        <div class="btn-row">
-          <button class="btn-secondary" id="backToStep1Btn" type="button">
-            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        <div class="btn-row" style="margin-top:8px;">
+          <button class="btn btn-secondary btn-primary-lg" id="backToStep1Btn" type="button">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="17" height="17"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
             Назад
           </button>
-          <button class="btn-primary" id="continueBtn" type="button" style="flex:1;">
-            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6m-3-3 3 3-3 3"/><circle cx="12" cy="12" r="10"/></svg>
+          <button class="btn btn-primary btn-primary-lg" id="continueBtn" type="button" style="flex:1;">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="17" height="17"><circle cx="12" cy="12" r="10"/><path d="M9 12h6m-3-3 3 3-3 3"/></svg>
             <span>Получить анализ</span>
           </button>
         </div>
@@ -431,66 +349,55 @@
   <!-- ═══ STEP 3 ═══ -->
   <div id="step3Panel" style="display:none;">
 
-    <!-- Card 1: file preview + meta info -->
-    <div class="r3-card-wrap">
-      <div class="r3-card">
-        <div class="r3-card-header">
-          <div class="r3-card-label">Информация и файл</div>
-        </div>
-        <div class="r3-info-grid">
-          <div class="r3-thumb-wrap" id="r3ThumbWrap">
-            <div class="r3-thumb-pdf">
-              <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <span id="r3ThumbName">—</span>
-            </div>
-          </div>
-          <div class="r3-meta-panel" id="r3MetaPanel">
-            <div class="r3-meta-item"><div class="r3-meta-key">Файл</div><div class="r3-meta-val" id="r3MetaFile">—</div></div>
-            <div class="r3-meta-item"><div class="r3-meta-key">Тип анализа</div><div class="r3-meta-val" id="r3MetaType">—</div></div>
-            <div class="r3-meta-item"><div class="r3-meta-key">Возраст</div><div class="r3-meta-val" id="r3MetaAge">—</div></div>
-            <div class="r3-meta-item"><div class="r3-meta-key">Пол</div><div class="r3-meta-val" id="r3MetaGender">—</div></div>
-            <div class="r3-meta-item"><div class="r3-meta-key">Дата</div><div class="r3-meta-val" id="r3MetaDate">—</div></div>
+    <div class="r3-card">
+      <div class="r3-card-outer"><div class="r3-card-inner">
+        <div class="r3-card-head"><div class="r3-card-label">Информация</div></div>
+        <div class="r3-card-body">
+          <div class="meta-grid">
+            <div class="meta-item"><div class="meta-item-key">Тип</div><div class="meta-item-val" id="r3MetaType">—</div></div>
+            <div class="meta-item"><div class="meta-item-key">Возраст</div><div class="meta-item-val" id="r3MetaAge">—</div></div>
+            <div class="meta-item"><div class="meta-item-key">Пол</div><div class="meta-item-val" id="r3MetaGender">—</div></div>
+            <div class="meta-item"><div class="meta-item-key">Файл</div><div class="meta-item-val" id="r3MetaFile">—</div></div>
           </div>
         </div>
-      </div>
+      </div></div>
     </div>
 
-    <!-- Card 2: AI result (summary + table vertical) -->
-    <div class="r3-card-wrap">
-      <div class="r3-card">
-        <div class="r3-card-header">
+    <div class="r3-card">
+      <div class="r3-card-outer"><div class="r3-card-inner">
+        <div class="r3-card-head">
           <div class="r3-card-label">Результат анализа ИИ</div>
-          <div class="pill pill-green"><span class="pill-inner">Готово</span></div>
+          <span class="pill-green">Готово</span>
         </div>
-        <div class="r3-result-body">
-          <div class="r3-block">
-            <div class="r3-block-label">Общее состояние и рекомендации</div>
-            <div id="summaryBlock3"></div>
+        <div class="r3-card-body">
+          <div class="result-block">
+            <div class="result-block-title">Состояние и рекомендации</div>
+            <div id="summaryBlock"></div>
           </div>
-          <div class="r3-block">
-            <div class="r3-block-label">Показатели</div>
-            <div style="overflow-x:auto;">
-              <table class="ind-res-table">
+          <div class="result-block" style="margin-bottom:0;">
+            <div class="result-block-title">Показатели</div>
+            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+              <table class="res-table">
                 <thead><tr><th>Показатель</th><th>Значение</th><th>Статус</th></tr></thead>
-                <tbody id="resultTableBody3"></tbody>
+                <tbody id="resultTableBody"></tbody>
               </table>
             </div>
           </div>
         </div>
-      </div>
+      </div></div>
     </div>
 
-    <div class="btn-row" style="margin-top:4px;">
-      <button class="btn-secondary" id="backToStep2Btn" type="button">
-        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    <div class="btn-row">
+      <button class="btn btn-secondary btn-primary-lg" id="backToStep2Btn" type="button">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="17" height="17"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
         Назад
       </button>
-      <button class="btn-primary" id="startOverBtn" type="button" style="flex:1;">
-        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+      <button class="btn btn-secondary btn-primary-lg" id="startOverBtn" type="button">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="17" height="17"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
         Новый анализ
       </button>
-      <a href="auth.html" class="btn-primary" style="flex:1;background:var(--orange);text-decoration:none;">
-        <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+      <a href="auth.html" class="btn btn-primary btn-primary-lg" style="flex:1;background:var(--orange);">
+        <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="17" height="17"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
         Войти и сохранить
       </a>
     </div>
@@ -499,38 +406,32 @@
 </section>
 
 <!-- HOW IT WORKS -->
-<section class="steps-section">
-  <div class="steps-inner">
+<section class="how-section">
+  <div class="how-inner">
     <div class="section-label">02 — Как это работает</div>
     <div class="section-title">Три шага до ясности</div>
-    <div class="steps-grid-wrap">
-      <div class="steps-grid">
-        <div class="step-card">
-          <div class="step-bg-num">01</div>
-          <div class="step-num-label">01</div>
-          <div class="step-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-          </div>
-          <div class="step-title">Сфотографируйте бланк</div>
-          <div class="step-desc">Загрузите фото или скан результатов анализов — мы сами распознаем текст и извлечём показатели.</div>
+    <div class="how-grid-outer">
+      <div class="how-grid">
+        <div class="how-card">
+          <div class="how-bg-num">01</div>
+          <div class="how-num">01</div>
+          <div class="how-icon"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+          <div class="how-title">Сфотографируйте бланк</div>
+          <div class="how-desc">Загрузите фото или скан результатов анализов — мы сами распознаем текст и извлечём показатели.</div>
         </div>
-        <div class="step-card">
-          <div class="step-bg-num">02</div>
-          <div class="step-num-label">02</div>
-          <div class="step-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          </div>
-          <div class="step-title">Укажите данные</div>
-          <div class="step-desc">Введите возраст и пол — для точного сравнения с референсными значениями вашей группы.</div>
+        <div class="how-card">
+          <div class="how-bg-num">02</div>
+          <div class="how-num">02</div>
+          <div class="how-icon"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <div class="how-title">Укажите данные</div>
+          <div class="how-desc">Введите возраст и пол — для точного сравнения с референсными значениями вашей группы.</div>
         </div>
-        <div class="step-card">
-          <div class="step-bg-num">03</div>
-          <div class="step-num-label">03</div>
-          <div class="step-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          </div>
-          <div class="step-title">Получите расшифровку</div>
-          <div class="step-desc">ИИ проанализирует каждый показатель, выделит отклонения и даст конкретные рекомендации.</div>
+        <div class="how-card">
+          <div class="how-bg-num">03</div>
+          <div class="how-num">03</div>
+          <div class="how-icon"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+          <div class="how-title">Получите расшифровку</div>
+          <div class="how-desc">ИИ проанализирует каждый показатель, выделит отклонения и даст конкретные рекомендации.</div>
         </div>
       </div>
     </div>
@@ -539,282 +440,174 @@
 
 <footer>
   <div class="footer-logo">Medeus<span>.</span></div>
-  <div class="footer-disclaimer">
-    Сервис предназначен только для информационных целей.<br>
-    Не является медицинским заключением. Проконсультируйтесь с врачом.
-  </div>
+  <div class="footer-disclaimer">Сервис предназначен только для информационных целей. Не является медицинским заключением. Проконсультируйтесь с врачом.</div>
   <div class="footer-copy">© 2026 Medeus</div>
 </footer>
 
 <script>
 const API_BASE = 'https://medeus.onrender.com';
+let selectedFile = null, indicators = [];
 
-const fileInput   = document.getElementById('fileInput');
-const uploadZone  = document.getElementById('uploadZone');
-const filePreview = document.getElementById('filePreview');
-const fileNameEl  = document.getElementById('fileName');
-const fileSizeEl  = document.getElementById('fileSize');
-const fileRemove  = document.getElementById('fileRemove');
-const ageInput    = document.getElementById('age');
-const genderInput = document.getElementById('gender');
-const extractBtn  = document.getElementById('extractBtn');
-const s1Loader    = document.getElementById('step1Loader');
-const s2Loader    = document.getElementById('step2Loader');
-const s1Error     = document.getElementById('step1Error');
-const s1ErrorText = document.getElementById('step1ErrorText');
-const s2Error     = document.getElementById('step2Error');
-const s2ErrorText = document.getElementById('step2ErrorText');
-const indicatorsBody = document.getElementById('indicatorsBody');
-const panel1 = document.getElementById('step1Panel');
-const panel2 = document.getElementById('step2Panel');
-const panel3 = document.getElementById('step3Panel');
-const resultLoader  = document.getElementById('resultLoader');
-const resultContent = document.getElementById('resultContent');
-const emptyState    = document.getElementById('emptyState');
-const statusPill    = document.getElementById('statusPill');
+function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function formatBytes(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
 
-let selectedFile = null;
-let indicators   = [];
+// ─── FILE ───
+const uploadZone=document.getElementById('uploadZone');
+const fileInput=document.getElementById('fileInput');
+uploadZone.addEventListener('click',()=>fileInput.click());
+uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.classList.add('dragover');});
+uploadZone.addEventListener('dragleave',()=>uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop',e=>{e.preventDefault();uploadZone.classList.remove('dragover');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change',()=>{if(fileInput.files[0])handleFile(fileInput.files[0]);});
 
-uploadZone.addEventListener('click', () => fileInput.click());
-uploadZone.addEventListener('dragover',  e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
-uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
-uploadZone.addEventListener('drop', e => {
-  e.preventDefault(); uploadZone.classList.remove('dragover');
-  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-});
-fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
-
-function formatBytes(b) {
-  if (b < 1024) return b + ' B';
-  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
-  return (b/1048576).toFixed(1) + ' MB';
+function handleFile(file){
+  if(file.size>10*1024*1024){showError(1,'Файл слишком большой. Максимум — 10 МБ.');return;}
+  selectedFile=file;
+  document.getElementById('fileName').textContent=file.name;
+  document.getElementById('fileSize').textContent=formatBytes(file.size);
+  uploadZone.style.display='none';
+  document.getElementById('filePreview').classList.add('show');
+  hideError(1);checkForm();
 }
-
-function handleFile(file) {
-  if (file.size > 10 * 1024 * 1024) { showError(1, 'Файл слишком большой. Максимум — 10 МБ.'); return; }
-  selectedFile = file;
-  fileNameEl.textContent = file.name;
-  fileSizeEl.textContent = formatBytes(file.size);
-  uploadZone.style.display = 'none';
-  filePreview.classList.add('show');
-  hideError(1); checkForm();
-}
-
-fileRemove.addEventListener('click', () => {
-  selectedFile = null; fileInput.value = '';
-  filePreview.classList.remove('show');
-  uploadZone.style.display = ''; checkForm();
+document.getElementById('fileRemove').addEventListener('click',()=>{
+  selectedFile=null;fileInput.value='';
+  document.getElementById('filePreview').classList.remove('show');
+  uploadZone.style.display='';checkForm();
 });
 
-function checkForm() {
-  extractBtn.disabled = !(selectedFile && ageInput.value && genderInput.value);
-}
-ageInput.addEventListener('input', checkForm);
-genderInput.addEventListener('change', checkForm);
+function checkForm(){document.getElementById('extractBtn').disabled=!(selectedFile&&document.getElementById('age').value&&document.getElementById('gender').value);}
+document.getElementById('age').addEventListener('input',checkForm);
+document.getElementById('gender').addEventListener('change',checkForm);
 
-function setStep(n) {
-  for (let i = 1; i <= 3; i++) {
-    const el = document.getElementById('si' + i);
-    el.className = 'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
-  }
-  panel1.style.display = n === 1 ? '' : 'none';
-  panel2.style.display = n === 2 ? '' : 'none';
-  panel3.style.display = n === 3 ? '' : 'none';
+// ─── STEPS ───
+function setStep(n){
+  const subs={1:'Шаг 1 из 3',2:'Шаг 2 из 3',3:'Шаг 3 из 3'};
+  for(let i=1;i<=3;i++){const el=document.getElementById('si'+i);el.className='step-item'+(i<n?' done':i===n?' active':'');}
+  document.getElementById('step1Panel').style.display=n===1?'':'none';
+  document.getElementById('step2Panel').style.display=n===2?'':'none';
+  document.getElementById('step3Panel').style.display=n===3?'':'none';
+  window.scrollTo({top:document.getElementById('analyzer').offsetTop-80,behavior:'smooth'});
 }
 
-function showError(step, msg) {
-  if (step === 1) { s1ErrorText.textContent = msg; s1Error.classList.add('show'); }
-  else            { s2ErrorText.textContent = msg; s2Error.classList.add('show'); }
+function showError(p,msg){
+  if(p===1){document.getElementById('step1ErrorText').textContent=msg;document.getElementById('step1Error').classList.add('show');}
+  else{document.getElementById('step2ErrorText').textContent=msg;document.getElementById('step2Error').classList.add('show');}
 }
-function hideError(step) {
-  if (step === 1) s1Error.classList.remove('show');
-  else            s2Error.classList.remove('show');
+function hideError(p){
+  if(p===1)document.getElementById('step1Error').classList.remove('show');
+  else document.getElementById('step2Error').classList.remove('show');
 }
 
-// STEP 1 → 2
-extractBtn.addEventListener('click', async () => {
-  if (!selectedFile || !ageInput.value || !genderInput.value) return;
+// ─── STEP 1 → 2 (extract) ───
+document.getElementById('extractBtn').addEventListener('click',async()=>{
   hideError(1);
-  s1Loader.classList.add('show');
-  extractBtn.disabled = true;
-  try {
-    const fd = new FormData();
-    fd.append('file', selectedFile);
-    const resp = await fetch(API_BASE + '/extract', { method: 'POST', body: fd });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Ошибка сервера: ' + resp.status);
-    indicators = data.indicators || [];
-    renderIndicators();
-    setStep(2);
-  } catch (err) {
-    showError(1, err.message || 'Не удалось подключиться к серверу');
-  } finally {
-    s1Loader.classList.remove('show');
-    extractBtn.disabled = false; checkForm();
-  }
+  document.getElementById('step1Loader').classList.add('show');
+  document.getElementById('extractBtn').disabled=true;
+  try{
+    const fd=new FormData();fd.append('file',selectedFile);
+    const resp=await fetch(API_BASE+'/extract',{method:'POST',body:fd});
+    const data=await resp.json();
+    if(!resp.ok)throw new Error(data.error||'Ошибка сервера: '+resp.status);
+    indicators=data.indicators||[];
+    renderIndicators();setStep(2);
+  }catch(err){showError(1,err.message||'Не удалось подключиться к серверу');}
+  finally{document.getElementById('step1Loader').classList.remove('show');document.getElementById('extractBtn').disabled=false;checkForm();}
 });
 
-function escHtml(str) {
-  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+document.getElementById('manualBtn').addEventListener('click',()=>{
+  indicators=[];renderIndicators();hideError(1);setStep(2);
+});
 
-function renderIndicators() {
-  if (!indicators.length) {
-    indicatorsBody.innerHTML = '<tr><td colspan="4"><div class="empty-indicators"><strong>Показатели не найдены</strong>Добавьте их вручную с помощью формы ниже.</div></td></tr>';
-    return;
-  }
-  indicatorsBody.innerHTML = '';
-  indicators.forEach((ind, i) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = '<td><input class="ind-input" data-field="name" value="' + escHtml(ind.name) + '" style="min-width:140px;"></td>' +
-      '<td><input class="ind-input" data-field="value" value="' + escHtml(ind.value) + '" style="max-width:100px;"></td>' +
-      '<td><input class="ind-input" data-field="unit" value="' + escHtml(ind.unit||'') + '" style="max-width:80px;"></td>' +
-      '<td><button class="ind-del" data-idx="' + i + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></button></td>';
-    tr.querySelectorAll('.ind-input').forEach(inp => inp.addEventListener('input', () => { indicators[i][inp.dataset.field] = inp.value; }));
-    tr.querySelector('.ind-del').addEventListener('click', () => { indicators.splice(i, 1); renderIndicators(); });
-    indicatorsBody.appendChild(tr);
+// ─── INDICATORS ───
+function renderIndicators(){
+  const tbody=document.getElementById('indicatorsBody');
+  if(!indicators.length){tbody.innerHTML='<tr><td colspan="4"><div class="empty-indicators"><strong>Показатели не найдены</strong>Добавьте вручную с помощью формы ниже.</div></td></tr>';return;}
+  tbody.innerHTML='';
+  indicators.forEach((ind,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><input class="ind-input" data-field="name" value="${escHtml(ind.name)}" style="min-width:130px;"></td><td><input class="ind-input" data-field="value" value="${escHtml(ind.value)}" style="max-width:90px;"></td><td><input class="ind-input" data-field="unit" value="${escHtml(ind.unit||'')}" style="max-width:75px;"></td><td><button class="ind-del" data-idx="${i}"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></button></td>`;
+    tr.querySelectorAll('.ind-input').forEach(inp=>inp.addEventListener('input',()=>{indicators[i][inp.dataset.field]=inp.value;}));
+    tr.querySelector('.ind-del').addEventListener('click',()=>{indicators.splice(i,1);renderIndicators();});
+    tbody.appendChild(tr);
   });
 }
-
-document.getElementById('addIndBtn').addEventListener('click', () => {
-  const name = document.getElementById('newIndName').value.trim();
-  const value = document.getElementById('newIndValue').value.trim();
-  const unit  = document.getElementById('newIndUnit').value.trim();
-  if (!name || !value) return;
-  indicators.push({name,value,unit});
-  renderIndicators();
-  ['newIndName','newIndValue','newIndUnit'].forEach(id => document.getElementById(id).value = '');
+document.getElementById('addIndBtn').addEventListener('click',()=>{
+  const name=document.getElementById('newIndName').value.trim(),value=document.getElementById('newIndValue').value.trim(),unit=document.getElementById('newIndUnit').value.trim();
+  if(!name||!value)return;indicators.push({name,value,unit});renderIndicators();
+  ['newIndName','newIndValue','newIndUnit'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('newIndName').focus();
 });
-['newIndName','newIndValue','newIndUnit'].forEach(id => {
-  document.getElementById(id).addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('addIndBtn').click(); });
-});
+['newIndName','newIndValue','newIndUnit'].forEach(id=>{document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('addIndBtn').click();});});
 
-document.getElementById('backToStep1Btn').addEventListener('click', () => { hideError(2); setStep(1); });
+document.getElementById('backToStep1Btn').addEventListener('click',()=>{hideError(2);setStep(1);});
 
-// STEP 2 → 3
-document.getElementById('continueBtn').addEventListener('click', async () => {
-  if (!indicators.length) { showError(2, 'Добавьте хотя бы один показатель.'); return; }
+// ─── STEP 2 → 3 (analyze) ───
+document.getElementById('continueBtn').addEventListener('click',async()=>{
+  if(!indicators.length){showError(2,'Добавьте хотя бы один показатель.');return;}
   hideError(2);
-  s2Loader.classList.add('show');
-  document.getElementById('continueBtn').disabled = true;
-  try {
-    const fd = new FormData();
-    fd.append('indicators', JSON.stringify(indicators));
-    fd.append('age', ageInput.value);
-    fd.append('gender', genderInput.value);
-    const resp = await fetch(API_BASE + '/analyze-indicators', { method: 'POST', body: fd });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Ошибка сервера: ' + resp.status);
-    renderResultBlocks3(data.analysis);
-    renderResMetaBlock3();
+  document.getElementById('step2Loader').classList.add('show');
+  document.getElementById('continueBtn').disabled=true;
+  try{
+    const fd=new FormData();
+    fd.append('indicators',JSON.stringify(indicators));
+    fd.append('age',document.getElementById('age').value);
+    fd.append('gender',document.getElementById('gender').value);
+    const resp=await fetch(API_BASE+'/analyze-indicators',{method:'POST',body:fd});
+    const data=await resp.json();
+    if(!resp.ok)throw new Error(data.error||'Ошибка сервера: '+resp.status);
+    renderResult(data.analysis);
+    renderMeta(data.analysis);
     setStep(3);
-  } catch (err) {
-    showError(2, err.message || 'Не удалось подключиться к серверу');
-  } finally {
-    s2Loader.classList.remove('show');
-    document.getElementById('continueBtn').disabled = false;
-  }
+  }catch(err){showError(2,err.message||'Не удалось подключиться к серверу');}
+  finally{document.getElementById('step2Loader').classList.remove('show');document.getElementById('continueBtn').disabled=false;}
 });
 
-document.getElementById('backToStep2Btn').addEventListener('click', () => setStep(2));
+document.getElementById('backToStep2Btn').addEventListener('click',()=>setStep(2));
 
-document.getElementById('startOverBtn').addEventListener('click', () => {
-  selectedFile = null; indicators = [];
-  fileInput.value = ''; filePreview.classList.remove('show');
-  uploadZone.style.display = '';
-  ageInput.value = ''; genderInput.value = '';
-  document.getElementById('summaryBlock3').innerHTML = '';
-  document.getElementById('resultTableBody3').innerHTML = '';
-  indicatorsBody.innerHTML = '';
-  hideError(1); hideError(2); checkForm(); setStep(1);
+document.getElementById('startOverBtn').addEventListener('click',()=>{
+  selectedFile=null;indicators=[];fileInput.value='';
+  document.getElementById('filePreview').classList.remove('show');
+  uploadZone.style.display='';
+  document.getElementById('age').value='';document.getElementById('gender').value='';
+  document.getElementById('summaryBlock').innerHTML='';document.getElementById('resultTableBody').innerHTML='';
+  document.getElementById('indicatorsBody').innerHTML='';
+  hideError(1);hideError(2);checkForm();setStep(1);
 });
 
-function escHtml3(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
-function parseAnalysisObj(data){
-  // data — объект от бэкенда: {analysis_type, summary, recommendations, indicators}
-  // или строка (старый формат) — на всякий случай обрабатываем оба
-  if(typeof data === 'string'){
-    // fallback: попробовать JSON.parse, иначе вернуть пустой результат
-    try { data = JSON.parse(data); } catch(e) {
-      return {analysisType:'',status:'',recommendations:[],indicators:[]};
-    }
-  }
-  if(!data) return {analysisType:'',status:'',recommendations:[],indicators:[]};
-
-  const indicators = (data.indicators || []).map(ind => {
-    const s = (ind.status || '').toLowerCase().trim();
-    let status = 'normal';
-    if(s === 'above' || s.includes('выше')) status = 'above';
-    else if(s === 'below' || s === 'deviation' || s.includes('ниже') || s.includes('отклонение')) status = 'below';
-    return { name: ind.name || ind.original_name || '', value: ind.value || '', status };
+function parseResult(data){
+  if(typeof data==='string'){try{data=JSON.parse(data);}catch(e){return{analysisType:'',status:'',recommendations:[],indicators:[]};}}
+  if(!data)return{analysisType:'',status:'',recommendations:[],indicators:[]};
+  const inds=(data.indicators||[]).map(ind=>{
+    const s=(ind.status||'').toLowerCase();
+    let status='normal';
+    if(s==='above'||s.includes('выше'))status='above';
+    else if(s==='below'||s==='deviation'||s.includes('ниже')||s.includes('отклон'))status='below';
+    return{name:ind.name||'',value:ind.value||'',status};
   });
-
-  return {
-    analysisType: data.analysis_type || '',
-    status: data.summary || '',
-    recommendations: data.recommendations || [],
-    indicators
-  };
+  return{analysisType:data.analysis_type||'',status:data.summary||'',recommendations:data.recommendations||[],indicators:inds};
 }
 
-function renderResultBlocks3(data){
-  const parsed=parseAnalysisObj(data);
-  // Populate meta: type from AI result
-  const typeEl=document.getElementById('r3MetaType');
-  if(typeEl) typeEl.textContent=parsed.analysisType||'Анализ крови';
-  // Summary block
-  const sumEl=document.getElementById('summaryBlock3');
-  let sumHtml='';
-  if(parsed.status) sumHtml+=`<div class="summary-status">${escHtml3(parsed.status)}</div>`;
-  if(parsed.recommendations.length){
-    sumHtml+='<ul class="rec-list">';
-    parsed.recommendations.forEach(r=>{
-      if(r.toLowerCase().includes('все показатели в норме')){sumHtml+=`<li class="rec-all-good">${escHtml3(r)}</li>`;}
-      else{sumHtml+=`<li class="rec-item">${escHtml3(r)}</li>`;}
-    });
-    sumHtml+='</ul>';
-  }
-  if(sumEl) sumEl.innerHTML=sumHtml||'<div style="color:var(--text-dim);font-family:var(--mono);font-size:11px;">Нет данных</div>';
-  const tbody=document.getElementById('resultTableBody3');
-  if(tbody){
-    if(parsed.indicators.length){
-      tbody.innerHTML=parsed.indicators.map(ind=>{
-        const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':'tag-ok';
-        const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':'✓ норма';
-        return`<tr><td class="col-name">${escHtml3(ind.name)}</td><td>${escHtml3(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;
-      }).join('');
-    } else {
-      tbody.innerHTML='<tr><td colspan="3" style="text-align:center;padding:16px;color:var(--text-dim);font-family:var(--mono);font-size:11px;">Нет данных</td></tr>';
-    }
-  }
+function renderResult(data){
+  const p=parseResult(data);
+  const sumEl=document.getElementById('summaryBlock');
+  let h='';
+  if(p.status)h+=`<div class="summary-status">${escHtml(p.status)}</div>`;
+  if(p.recommendations.length){h+='<ul class="rec-list">';p.recommendations.forEach(r=>{h+=r.toLowerCase().includes('все показатели в норме')?`<li class="rec-all-good">${escHtml(r)}</li>`:`<li class="rec-item">${escHtml(r)}</li>`;});h+='</ul>';}
+  if(sumEl)sumEl.innerHTML=h||'<div style="color:var(--text-dim);font-size:12px;">Нет данных</div>';
+  const tbody=document.getElementById('resultTableBody');
+  if(tbody){tbody.innerHTML=p.indicators.length?p.indicators.map(ind=>{const sc=ind.status==='above'?'tag-high':ind.status==='below'?'tag-low':'tag-ok';const sl=ind.status==='above'?'↑ выше нормы':ind.status==='below'?'↓ ниже нормы':'✓ норма';return`<tr><td class="col-name">${escHtml(ind.name)}</td><td>${escHtml(ind.value)}</td><td><span class="${sc}">${sl}</span></td></tr>`;}).join(''):'<tr><td colspan="3" style="text-align:center;padding:16px;color:var(--text-dim);font-family:var(--mono);font-size:11px;">Нет данных</td></tr>';}
 }
 
-function renderResMetaBlock3(){
-  const isPdf=f=>f&&f.toLowerCase().endsWith('.pdf');
-  const fname=selectedFile?selectedFile.name:'—';
-  const age=ageInput?ageInput.value:'—';
-  const gender=genderInput?genderInput.options[genderInput.selectedIndex]?.text||genderInput.value:'—';
-  const today=new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
-  // Meta fields
-  const setMeta=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
-  setMeta('r3MetaFile',fname);
-  setMeta('r3MetaAge',age?age+' лет':'—');
-  setMeta('r3MetaGender',gender||'—');
-  setMeta('r3MetaDate',today);
-  // Thumb: if image show preview, else pdf icon with filename
-  const thumbWrap=document.getElementById('r3ThumbWrap');
-  if(thumbWrap&&selectedFile){
-    const nameEl=document.getElementById('r3ThumbName');
-    if(nameEl)nameEl.textContent=fname;
-    if(!isPdf(fname)){
-      const url=URL.createObjectURL(selectedFile);
-      thumbWrap.innerHTML=`<img class="r3-thumb-img" src="${url}" alt="${escHtml3(fname)}">`;
-    }
-  }
+function renderMeta(data){
+  const p=parseResult(data);
+  document.getElementById('r3MetaType').textContent=p.analysisType||'—';
+  document.getElementById('r3MetaAge').textContent=document.getElementById('age').value?document.getElementById('age').value+' лет':'—';
+  const gEl=document.getElementById('gender');
+  document.getElementById('r3MetaGender').textContent=gEl.options[gEl.selectedIndex]?.text||'—';
+  document.getElementById('r3MetaFile').textContent=selectedFile?selectedFile.name:'Внесено вручную';
 }
-checkForm(); setStep(1);
+
+checkForm();setStep(1);
 </script>
 </body>
 </html>
