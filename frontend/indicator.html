@@ -241,6 +241,18 @@ function render(name, history, description){
   const pillLabel=latestStatus==='normal'?'Норма':latestStatus==='above'?'Выше нормы':'Ниже нормы';
   const hasDesc=!!description;
 
+  // Изменение: разница двух последних значений
+  let changeTxt='—', changeCls='';
+  if(history.length>=2){
+    const vLast=parseFltVal(history[history.length-1].value);
+    const vPrev=parseFltVal(history[history.length-2].value);
+    if(!isNaN(vLast)&&!isNaN(vPrev)){
+      const diff=+(vLast-vPrev).toFixed(4);
+      changeTxt=(diff>0?'+':'')+String(diff).replace(/\.?0+$/,'');
+      changeCls=diff>0?'warn':diff<0?'low':'ok';
+    }
+  }
+
   const currentValueCard=`<div class="ind-card-outer">
     <div class="ind-card">
       <div class="ind-card-head">
@@ -248,21 +260,26 @@ function render(name, history, description){
         <span class="pill ${pillCls}">${pillLabel}</span>
       </div>
       <div class="ind-card-body" style="padding:0;">
-        <div class="cv-grid">
+        <div class="cv-grid" style="grid-template-columns:1fr 1fr;">
           <div class="cv-block">
-            <div class="cv-label">Последнее</div>
+            <div class="cv-label">Значение</div>
             <div class="cv-value ${valCls}">${escHtml(latestVal)}</div>
-            <div class="cv-sub">${latestDate}</div>
           </div>
           <div class="cv-block">
-            <div class="cv-label">Измерений</div>
-            <div class="cv-value">${history.length}</div>
-            <div class="cv-sub">за всё время</div>
+            <div class="cv-label">Изменение</div>
+            <div class="cv-value ${changeCls||'ok'}">${changeTxt}</div>
           </div>
           <div class="cv-block">
-            <div class="cv-label">В норме</div>
-            <div class="cv-value ok">${pct}%</div>
-            <div class="cv-sub">${totalOk} из ${history.length}</div>
+            <div class="cv-label">Дата измерения</div>
+            <div class="cv-value" style="font-size:15px;">${latestDate}</div>
+          </div>
+          <div class="cv-block">
+            <div class="cv-label">Статус</div>
+            <div class="cv-value" style="font-size:13px;"><span class="pill ${pillCls}">${pillLabel}</span></div>
+          </div>
+          <div class="cv-block" style="grid-column:span 2;">
+            <div class="cv-label">Документ</div>
+            <div class="cv-value" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(latest?.source||'—')}</div>
           </div>
         </div>
       </div>
