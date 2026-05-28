@@ -64,6 +64,11 @@ body {
   overflow-x: hidden;
 }
 
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 /* Grid texture */
 body::before {
   content: '';
@@ -518,9 +523,26 @@ textarea { height: auto; resize: vertical; }
 .empty-indicators { text-align: center; padding: 32px 20px; color: var(--text-dim); font-family: var(--mono); font-size: 12px; line-height: 1.8; }
 
 @media (max-width: 600px) {
-  .ind-table col.col-value { width: 90px; }
-  .ind-table col.col-unit  { width: 70px; }
-  .add-ind-row { grid-template-columns: auto 90px 70px 44px; }
+  .ind-table col.col-value { width: 80px; }
+  .ind-table col.col-unit  { width: 60px; }
+  .ind-table col.col-del   { width: 36px; }
+  .ind-table tbody td { padding: 4px 5px; }
+  .ind-input { padding: 5px 6px; font-size: 11px; }
+
+  /* add-row: название на всю ширину, значение+единица+кнопка в ряд */
+  .add-ind-row {
+    grid-template-columns: 1fr 1fr auto;
+    grid-template-rows: auto auto;
+  }
+  .add-ind-row input:nth-child(1) {
+    grid-column: 1 / 4;
+    border-right: none;
+    border-bottom: 1px solid var(--line-mid);
+  }
+  .add-ind-row input:nth-child(2) { grid-column: 1 / 2; }
+  .add-ind-row input:nth-child(3) { grid-column: 2 / 3; }
+  .btn-add-row { grid-column: 3 / 4; font-size: 9px; padding: 0 10px; min-width: 56px; }
+  .add-ind-row input { padding: 8px 8px; height: 40px; font-size: 11px; }
 }
 
 /* ─── RESULT BOX ─── */
@@ -625,6 +647,19 @@ footer {
   .card-body { padding: 24px 18px; }
   footer { flex-direction: column; align-items: flex-start; gap: 12px; }
   .footer-disclaimer { text-align: left; }
+
+  /* Уменьшенные паддинги инпутов на мобильном */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  select,
+  textarea {
+    padding: 10px 10px;
+    height: 42px;
+    font-size: 12px;
+  }
 }
 
 @media (max-width: 480px) {
