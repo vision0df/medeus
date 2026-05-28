@@ -1066,7 +1066,14 @@ def route_indicator_history():
             }
             for r in rows
         ]
-        return jsonify({"name": name, "history": history})
+
+        # Получаем описание из таблицы indicators
+        description = ""
+        ind_rows = db_select("indicators", "description", {"name": name})
+        if ind_rows and ind_rows[0].get("description"):
+            description = ind_rows[0]["description"]
+
+        return jsonify({"name": name, "history": history, "description": description})
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
     except Exception as e:

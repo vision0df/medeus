@@ -111,6 +111,24 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .no-history { padding: 40px 22px; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--text-dim); line-height: 1.8; }
 .no-history strong { display: block; color: var(--text); font-size: 13px; margin-bottom: 8px; }
 
+/* ─── DESCRIPTION BLOCK ─── */
+.desc-text {
+  font-family: var(--mono); font-size: 13px; color: var(--text-mid);
+  line-height: 1.75; white-space: pre-wrap;
+}
+
+/* ─── BOTTOM GRID (with description) ─── */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+  align-items: start;
+}
+.bottom-grid > .ind-card-outer {
+  margin-bottom: 16px;
+  animation: none !important;
+}
+
 /* ─── PILL ─── */
 .pill { display: inline-flex; align-items: center; font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; padding: 4px 10px; }
 .pill-green { background: var(--green-pale); color: var(--green); }
@@ -183,7 +201,31 @@ function calcTrend(history){
   if(diff>5)return'up';if(diff<-5)return'down';return'stable';
 }
 
-function render(name, history){
+function buildHistoryCard(history){
+  const rows=[...history].reverse().map(h=>{
+    const sc=h.status==='above'?'tag-high':h.status==='below'?'tag-low':h.status==='deviation'?'tag-dev':'tag-ok';
+    const sl=h.status==='above'?'↑ выше нормы':h.status==='below'?'↓ ниже нормы':h.status==='deviation'?'⚠ отклонение':'✓ норма';
+    const href=h.analysis_id?`analysis.html?id=${encodeURIComponent(h.analysis_id)}`:null;
+    return`<tr${href?` class="link-row" onclick="window.location.href='${href}'"`:''}>
+      <td>${fmtDate(h.date)}${href?`<svg class="link-icon" viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`:''}</td>
+      <td class="col-val">${escHtml(h.value)}</td>
+      <td><span class="${sc}">${sl}</span></td>
+      <td>${escHtml(h.source||'—')}</td>
+    </tr>`;
+  }).join('');
+  return`<div class="ind-card-outer">
+    <div class="ind-card">
+      <div class="ind-card-head"><div class="ind-card-label">История измерений</div></div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        ${history.length
+          ?`<table class="hist-table"><thead><tr><th>Дата</th><th>Значение</th><th>Статус</th><th>Источник</th></tr></thead><tbody>${rows}</tbody></table>`
+          :`<div class="no-history"><strong>История недоступна</strong>Показатель найден в одном анализе. Загружайте анализы регулярно, чтобы видеть динамику.</div>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+function render(name, history, description){
   const mc=document.getElementById('mainContent');
   history=[...history].sort((a,b)=>new Date(a.date)-new Date(b.date));
   const latest=history.length?history[history.length-1]:null;
@@ -197,19 +239,9 @@ function render(name, history){
   const pct=history.length?Math.round(totalOk/history.length*100):0;
   const pillCls=latestStatus==='normal'?'pill-green':latestStatus==='above'?'pill-red':'pill-yellow';
   const pillLabel=latestStatus==='normal'?'Норма':latestStatus==='above'?'Выше нормы':'Ниже нормы';
+  const hasDesc=!!description;
 
-  mc.innerHTML=`
-  <div class="page-header" style="animation:fadeUp .35s ease both;">
-    <div>
-      <div class="page-title">${escHtml(name)}<span class="cursor-blink"></span></div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <span class="trend-badge ${trendCls}">${trendLabel}</span>
-    </div>
-  </div>
-
-  <!-- Current value -->
-  <div class="ind-card-outer">
+  const currentValueCard=`<div class="ind-card-outer">
     <div class="ind-card">
       <div class="ind-card-head">
         <div class="ind-card-label">Текущее значение</div>
@@ -235,54 +267,56 @@ function render(name, history){
         </div>
       </div>
     </div>
-  </div>
+  </div>`;
 
-  ${history.length>=2?`
-  <!-- Chart -->
-  <div class="ind-card-outer">
+  const chartCard=history.length>=2?`<div class="ind-card-outer">
     <div class="ind-card">
-      <div class="ind-card-head">
-        <div class="ind-card-label">Динамика</div>
-      </div>
+      <div class="ind-card-head"><div class="ind-card-label">Динамика</div></div>
       <div class="chart-wrap">
-        <div class="chart-container">
-          <canvas id="historyChart"></canvas>
-        </div>
+        <div class="chart-container"><canvas id="historyChart"></canvas></div>
       </div>
     </div>
-  </div>`:''}
+  </div>`:'';
 
-  <!-- History table -->
-  <div class="ind-card-outer">
+  const historyCard=buildHistoryCard(history);
+
+  const descCard=`<div class="ind-card-outer">
     <div class="ind-card">
-      <div class="ind-card-head">
-        <div class="ind-card-label">История измерений</div>
-      </div>
-      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
-        ${history.length?`
-        <table class="hist-table">
-          <thead><tr><th>Дата</th><th>Значение</th><th>Статус</th><th>Источник</th></tr></thead>
-          <tbody>
-            ${[...history].reverse().map(h=>{
-              const sc=h.status==='above'?'tag-high':h.status==='below'?'tag-low':h.status==='deviation'?'tag-dev':'tag-ok';
-              const sl=h.status==='above'?'↑ выше нормы':h.status==='below'?'↓ ниже нормы':h.status==='deviation'?'⚠ отклонение':'✓ норма';
-              const href=h.analysis_id?`analysis.html?id=${encodeURIComponent(h.analysis_id)}`:null;
-              return`<tr${href?` class="link-row" onclick="window.location.href='${href}'"`:''}>
-                <td>${fmtDate(h.date)}${href?`<svg class="link-icon" viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`:''}</td>
-                <td class="col-val">${escHtml(h.value)}</td>
-                <td><span class="${sc}">${sl}</span></td>
-                <td>${escHtml(h.source||'—')}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>`:`
-        <div class="no-history">
-          <strong>История недоступна</strong>
-          Показатель найден в одном анализе. Загружайте анализы регулярно, чтобы видеть динамику.
-        </div>`}
+      <div class="ind-card-head"><div class="ind-card-label">Описание</div></div>
+      <div class="ind-card-body">
+        <div class="desc-text">${escHtml(description)}</div>
       </div>
     </div>
   </div>`;
+
+  let bottomHtml;
+  if(hasDesc){
+    // Лайаут: слева — описание (50%), справа — текущее значение + история (50%)
+    bottomHtml=`<div class="bottom-grid">
+      <div>${descCard}</div>
+      <div>${currentValueCard}${historyCard}</div>
+    </div>`;
+  } else {
+    // Лайаут: текущее значение и история 50/50
+    bottomHtml=`<div class="bottom-grid">
+      <div>${currentValueCard}</div>
+      <div>${historyCard}</div>
+    </div>`;
+  }
+
+  mc.innerHTML=`
+  <div class="page-header" style="animation:fadeUp .35s ease both;">
+    <div>
+      <div class="page-title">${escHtml(name)}<span class="cursor-blink"></span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span class="trend-badge ${trendCls}">${trendLabel}</span>
+    </div>
+  </div>
+
+  ${chartCard}
+
+  ${bottomHtml}`;
 
   // Draw chart
   if(history.length>=2){
@@ -336,7 +370,7 @@ async function loadIndicator(){
     if(r.status===401){window.location.href='auth.html';return;}
     if(!r.ok)throw new Error(`HTTP ${r.status}`);
     const data=await r.json();
-    render(data.name||indicatorName,data.history||[]);
+    render(data.name||indicatorName,data.history||[],data.description||'');
   }catch(e){
     document.getElementById('mainContent').innerHTML=`<div class="state-error">Ошибка загрузки: ${escHtml(e.message)}</div>`;
   }
