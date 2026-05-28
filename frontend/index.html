@@ -267,23 +267,6 @@ body { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hid
           </button>
         </div>
 
-        <div class="meta-row">
-          <div class="form-group">
-            <label for="age">Возраст</label>
-            <input type="number" id="age" placeholder="30" min="1" max="120">
-          </div>
-          <div class="form-group">
-            <label for="gender">Пол</label>
-            <div class="select-wrap">
-              <select id="gender">
-                <option value="">— выберите —</option>
-                <option value="мужской">Мужской</option>
-                <option value="женский">Женский</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
         <div class="btn-row">
           <button id="extractBtn" disabled type="button" class="btn btn-primary btn-primary-lg" style="flex:1;">
             <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="17" height="17"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -317,6 +300,23 @@ body { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hid
         <p style="font-family:var(--mono);font-size:12px;color:var(--text-mid);line-height:1.8;margin-bottom:16px;">
           <strong style="color:var(--text);">Проверьте показатели перед анализом.</strong> Исправьте ошибки, удалите лишнее или добавьте пропущенное.
         </p>
+
+        <div class="meta-row" style="margin-bottom:20px;">
+          <div class="form-group">
+            <label for="age">Возраст</label>
+            <input type="number" id="age" placeholder="30" min="1" max="120">
+          </div>
+          <div class="form-group">
+            <label for="gender">Пол</label>
+            <div class="select-wrap">
+              <select id="gender">
+                <option value="">— выберите —</option>
+                <option value="мужской">Мужской</option>
+                <option value="женский">Женский</option>
+              </select>
+            </div>
+          </div>
+        </div>
 
         <div class="ind-table-wrap">
           <table class="ind-table">
@@ -476,9 +476,7 @@ document.getElementById('fileRemove').addEventListener('click',()=>{
   uploadZone.style.display='';checkForm();
 });
 
-function checkForm(){document.getElementById('extractBtn').disabled=!(selectedFile&&document.getElementById('age').value&&document.getElementById('gender').value);}
-document.getElementById('age').addEventListener('input',checkForm);
-document.getElementById('gender').addEventListener('change',checkForm);
+function checkForm(){document.getElementById('extractBtn').disabled=!selectedFile;}
 
 // ─── STEPS ───
 function setStep(n){

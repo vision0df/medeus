@@ -400,6 +400,21 @@ textarea { height: auto; resize: vertical; }
   text-align: center; cursor: pointer; transition: all .18s;
   background: var(--bg); margin-bottom: 20px; position: relative;
 }
+@media (max-width: 767px) {
+  .upload-zone {
+    margin-left: calc(-24px);
+    margin-right: calc(-24px);
+    width: calc(100% + 48px);
+    padding: 44px 20px;
+    border-left: none;
+    border-right: none;
+  }
+  .file-preview {
+    margin-left: calc(-24px);
+    margin-right: calc(-24px);
+    width: calc(100% + 48px);
+  }
+}
 .upload-zone:hover, .upload-zone.dragover {
   border-color: var(--orange); border-style: solid; background: var(--orange-pale);
 }
