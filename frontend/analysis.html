@@ -326,11 +326,6 @@ function renderAnalysis(a){
   mc.innerHTML=`
   <div class="page-header" style="animation:fadeUp .35s ease both;">
     <div>
-      <div class="breadcrumb">
-        <a href="cabinet.html">Кабинет</a><span class="sep">/</span>
-        <a href="all-analyses.html">Анализы</a><span class="sep">/</span>
-        <span>${escHtml(name)}</span>
-      </div>
       <div class="page-title">${escHtml(name)}</div>
     </div>
     <div class="page-meta" style="text-align:right;">Дата сдачи<br><strong style="color:var(--text)">${fmtDate(a.analysis_date)||'—'}</strong></div>
