@@ -6,7 +6,6 @@
 <title>Medeus // AI Analyzer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="global.css">
 <style>
 body { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
 
@@ -320,15 +319,16 @@ body { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hid
 
         <div class="ind-table-wrap">
           <table class="ind-table">
+            <colgroup><col class="col-name"><col class="col-value"><col class="col-unit"><col class="col-del"></colgroup>
             <thead><tr><th>Показатель</th><th>Значение</th><th>Единица</th><th></th></tr></thead>
             <tbody id="indicatorsBody"></tbody>
           </table>
         </div>
 
         <div class="add-ind-row">
-          <input type="text" id="newIndName" placeholder="Название показателя" style="flex:2;">
-          <input type="text" id="newIndValue" placeholder="Значение" style="flex:1;max-width:110px;">
-          <input type="text" id="newIndUnit" placeholder="Ед." style="flex:0;max-width:80px;">
+          <input type="text" id="newIndName" placeholder="Название показателя">
+          <input type="text" id="newIndValue" placeholder="Значение">
+          <input type="text" id="newIndUnit" placeholder="Единица">
           <button class="btn-add-row" id="addIndBtn" type="button">+ Добавить</button>
         </div>
 
@@ -525,7 +525,7 @@ function renderIndicators(){
   tbody.innerHTML='';
   indicators.forEach((ind,i)=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td><input class="ind-input" data-field="name" value="${escHtml(ind.name)}" style="min-width:130px;"></td><td><input class="ind-input" data-field="value" value="${escHtml(ind.value)}" style="max-width:90px;"></td><td><input class="ind-input" data-field="unit" value="${escHtml(ind.unit||'')}" style="max-width:75px;"></td><td><button class="ind-del" data-idx="${i}"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></button></td>`;
+    tr.innerHTML=`<td><input class="ind-input" data-field="name" value="${escHtml(ind.name)}"></td><td><input class="ind-input" data-field="value" value="${escHtml(ind.value)}"></td><td><input class="ind-input" data-field="unit" value="${escHtml(ind.unit||'')}"></td><td><button class="ind-del" data-idx="${i}"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></button></td>`;
     tr.querySelectorAll('.ind-input').forEach(inp=>inp.addEventListener('input',()=>{indicators[i][inp.dataset.field]=inp.value;}));
     tr.querySelector('.ind-del').addEventListener('click',()=>{indicators.splice(i,1);renderIndicators();});
     tbody.appendChild(tr);

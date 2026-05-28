@@ -2,7 +2,7 @@
    MEDEUS — Design System v3 (Mobile-first, Unified)
    ═══════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syne:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 
 /* ─── VARIABLES ─── */
 :root {
@@ -38,7 +38,7 @@
   --yellow-pale:  rgba(184,126,0,0.08);
 
   --mono: 'IBM Plex Mono', monospace;
-  --sans: 'Syne', sans-serif;
+  --sans: 'IBM Plex Mono', monospace;
 
   --header-h: 58px;
   --nav-h: 62px; /* mobile bottom nav */
@@ -481,7 +481,7 @@ textarea { height: auto; resize: vertical; }
 /* Add row — grid совпадает с колонками таблицы */
 .add-ind-row {
   display: grid;
-  grid-template-columns: auto 160px 130px 44px;
+  grid-template-columns: auto 160px 130px 120px;
   border: 1px solid var(--line-mid); border-top: none;
   margin-bottom: 18px;
 }
@@ -496,12 +496,12 @@ textarea { height: auto; resize: vertical; }
 .add-ind-row input:focus { background: var(--white); border-left-color: var(--orange); }
 .add-ind-row input::placeholder { color: var(--text-dim); }
 .btn-add-row {
-  height: 46px; padding: 0; background: var(--bg3); border: none;
+  height: 46px; padding: 0 12px; background: var(--text); border: none;
   font-family: var(--mono); font-size: 10px; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
-  color: var(--text-mid); transition: all .15s; white-space: nowrap; width: 100%;
+  color: #fff; transition: background .15s; white-space: nowrap; width: 100%;
 }
-.btn-add-row:hover { background: var(--orange); color: #fff; }
+.btn-add-row:hover { background: var(--orange); }
 
 .empty-indicators { text-align: center; padding: 32px 20px; color: var(--text-dim); font-family: var(--mono); font-size: 12px; line-height: 1.8; }
 
