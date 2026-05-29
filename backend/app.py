@@ -1,23 +1,20 @@
 """
-Medeus Backend — полностью переработанная версия.
+Medeus Backend — OpenRouter edition.
 
-Изменения:
-  - Убран python-magic (libmagic недоступен на Render); mime-тип определяется
-    по расширению файла — этого достаточно для white-list из 4 форматов.
-  - Убран cachetools (не использовался).
-  - Все запросы к Supabase через единый _supa() клиент с retry-логикой.
-  - Gemini-клиент создаётся один раз при старте, не пересоздаётся.
-  - Добавлен /health endpoint для Render health-check.
-  - Улучшена обработка ошибок: разделены 400 / 401 / 409 / 500.
-  - resolve_indicators_batch переработан: меньше лишних Gemini-запросов.
-  - dashboard и indicators теперь возвращают консистентные структуры.
-  - Рекомендации сохраняются и читаются корректно (JSONB vs TEXT).
+Изменения vs Gemini-версии:
+  - google-genai заменён на openai SDK (OpenRouter совместим с OpenAI API)
+  - _gemini_call → _ai_call (текстовые запросы через chat/completions)
+  - extract_indicators_from_file → передаёт файл как base64 image/document
+  - PDF передаётся как изображение через url (data URI base64)
+  - Переменная окружения: OPENROUTER_API_KEY вместо GEMINI_API_KEY
+  - Всё остальное (Supabase, маршруты, логика) — без изменений
 """
 
 import os
 import re
 import json
 import uuid
+import base64
 import hashlib
 import logging
 import threading
@@ -26,8 +23,7 @@ import traceback
 import httpx
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from google import genai
-from google.genai import types
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -62,27 +58,34 @@ def too_large(e):
 # ──────────────────────────────────────────────
 # Конфигурация
 # ──────────────────────────────────────────────
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-SUPABASE_URL   = os.environ.get("SUPABASE_URL", "")
-SUPABASE_KEY   = os.environ.get("SUPABASE_SERVICE_KEY", "")
-STORAGE_BUCKET = "analyses-files"
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+SUPABASE_URL       = os.environ.get("SUPABASE_URL", "")
+SUPABASE_KEY       = os.environ.get("SUPABASE_SERVICE_KEY", "")
+STORAGE_BUCKET     = "analyses-files"
 
-log.info("GEMINI KEY:   %s", "OK" if GEMINI_API_KEY else "MISSING")
-log.info("SUPABASE URL: %s", "OK" if SUPABASE_URL   else "MISSING")
-log.info("SUPABASE KEY: %s", "OK" if SUPABASE_KEY   else "MISSING")
+log.info("OPENROUTER KEY: %s", "OK" if OPENROUTER_API_KEY else "MISSING")
+log.info("SUPABASE URL:   %s", "OK" if SUPABASE_URL       else "MISSING")
+log.info("SUPABASE KEY:   %s", "OK" if SUPABASE_KEY       else "MISSING")
 
-gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+# OpenRouter — OpenAI-совместимый клиент
+ai_client = OpenAI(
+    api_key=OPENROUTER_API_KEY,
+    base_url="https://openrouter.ai/api/v1",
+)
 
-# Модели: lite — для парсинга (дешевле), flash — для анализа (качественнее)
-MODELS_EXTRACT  = ["gemini-2.5-flash-lite", "gemini-2.5-flash"]
-MODELS_ANALYZE  = ["gemini-2.5-flash",      "gemini-2.5-flash-lite"]
+# Модели OpenRouter (бесплатные, с vision)
+# Основная — Gemini 2.0 Flash (тот же Gemini, но через OpenRouter без геоблока)
+# Резервная — Llama 4 Maverick (Meta, тоже поддерживает vision)
+MODEL_VISION   = "google/gemini-2.0-flash-exp:free"   # для извлечения из файлов
+MODEL_TEXT     = "google/gemini-2.0-flash-exp:free"   # для анализа текста
+MODEL_FALLBACK = "meta-llama/llama-4-maverick:free"   # резерв при лимите
 
 VALID_GROUP_KEYS = {
     "blood", "hormones", "infections", "biomaterials",
     "genetics", "microbiome", "oncology", "functional",
 }
 
-# White-list расширений → MIME-тип (без libmagic)
+# White-list расширений → MIME-тип
 ALLOWED_EXTENSIONS: dict[str, str] = {
     ".pdf":  "application/pdf",
     ".png":  "image/png",
@@ -105,11 +108,10 @@ def get_mime_type(filename: str) -> str | None:
 
 def parse_gemini_json(raw: str, expect_type: type = list):
     """
-    Парсит JSON из ответа Gemini. Снимает markdown-обёртки ```json ... ```.
+    Парсит JSON из ответа модели. Снимает markdown-обёртки ```json ... ```.
     Возвращает объект нужного типа или пустой list/dict.
     """
     text = raw.strip()
-    # Снимаем ``` ... ```
     if text.startswith("```"):
         parts = text.split("```")
         text = parts[1] if len(parts) > 1 else text
@@ -120,7 +122,6 @@ def parse_gemini_json(raw: str, expect_type: type = list):
         result = json.loads(text)
         if isinstance(result, expect_type):
             return result
-        # Gemini иногда оборачивает массив в {"indicators": [...]}
         if expect_type is list and isinstance(result, dict):
             for v in result.values():
                 if isinstance(v, list):
@@ -190,7 +191,6 @@ def _delete(path: str, params: dict | None = None, timeout: int = 10):
         raise RuntimeError(f"Supabase DELETE {path} → {resp.status_code}: {resp.text}")
 
 
-# ── Таблицы ──
 def db_insert(table: str, row: dict) -> list:
     return _post(f"/rest/v1/{table}", row)
 
@@ -208,7 +208,6 @@ def db_delete(table: str, filters: dict):
 
 
 def db_upsert(table: str, row: dict, on_conflict: str) -> dict | None:
-    """INSERT ... ON CONFLICT DO NOTHING. Возвращает строку или None (если дубликат)."""
     h = {"Prefer": "resolution=ignore-duplicates,return=representation"}
     result = _post(f"/rest/v1/{table}?on_conflict={on_conflict}", row, headers_extra=h)
     if isinstance(result, list):
@@ -216,7 +215,6 @@ def db_upsert(table: str, row: dict, on_conflict: str) -> dict | None:
     return result or None
 
 
-# ── Storage ──
 def upload_to_storage(user_id: str, filename: str, data: bytes, mime: str) -> str:
     ext  = os.path.splitext(filename)[1].lower()
     path = f"{user_id}/{uuid.uuid4()}{ext}"
@@ -257,7 +255,6 @@ def delete_from_storage(file_url: str):
 # Auth
 # ──────────────────────────────────────────────
 def get_user(auth_header: str | None) -> dict:
-    """Возвращает пользователя или кидает ValueError."""
     if not auth_header or not auth_header.startswith("Bearer "):
         raise ValueError("Требуется авторизация")
     token = auth_header.removeprefix("Bearer ").strip()
@@ -281,26 +278,94 @@ def try_get_user(auth_header: str | None) -> dict | None:
 
 
 # ──────────────────────────────────────────────
-# Gemini helpers
+# AI helpers (OpenRouter)
 # ──────────────────────────────────────────────
-def _gemini_call(models: list[str], contents: list) -> str:
+def _ai_call(messages: list[dict], model: str = MODEL_TEXT) -> str:
     """
-    Вызывает Gemini, перебирая модели при 429 / 503.
-    Любая другая ошибка пробрасывается сразу.
+    Текстовый запрос к OpenRouter. При лимите (429) пробует резервную модель.
     """
+    models_to_try = [model]
+    if model != MODEL_FALLBACK:
+        models_to_try.append(MODEL_FALLBACK)
+
     last_err: Exception | None = None
-    for model in models:
+    for m in models_to_try:
         try:
-            resp = gemini_client.models.generate_content(model=model, contents=contents)
-            return resp.text.strip()
+            resp = ai_client.chat.completions.create(
+                model=m,
+                messages=messages,
+                max_tokens=4096,
+                timeout=60,
+            )
+            return resp.choices[0].message.content.strip()
         except Exception as e:
             msg = str(e)
-            if any(s in msg for s in ("429", "503", "RESOURCE_EXHAUSTED", "UNAVAILABLE", "quota")):
+            if any(s in msg for s in ("429", "503", "rate_limit", "overloaded", "quota")):
                 last_err = e
+                log.warning("AI rate limit on %s, trying fallback: %s", m, msg[:100])
                 continue
             raise
     raise RuntimeError(
-        "Сервис Gemini временно недоступен (лимит запросов). "
+        "AI сервис временно недоступен (лимит запросов). "
+        f"Попробуйте через несколько минут. Последняя ошибка: {last_err}"
+    )
+
+
+def _ai_call_vision(file_bytes: bytes, filename: str, prompt: str) -> str:
+    """
+    Vision-запрос: передаёт файл (изображение или PDF) как base64 data URI.
+    При лимите пробует резервную модель.
+    """
+    mime = get_mime_type(filename) or "image/jpeg"
+    b64  = base64.b64encode(file_bytes).decode("utf-8")
+
+    # PDF → передаём как document (поддерживается Gemini через OpenRouter)
+    # Изображения → передаём как image_url с data URI
+    if mime == "application/pdf":
+        # Gemini через OpenRouter поддерживает PDF как image_url с data URI
+        content_part = {
+            "type": "image_url",
+            "image_url": {"url": f"data:{mime};base64,{b64}"},
+        }
+    else:
+        content_part = {
+            "type": "image_url",
+            "image_url": {"url": f"data:{mime};base64,{b64}"},
+        }
+
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                content_part,
+                {"type": "text", "text": prompt},
+            ],
+        }
+    ]
+
+    models_to_try = [MODEL_VISION]
+    if MODEL_VISION != MODEL_FALLBACK:
+        models_to_try.append(MODEL_FALLBACK)
+
+    last_err: Exception | None = None
+    for m in models_to_try:
+        try:
+            resp = ai_client.chat.completions.create(
+                model=m,
+                messages=messages,
+                max_tokens=4096,
+                timeout=90,
+            )
+            return resp.choices[0].message.content.strip()
+        except Exception as e:
+            msg = str(e)
+            if any(s in msg for s in ("429", "503", "rate_limit", "overloaded", "quota")):
+                last_err = e
+                log.warning("Vision rate limit on %s, trying fallback: %s", m, msg[:100])
+                continue
+            raise
+    raise RuntimeError(
+        "AI сервис временно недоступен (лимит запросов). "
         f"Попробуйте через несколько минут. Последняя ошибка: {last_err}"
     )
 
@@ -322,10 +387,7 @@ def extract_indicators_from_file(file_bytes: bytes, filename: str) -> str:
         "4. Если показателей нет — indicators: [].\n"
         "5. НЕ интерпретируй, НЕ добавляй статус, только JSON."
     )
-    return _gemini_call(
-        MODELS_EXTRACT,
-        [types.Part.from_bytes(data=file_bytes, mime_type=get_mime_type(filename)), prompt],
-    )
+    return _ai_call_vision(file_bytes, filename, prompt)
 
 
 def analyze_indicators(indicators_json: str, age: str, gender: str) -> str:
@@ -356,7 +418,7 @@ def analyze_indicators(indicators_json: str, age: str, gender: str) -> str:
         f"Группы: {groups_desc}\n\n"
         "ТОЛЬКО JSON, без текста до и после."
     )
-    return _gemini_call(MODELS_ANALYZE, [prompt])
+    return _ai_call([{"role": "user", "content": prompt}], model=MODEL_TEXT)
 
 
 def _normalize_status(raw: str) -> str:
@@ -376,10 +438,6 @@ def _normalize_status(raw: str) -> str:
 
 
 def parse_analysis_result(raw: str) -> dict:
-    """
-    Парсит ответ analyze_indicators → нормализованный dict.
-    При ошибке возвращает безопасный дефолт.
-    """
     data = parse_gemini_json(raw, expect_type=dict)
     if not data:
         log.error("parse_analysis_result: не удалось распарсить: %s", raw[:300])
@@ -414,23 +472,12 @@ def parse_analysis_result(raw: str) -> dict:
 # Resolve indicators (batch)
 # ──────────────────────────────────────────────
 def _resolve_batch(indicators: list[dict]) -> dict[str, str]:
-    """
-    Принимает [{"original_name": ..., "name": ..., "group_key": ...}].
-    Возвращает {_rk(name.lower(), group_key): indicator_id}.
-
-    Ключ — (name_lower, group_key), поэтому показатели с одинаковым
-    именем в РАЗНЫХ группах живут независимо и не пересекаются.
-    """
-
     def _rk(name_lo: str, gk: str) -> str:
-        """Строковый ключ: имя + группа."""
         return f"{name_lo}||{gk}"
 
-    # Загружаем всё из БД одним запросом
     all_inds  = db_select("indicators",      "id,name,group_key", {}, order="name.asc")
     all_names = db_select("indicator_names", "name,indicator_id,group_key", {}, order="name.asc")
 
-    # Ключ = _rk(name.lower(), group_key) → indicator_id
     by_name:  dict[str, str] = {_rk(r["name"].lower(), r["group_key"]): r["id"] for r in all_inds}
     by_alias: dict[str, str] = {
         _rk(r["name"].lower(), r["group_key"]): r["indicator_id"]
@@ -453,7 +500,6 @@ def _resolve_batch(indicators: list[dict]) -> dict[str, str]:
         ind_id = known.get(_rk(c_lo, gk)) or known.get(_rk(o_lo, gk))
         if ind_id:
             result_map[_rk(c_lo, gk)] = ind_id
-            # Добавляем оригинальное имя как алиас (в той же группе)
             if o_lo != c_lo and _rk(o_lo, gk) not in known:
                 try:
                     db_upsert(
@@ -476,8 +522,6 @@ def _resolve_batch(indicators: list[dict]) -> dict[str, str]:
     if not unknown:
         return result_map
 
-    # Для неизвестных — спрашиваем Gemini: синоним или новый?
-    # Сравниваем строго внутри той же group_key
     used_groups  = {u["group_key"] for u in unknown}
     known_subset = [
         {"name": r["name"], "group_key": r["group_key"]}
@@ -506,15 +550,14 @@ def _resolve_batch(indicators: list[dict]) -> dict[str, str]:
     )
 
     try:
-        raw_decisions = _gemini_call(MODELS_EXTRACT, [prompt])
+        raw_decisions = _ai_call([{"role": "user", "content": prompt}])
         decisions: list = parse_gemini_json(raw_decisions, expect_type=list)
         if not decisions:
             raise ValueError("пустой ответ")
     except Exception as e:
-        log.error("_resolve_batch Gemini error: %s", e)
+        log.error("_resolve_batch AI error: %s", e)
         decisions = [{"id": i, "action": "new"} for i in range(len(unknown))]
 
-    # Применяем решения
     inds_by_name_gk: dict[str, dict] = {
         _rk(r["name"].lower(), r["group_key"]): r for r in all_inds
     }
@@ -546,9 +589,7 @@ def _resolve_batch(indicators: list[dict]) -> dict[str, str]:
                     result_map[_rk(u["c_lo"], gk)] = ind_id
                     log.info("resolve alias: '%s' [%s] → '%s'", u["canonical"], gk, matched["name"])
                     continue
-                # match не найден → создаём как новый
 
-            # action == "new" (или alias без совпадения)
             new_row = db_upsert(
                 "indicators",
                 {"name": u["canonical"], "group_key": gk},
@@ -557,7 +598,6 @@ def _resolve_batch(indicators: list[dict]) -> dict[str, str]:
             if new_row:
                 ind_id = new_row["id"]
             else:
-                # уже существует (race condition)
                 rows = db_select("indicators", "id,group_key", {"name": u["canonical"], "group_key": gk})
                 if not rows:
                     continue
@@ -598,8 +638,6 @@ def _save_user_indicators(
     if not indicators:
         return
 
-    # Каждый показатель несёт свой group_key (из поля ind["group_key"]).
-    # Если его нет — используем group_key всего анализа как fallback.
     to_resolve = [
         {
             "original_name": ind.get("original_name", ind["name"]),
@@ -655,10 +693,6 @@ def _save_user_indicators_async(
 # File helpers
 # ──────────────────────────────────────────────
 def read_uploaded_file() -> tuple[bytes, str, str]:
-    """
-    Читает файл из request.files['file'].
-    Возвращает (bytes, filename, mime_type) или кидает ValueError.
-    """
     if "file" not in request.files:
         raise ValueError("Файл не найден в запросе")
     f = request.files["file"]
@@ -675,9 +709,6 @@ def read_uploaded_file() -> tuple[bytes, str, str]:
 
 
 def check_duplicate(user_id: str, file_hash: str) -> str | None:
-    """
-    Возвращает сообщение об ошибке если дубликат уже существует, иначе None.
-    """
     rows = db_select("analyses", "id,analysis_name,analysis_date", {"user_id": user_id, "file_hash": file_hash})
     if not rows:
         return None
@@ -691,7 +722,6 @@ def check_duplicate(user_id: str, file_hash: str) -> str | None:
 
 
 def _parse_recommendations(raw) -> list[str]:
-    """Безопасно парсит поле recommendations из БД (может быть str или list)."""
     if not raw:
         return []
     if isinstance(raw, list):
@@ -711,7 +741,6 @@ def _parse_recommendations(raw) -> list[str]:
 
 @app.route("/health", methods=["GET"])
 def health():
-    """Health-check для Render. Не требует авторизации."""
     return jsonify({"ok": True})
 
 
@@ -734,18 +763,15 @@ def route_check_duplicate():
 
 @app.route("/extract", methods=["POST"])
 def route_extract():
-    """Шаг 1: извлечь показатели из файла (авторизованный или публичный режим)."""
     try:
         try_get_user(request.headers.get("Authorization"))
         data, filename, _ = read_uploaded_file()
         raw        = extract_indicators_from_file(data, filename)
         parsed     = parse_gemini_json(raw, expect_type=dict)
-        # Поддерживаем оба формата: новый {analysis_name, indicators} и старый []
         if isinstance(parsed, dict):
             indicators    = parsed.get("indicators", [])
             analysis_name = parsed.get("analysis_name", "")
         else:
-            # fallback — если Gemini вернул просто массив
             indicators    = parse_gemini_json(raw, expect_type=list)
             analysis_name = ""
         return jsonify({"indicators": indicators, "analysis_name": analysis_name})
@@ -758,7 +784,6 @@ def route_extract():
 
 @app.route("/analyze-indicators", methods=["POST"])
 def route_analyze_indicators():
-    """Шаг 2: анализ показателей (авторизованный или публичный режим)."""
     try:
         try_get_user(request.headers.get("Authorization"))
 
@@ -782,7 +807,6 @@ def route_analyze_indicators():
 
 @app.route("/save-analysis", methods=["POST"])
 def route_save_analysis():
-    """Шаг 3: сохранить результат анализа в БД. Файл опционален."""
     try:
         user = get_user(request.headers.get("Authorization"))
 
@@ -797,7 +821,6 @@ def route_save_analysis():
 
         analysis = parse_analysis_result(analysis_raw)
 
-        # Файл опционален — если есть, загружаем в storage
         file_url  = None
         filename  = None
         file_hash = None
@@ -844,11 +867,11 @@ def route_save_analysis():
 
         if analysis_id and analysis["indicators"]:
             _save_user_indicators_async(
-                user_id          = user["id"],
-                analysis_id      = analysis_id,
-                indicators       = analysis["indicators"],
-                group_key        = analysis["group_key"],
-                measured_at      = analysis_date or None,
+                user_id     = user["id"],
+                analysis_id = analysis_id,
+                indicators  = analysis["indicators"],
+                group_key   = analysis["group_key"],
+                measured_at = analysis_date or None,
             )
 
         return jsonify({"ok": True})
@@ -922,22 +945,16 @@ def route_delete_analysis(analysis_id: str):
 
 @app.route("/dashboard", methods=["GET"])
 def route_dashboard():
-    """
-    Один запрос для личного кабинета:
-    history + последние показатели (по одному на каждый indicator) + рекомендации.
-    """
     try:
         user = get_user(request.headers.get("Authorization"))
         uid  = user["id"]
 
-        # 1. История анализов
         history = db_select(
             "analyses",
             "id,filename,analysis_name,age,gender,file_url,analysis_date,created_at,summary,group_key",
             {"user_id": uid},
         )
 
-        # 2. Последние показатели (JOIN с indicators)
         ind_rows = _get(
             "/rest/v1/user_indicators",
             params={
@@ -966,7 +983,6 @@ def route_dashboard():
             })
         indicators.sort(key=lambda x: x["name"])
 
-        # 3. Рекомендации (дедупликация по первым 60 символам)
         rec_rows = db_select(
             "analyses",
             "recommendations,analysis_name,analysis_date",
@@ -999,7 +1015,6 @@ def route_dashboard():
 
 @app.route("/indicators", methods=["GET"])
 def route_indicators():
-    """Все последние показатели пользователя (по одному на каждый indicator)."""
     try:
         user = get_user(request.headers.get("Authorization"))
 
@@ -1042,7 +1057,6 @@ def route_indicators():
 
 @app.route("/indicator-history", methods=["GET"])
 def route_indicator_history():
-    """История значений одного показателя по имени через Supabase RPC."""
     try:
         user = get_user(request.headers.get("Authorization"))
         name = request.args.get("name", "").strip()
@@ -1067,7 +1081,6 @@ def route_indicator_history():
             for r in rows
         ]
 
-        # Получаем описание из таблицы indicators
         description = ""
         ind_rows = db_select("indicators", "description", {"name": name})
         if ind_rows and ind_rows[0].get("description"):
@@ -1083,7 +1096,6 @@ def route_indicator_history():
 
 @app.route("/recommendations", methods=["GET"])
 def route_recommendations():
-    """Все уникальные рекомендации пользователя."""
     try:
         user = get_user(request.headers.get("Authorization"))
         rows = db_select(
@@ -1118,28 +1130,7 @@ def route_recommendations():
 # ──────────────────────────────────────────────
 
 def _fetch_indicator_no_description() -> dict | None:
-    """
-    Возвращает один показатель у которого description IS NULL или пустое,
-    либо None если таких нет.
-    """
     h = _supa_headers()
-    for flt in ("is.null", "eq."):
-        resp = httpx.get(
-            f"{SUPABASE_URL}/rest/v1/indicators",
-            headers=h,
-            params={
-                "select": "id,name,group_key",
-                flt if flt == "is.null" else "description": flt,
-                "limit":  "1",
-                "order":  "created_at.asc",
-            },
-            timeout=10,
-        )
-        # PostgREST не принимает "is.null" как ключ params — используем правильный синтаксис
-        # Повторим через корректный URL-параметр
-        break
-
-    # Корректный запрос через два отдельных вызова
     for flt_val in ("is.null", "eq."):
         r = httpx.get(
             f"{SUPABASE_URL}/rest/v1/indicators",
@@ -1156,10 +1147,6 @@ def _fetch_indicator_no_description() -> dict | None:
 
 
 def _fetch_analysis_names_for_indicator(indicator_id: str) -> list[str]:
-    """
-    Возвращает до 3 последних уникальных названий анализов,
-    в которых встречался данный показатель.
-    """
     try:
         rows = _get(
             "/rest/v1/user_indicators",
@@ -1200,12 +1187,7 @@ def _build_description_prompt(indicator_name: str, analysis_names: list[str]) ->
 
 
 def _parse_description_response(raw: str) -> str | None:
-    """
-    Разбирает JSON-ответ Gemini и собирает финальный текст описания.
-    Возвращает None если структура невалидна.
-    """
     try:
-        # Убираем возможные markdown-обёртки
         clean = raw.strip()
         if clean.startswith("```"):
             clean = clean.split("\n", 1)[-1]
@@ -1230,9 +1212,6 @@ def _parse_description_response(raw: str) -> str | None:
 
 
 def _patch_indicator_description(indicator_id: str, description: str | None) -> None:
-    """
-    Обновляет поле description (и сбрасывает в NULL при description=None).
-    """
     h = _supa_headers()
     h["Prefer"] = "return=minimal"
     resp = httpx.patch(
@@ -1249,21 +1228,13 @@ def _patch_indicator_description(indicator_id: str, description: str | None) -> 
 
 
 def _description_worker() -> None:
-    """
-    Фоновый поток:
-    - Стартует через 40 сек
-    - Раз в минуту берёт 1 показатель без описания
-    - Запрашивает у Gemini структурированный JSON-ответ
-    - При невалидном ответе/ошибке — оставляет NULL и ждёт 10 мин
-    - Если все показатели заполнены — ждёт 10 мин
-    """
     import time
 
     log.info("[desc-worker] запущен, старт через 40 сек")
     time.sleep(40)
 
     while True:
-        wait_next = 60  # стандартный интервал — 1 минута
+        wait_next = 60
 
         try:
             ind = _fetch_indicator_no_description()
@@ -1281,14 +1252,11 @@ def _description_worker() -> None:
             try:
                 analysis_names = _fetch_analysis_names_for_indicator(ind_id)
                 prompt = _build_description_prompt(ind_name, analysis_names)
-                raw = _gemini_call(MODELS_ANALYZE, [prompt])
+                raw = _ai_call([{"role": "user", "content": prompt}])
                 description = _parse_description_response(raw)
 
                 if description is None:
-                    # Невалидный ответ — оставляем NULL, ждём 10 мин
-                    log.warning(
-                        "[desc-worker] невалидный ответ для '%s', жду 10 мин", ind_name
-                    )
+                    log.warning("[desc-worker] невалидный ответ для '%s', жду 10 мин", ind_name)
                     wait_next = 600
                 else:
                     _patch_indicator_description(ind_id, description[:1500])
@@ -1296,7 +1264,7 @@ def _description_worker() -> None:
 
             except Exception as e:
                 log.error("[desc-worker] ошибка для '%s': %s", ind_name, e)
-                wait_next = 600  # при любой ошибке — 10 мин
+                wait_next = 600
 
         except Exception as e:
             log.error("[desc-worker] критическая ошибка: %s", e)
@@ -1305,7 +1273,6 @@ def _description_worker() -> None:
         time.sleep(wait_next)
 
 
-# Запускаем воркер при старте приложения
 _desc_thread = threading.Thread(target=_description_worker, daemon=True, name="desc-worker")
 _desc_thread.start()
 
