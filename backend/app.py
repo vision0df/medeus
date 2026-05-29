@@ -73,22 +73,15 @@ ai_client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
 )
 
-# Модели OpenRouter (бесплатные, с vision)
-# Цепочка из трёх — если первая недоступна, автоматически берётся следующая.
-# Бесплатные модели могут пропадать без предупреждения, поэтому fallback обязателен.
-MODELS_VISION = [
-    "qwen/qwen2.5-vl-32b-instruct:free",   # vision + PDF, стабильная
-    "meta-llama/llama-4-maverick:free",     # vision (изображения)
-    "google/gemma-3-27b-it:free",           # резерв (только текст, без PDF)
-]
-MODELS_TEXT = [
-    "qwen/qwen2.5-vl-32b-instruct:free",
-    "meta-llama/llama-4-maverick:free",
-    "google/gemma-3-27b-it:free",
-]
-# Алиасы для _ai_call (он принимает одну модель + сам добавляет fallback)
-MODEL_TEXT     = MODELS_TEXT[0]
-MODEL_FALLBACK = MODELS_TEXT[1]
+# openrouter/free — специальный роутер OpenRouter.
+# Автоматически выбирает подходящую бесплатную модель под каждый запрос:
+# если в запросе есть изображение — выберет vision-модель,
+# если только текст — выберет текстовую. Следить за конкретными моделями не нужно.
+MODELS_VISION = ["openrouter/free"]
+MODELS_TEXT   = ["openrouter/free"]
+MODEL_TEXT     = "openrouter/free"
+MODEL_FALLBACK = "openrouter/free"
+
 
 VALID_GROUP_KEYS = {
     "blood", "hormones", "infections", "biomaterials",
