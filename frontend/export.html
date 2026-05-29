@@ -13,6 +13,7 @@
 <style>
 body { display: flex; flex-direction: column; min-height: 100vh; }
 
+/* ─── NAV LINKS ─── */
 .desk-nav-link {
   font-family: var(--mono); font-size: 11px; font-weight: 700;
   letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-mid);
@@ -30,53 +31,79 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 }
 .btn-nav-sm:hover { background: var(--text); color: #fff; }
 
-/* ─── SINGLE EXPORT BLOCK ─── */
-.export-block-outer {
-  background: var(--text);
-  clip-path: var(--clip-lg);
-  padding: 2px;
-  animation: fadeUp .35s ease both;
-  max-width: 680px;
-  margin: 0 auto;
+/* ─── PAGE LAYOUT ─── */
+.export-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
 }
-.export-block {
+@media (min-width: 900px) {
+  .export-grid { grid-template-columns: 1fr 1fr; }
+  .export-grid .col-full { grid-column: 1 / -1; }
+}
+
+/* ─── STATS ROW ─── */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 6px;
+  animation: fadeUp .35s ease both;
+}
+@media (max-width: 480px) { .stats-row { grid-template-columns: repeat(2,1fr); gap: 5px; } }
+
+.stat-card {
+  background: var(--text);
+  clip-path: polygon(8px 0%,100% 0%,100% calc(100% - 8px),calc(100% - 8px) 100%,0% 100%,0% 8px);
+  padding: 2px; min-width: 0;
+}
+.stat-card-inner {
+  background: var(--white);
+  clip-path: polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
+  padding: 12px 14px; display: flex; flex-direction: column;
+}
+.stat-num { font-family: var(--sans); font-size: 22px; font-weight: 800; color: var(--text); line-height: 1; }
+.stat-lbl { font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-top: 5px; }
+
+/* ─── DASH CARDS ─── */
+.dash-card-wrap {
+  background: var(--text);
+  clip-path: polygon(18px 0%, 100% 0%, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0% 100%, 0% 18px);
+  padding: 2px; animation: fadeUp .4s ease both; overflow: hidden;
+}
+.dash-card-wrap:nth-child(2){animation-delay:.05s}
+.dash-card-wrap:nth-child(3){animation-delay:.1s}
+.dash-card-wrap:nth-child(4){animation-delay:.15s}
+.dash-card-wrap:nth-child(5){animation-delay:.2s}
+.dash-card-wrap:nth-child(6){animation-delay:.25s}
+
+.dash-card {
   background: var(--white);
   clip-path: polygon(16px 0%, 100% 0%, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0% 100%, 0% 16px);
+  display: flex; flex-direction: column; height: 100%; overflow: hidden;
 }
-
-/* ─── STATS ROW inside block ─── */
-.exp-stats {
-  display: grid; grid-template-columns: repeat(4,1fr);
-  border-bottom: 1px solid var(--line);
-}
-.exp-stat {
-  padding: 14px 16px; text-align: center;
-  border-right: 1px solid var(--line);
-}
-.exp-stat:last-child { border-right: none; }
-.exp-stat-num { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
-.exp-stat-lbl { font-size: 8px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-top: 3px; }
-
-/* ─── SECTION inside block ─── */
-.exp-section { border-bottom: 1px solid var(--line); }
-.exp-section:last-of-type { border-bottom: none; }
-.exp-section-header {
+.dash-card-header {
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
-  padding: 12px 20px; background: var(--bg2);
-  border-bottom: 1px solid var(--line);
+  padding: 16px 22px 14px; border-bottom: 1px solid var(--line); background: var(--bg2);
 }
-.exp-section-label {
+.dash-card-label {
   font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--text-dim); display: flex; align-items: center; gap: 6px;
 }
-.exp-section-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
-.exp-section-body { padding: 16px 20px; }
+.dash-card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
+.card-badge {
+  font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.13em;
+  text-transform: uppercase; padding: 3px 9px;
+}
+.badge-ok     { background: var(--green-pale); color: var(--green); }
+.badge-warn   { background: var(--yellow-pale); color: var(--yellow); }
+.badge-alert  { background: var(--red-pale); color: var(--red); }
+.badge-neutral{ background: var(--bg3); color: var(--text-dim); }
+.dash-card-body { padding: 20px 22px; flex: 1; }
+.dash-card-footer { border-top: 2px solid var(--text); }
 
 /* ─── GROUP CHIPS ─── */
 .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
 .g-chip {
   border: 1px solid var(--line-mid); background: var(--bg);
-  padding: 8px 4px; text-align: center;
+  padding: 9px 4px; text-align: center;
   font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
   color: var(--text-mid); cursor: pointer;
   clip-path: var(--clip-sm); transition: all .12s; user-select: none; line-height: 1.3;
@@ -88,73 +115,72 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .toggle-row { display: flex; gap: 5px; flex-wrap: wrap; }
 .t-btn {
   border: 1px solid var(--line-mid); background: var(--bg);
-  padding: 7px 12px; font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+  padding: 8px 14px; font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--text-mid); cursor: pointer;
   clip-path: var(--clip-sm); transition: all .12s; user-select: none; font-family: var(--mono);
 }
 .t-btn.active  { background: var(--text); border-color: var(--text); color: #fff; }
 .t-btn:hover:not(.active) { background: var(--bg3); }
-.hint { font-size: 9px; color: var(--text-dim); margin-top: 8px; line-height: 1.6; }
+.hint { font-size: 9px; color: var(--text-dim); margin-top: 10px; line-height: 1.7; }
 
-/* ─── INCLUDE CHECKS ─── */
-.inc-list { display: flex; flex-direction: column; gap: 5px; }
-.inc-item {
+/* ─── CHECKABLE ITEMS ─── */
+.check-list { display: flex; flex-direction: column; gap: 5px; }
+.check-item {
   display: flex; align-items: center; gap: 10px;
-  padding: 9px 12px; border: 1px solid var(--line);
+  padding: 10px 13px; border: 1px solid var(--line);
   background: var(--bg); cursor: pointer; transition: all .12s; user-select: none;
   clip-path: var(--clip-sm);
 }
-.inc-item.active { border-color: var(--orange-border); background: var(--orange-pale); }
-.inc-item:hover:not(.active) { background: var(--bg3); }
-.inc-check {
-  width: 14px; height: 14px; border: 1.5px solid var(--text-dim); flex-shrink: 0;
+.check-item.active { border-color: var(--orange-border); background: var(--orange-pale); }
+.check-item:hover:not(.active) { background: var(--bg3); }
+.check-box {
+  width: 15px; height: 15px; border: 1.5px solid var(--text-dim); flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   clip-path: polygon(3px 0%,100% 0%,100% calc(100% - 3px),calc(100% - 3px) 100%,0% 100%,0% 3px);
   transition: all .12s;
 }
-.inc-item.active .inc-check { background: var(--orange); border-color: var(--orange); }
-.inc-check-mark {
-  width: 6px; height: 5px;
+.check-item.active .check-box { background: var(--orange); border-color: var(--orange); }
+.check-mark {
+  width: 7px; height: 5px;
   border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff;
   transform: rotate(-45deg) translate(1px,-1px);
 }
-.inc-label { font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--text-mid); }
-.inc-item.active .inc-label { color: var(--orange); }
+.check-label { font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--text-mid); }
+.check-item.active .check-label { color: var(--orange); }
 
 /* ─── FILE LIST ─── */
-.file-list { display: flex; flex-direction: column; gap: 5px; }
 .f-item {
   display: flex; align-items: center; gap: 10px;
-  padding: 9px 12px; border: 1px solid var(--line);
+  padding: 10px 13px; border: 1px solid var(--line);
   background: var(--bg); cursor: pointer; transition: all .12s; user-select: none;
   clip-path: var(--clip-sm);
 }
 .f-item.active { border-color: var(--orange-border); background: var(--orange-pale); }
 .f-item:hover:not(.active) { background: var(--bg3); }
 .f-check {
-  width: 14px; height: 14px; border: 1.5px solid var(--text-dim); flex-shrink: 0;
+  width: 15px; height: 15px; border: 1.5px solid var(--text-dim); flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   clip-path: polygon(3px 0%,100% 0%,100% calc(100% - 3px),calc(100% - 3px) 100%,0% 100%,0% 3px);
   transition: all .12s;
 }
 .f-item.active .f-check { background: var(--orange); border-color: var(--orange); }
 .f-check-mark {
-  width: 6px; height: 5px;
+  width: 7px; height: 5px;
   border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff;
   transform: rotate(-45deg) translate(1px,-1px);
 }
 .f-name { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.f-date { font-family: var(--mono); font-size: 9px; color: var(--text-dim); }
+.f-date { font-family: var(--mono); font-size: 9px; color: var(--text-dim); flex-shrink: 0; }
 .f-count { font-family: var(--mono); font-size: 9px; color: var(--text-dim); flex-shrink: 0; }
 
-/* ─── DATE INPUTS ─── */
+/* ─── DATE ROW ─── */
 .date-row { display: flex; gap: 8px; align-items: center; }
 .date-sep  { font-size: 11px; color: var(--text-dim); font-weight: 700; flex-shrink: 0; }
 
 /* ─── EXPORT BUTTON ─── */
 .export-btn {
   display: flex; align-items: center; justify-content: space-between;
-  width: 100%; padding: 16px 22px;
+  width: 100%; padding: 18px 24px;
   background: var(--orange);
   font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
   text-transform: uppercase; color: #fff; border: none; cursor: pointer;
@@ -188,10 +214,9 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 
 /* ─── MOBILE ─── */
 @media (max-width: 767px) {
-  .export-block-outer { clip-path: none; border-top: 2px solid var(--text); border-bottom: 2px solid var(--text); padding: 0; }
-  .export-block { clip-path: none; }
-  .exp-stats { grid-template-columns: repeat(2,1fr); }
-  .export-btn { clip-path: polygon(8px 0%,100% 0%,100% calc(100% - 8px),calc(100% - 8px) 100%,0% 100%,0% 8px); }
+  .dash-card-header { padding: 11px 14px 10px; }
+  .dash-card-body   { padding: 14px; }
+  .stats-row { grid-template-columns: repeat(2,1fr); }
 }
 </style>
 </head>
@@ -234,32 +259,55 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 </div>
 
 <main class="page">
+
+  <!-- PAGE HEADER -->
   <div class="page-header" style="animation:fadeUp .3s ease both;">
     <div>
-      <div class="page-title-label">/ Экспорт</div>
+      <div class="page-title-label">Экспорт</div>
       <h1 class="page-title">Выгрузка в PDF<span class="cursor-blink"></span></h1>
     </div>
     <div class="page-meta" id="pageMeta">—</div>
   </div>
 
-  <div class="export-block-outer">
-    <div class="export-block">
-
-      <!-- STATS -->
-      <div class="exp-stats">
-        <div class="exp-stat"><div class="exp-stat-num" id="statTotal">—</div><div class="exp-stat-lbl">Показателей</div></div>
-        <div class="exp-stat"><div class="exp-stat-num" id="statDevs">—</div><div class="exp-stat-lbl">Отклонений</div></div>
-        <div class="exp-stat"><div class="exp-stat-num" id="statSrc">—</div><div class="exp-stat-lbl">Источников</div></div>
-        <div class="exp-stat"><div class="exp-stat-num" id="statGrp">—</div><div class="exp-stat-lbl">Групп</div></div>
+  <!-- STATS ROW -->
+  <div class="stats-row" style="margin-bottom:20px;">
+    <div class="stat-card">
+      <div class="stat-card-inner">
+        <div class="stat-num" id="statTotal">—</div>
+        <div class="stat-lbl">Показателей</div>
       </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-inner">
+        <div class="stat-num" id="statDevs">—</div>
+        <div class="stat-lbl">Отклонений</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-inner">
+        <div class="stat-num" id="statSrc">—</div>
+        <div class="stat-lbl">Источников</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-inner">
+        <div class="stat-num" id="statGrp">—</div>
+        <div class="stat-lbl">Групп</div>
+      </div>
+    </div>
+  </div>
 
-      <!-- GROUPS -->
-      <div class="exp-section">
-        <div class="exp-section-header">
-          <div class="exp-section-label">Группы показателей</div>
+  <!-- CARDS GRID -->
+  <div class="export-grid">
+
+    <!-- GROUPS -->
+    <div class="dash-card-wrap">
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div class="dash-card-label">Группы показателей</div>
           <span id="groupsBadge" class="card-badge badge-neutral">8 групп</span>
         </div>
-        <div class="exp-section-body">
+        <div class="dash-card-body">
           <div class="group-grid" id="groupsGrid">
             <div class="g-chip active" data-g="blood">Кровь</div>
             <div class="g-chip active" data-g="functional">Биохимия</div>
@@ -272,29 +320,33 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- SOURCES -->
-      <div class="exp-section">
-        <div class="exp-section-header">
-          <div class="exp-section-label">Источники</div>
+    <!-- SOURCES -->
+    <div class="dash-card-wrap">
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div class="dash-card-label">Источники</div>
           <span id="srcBadge" class="card-badge badge-neutral">загрузка...</span>
         </div>
-        <div class="exp-section-body">
-          <div class="file-list" id="fileList">
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;color:var(--text-dim);font-size:11px;">
+        <div class="dash-card-body">
+          <div class="check-list" id="fileList">
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 0;color:var(--text-dim);font-size:11px;">
               <div class="loader-px" style="width:20px;height:20px;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
               Загружаем источники...
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- SCOPE -->
-      <div class="exp-section">
-        <div class="exp-section-header">
-          <div class="exp-section-label">Состав</div>
+    <!-- SCOPE -->
+    <div class="dash-card-wrap">
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div class="dash-card-label">Состав отчёта</div>
         </div>
-        <div class="exp-section-body">
+        <div class="dash-card-body">
           <div class="toggle-row" id="scopeRow">
             <div class="t-btn active" data-s="latest">Актуальные</div>
             <div class="t-btn" data-s="all">Все результаты</div>
@@ -303,13 +355,15 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
           <div class="hint" id="scopeHint">* последний уникальный результат по каждому показателю</div>
         </div>
       </div>
+    </div>
 
-      <!-- PERIOD -->
-      <div class="exp-section">
-        <div class="exp-section-header">
-          <div class="exp-section-label">Период</div>
+    <!-- PERIOD -->
+    <div class="dash-card-wrap">
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div class="dash-card-label">Период наблюдений</div>
         </div>
-        <div class="exp-section-body">
+        <div class="dash-card-body">
           <div class="date-row">
             <input type="date" id="dateFrom" style="flex:1;">
             <div class="date-sep">—</div>
@@ -318,46 +372,45 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
           <div class="hint">* оставь пустым — весь период наблюдений</div>
         </div>
       </div>
+    </div>
 
-      <!-- INCLUDE -->
-      <div class="exp-section">
-        <div class="exp-section-header">
-          <div class="exp-section-label">Включить в отчёт</div>
+    <!-- INCLUDE -->
+    <div class="dash-card-wrap col-full">
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div class="dash-card-label">Включить в отчёт</div>
         </div>
-        <div class="exp-section-body">
-          <div class="inc-list" id="includeList">
-            <div class="inc-item active" data-i="status">
-              <div class="inc-check"><div class="inc-check-mark"></div></div>
-              <div class="inc-label">Статус (норма / отклонение)</div>
-            </div>
-            <div class="inc-item active" data-i="source">
-              <div class="inc-check"><div class="inc-check-mark"></div></div>
-              <div class="inc-label">Источник анализа</div>
-            </div>
-            <div class="inc-item active" data-i="date">
-              <div class="inc-check"><div class="inc-check-mark"></div></div>
-              <div class="inc-label">Дата измерения</div>
-            </div>
-            <div class="inc-item" data-i="disclaimer">
-              <div class="inc-check"></div>
-              <div class="inc-label">Медицинский дисклеймер</div>
-            </div>
+        <div class="dash-card-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:5px;">
+          <div class="check-item active" data-i="status">
+            <div class="check-box"><div class="check-mark"></div></div>
+            <div class="check-label">Статус (норма / отклонение)</div>
+          </div>
+          <div class="check-item active" data-i="source">
+            <div class="check-box"><div class="check-mark"></div></div>
+            <div class="check-label">Источник анализа</div>
+          </div>
+          <div class="check-item active" data-i="date">
+            <div class="check-box"><div class="check-mark"></div></div>
+            <div class="check-label">Дата измерения</div>
+          </div>
+          <div class="check-item" data-i="disclaimer">
+            <div class="check-box"></div>
+            <div class="check-label">Медицинский дисклеймер</div>
           </div>
         </div>
+        <div class="dash-card-footer">
+          <button class="export-btn" id="exportBtn" onclick="doExport()">
+            <span style="display:flex;align-items:center;gap:9px;">
+              <svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Скачать PDF
+            </span>
+            <span class="export-badge" id="exportBadge">— показ.</span>
+          </button>
+        </div>
       </div>
-
-      <!-- EXPORT BUTTON -->
-      <button class="export-btn" id="exportBtn" onclick="doExport()">
-        <span style="display:flex;align-items:center;gap:9px;">
-          <svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Скачать PDF
-        </span>
-        <span class="export-badge" id="exportBadge">— показ.</span>
-      </button>
-
     </div>
-  </div>
 
+  </div>
 </main>
 
 <div class="status-bar">
@@ -482,11 +535,11 @@ document.querySelectorAll('#scopeRow .t-btn').forEach(b=>b.addEventListener('cli
   updateStats();
 }));
 
-document.querySelectorAll('#includeList .inc-item').forEach(item=>item.addEventListener('click',()=>{
+document.querySelectorAll('.check-item[data-i]').forEach(item=>item.addEventListener('click',()=>{
   const key=item.dataset.i;
-  const ch=item.querySelector('.inc-check');
+  const ch=item.querySelector('.check-box');
   if(includeOpts.has(key)){includeOpts.delete(key);item.classList.remove('active');ch.innerHTML='';}
-  else{includeOpts.add(key);item.classList.add('active');ch.innerHTML='<div class="inc-check-mark"></div>';}
+  else{includeOpts.add(key);item.classList.add('active');ch.innerHTML='<div class="check-mark"></div>';}
 }));
 
 document.getElementById('dateFrom').addEventListener('input',updateStats);
@@ -615,7 +668,6 @@ const TD="padding:9px 12px;border-bottom:1px solid #E8E5E0;font-size:12px;color:
   try{
     const data=await apiFetch('/indicators',session);
     allIndicators=(data.indicators||[]).sort((a,b)=>new Date(b.date)-new Date(a.date));
-    // Build sources map
     const srcMap={};
     allIndicators.forEach(ind=>{
       const src=ind.source||'';
@@ -624,7 +676,6 @@ const TD="padding:9px 12px;border-bottom:1px solid #E8E5E0;font-size:12px;color:
       if(new Date(ind.date)>new Date(srcMap[src].date))srcMap[src].date=ind.date;
       srcMap[src].count++;
     });
-    // Also load history for source names
     try{
       const hist=await apiFetch('/history',session);
       (hist.history||[]).forEach(h=>{
