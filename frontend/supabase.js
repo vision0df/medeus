@@ -36,6 +36,6 @@ async function requireAuth() {
 // Выйти из аккаунта
 async function signOut() {
   const client = getSupabase();
-  await client.auth.signOut();
+  await client.auth.signOut({ scope: 'local' });
   window.location.href = 'auth.html';
 }
