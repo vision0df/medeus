@@ -30,39 +30,47 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 }
 .btn-nav-sm:hover { background: var(--text); color: #fff; }
 
-/* ─── LAYOUT ─── */
-.export-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-@media (max-width: 767px) { .export-grid { grid-template-columns: 1fr; } }
-
-/* ─── SECTION CARD ─── */
-.section-card-outer {
+/* ─── SINGLE EXPORT BLOCK ─── */
+.export-block-outer {
   background: var(--text);
-  clip-path: var(--clip-md);
+  clip-path: var(--clip-lg);
   padding: 2px;
   animation: fadeUp .35s ease both;
+  max-width: 680px;
+  margin: 0 auto;
 }
-.section-card-outer:nth-child(2){animation-delay:.05s}
-.section-card-outer:nth-child(3){animation-delay:.1s}
-.section-card-outer:nth-child(4){animation-delay:.15s}
-
-.section-card {
+.export-block {
   background: var(--white);
-  clip-path: polygon(12px 0%, 100% 0%, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0% 100%, 0% 12px);
+  clip-path: polygon(16px 0%, 100% 0%, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0% 100%, 0% 16px);
 }
-.section-card-header {
+
+/* ─── STATS ROW inside block ─── */
+.exp-stats {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  border-bottom: 1px solid var(--line);
+}
+.exp-stat {
+  padding: 14px 16px; text-align: center;
+  border-right: 1px solid var(--line);
+}
+.exp-stat:last-child { border-right: none; }
+.exp-stat-num { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
+.exp-stat-lbl { font-size: 8px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-top: 3px; }
+
+/* ─── SECTION inside block ─── */
+.exp-section { border-bottom: 1px solid var(--line); }
+.exp-section:last-of-type { border-bottom: none; }
+.exp-section-header {
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
-  padding: 14px 20px 12px; border-bottom: 1px solid var(--line); background: var(--bg2);
+  padding: 12px 20px; background: var(--bg2);
+  border-bottom: 1px solid var(--line);
 }
-.section-card-label {
+.exp-section-label {
   font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--text-dim); display: flex; align-items: center; gap: 6px;
 }
-.section-card-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
-.section-card-body { padding: 18px 20px; }
+.exp-section-label::before { content: '/'; color: var(--orange); font-weight: 700; font-size: 12px; }
+.exp-section-body { padding: 16px 20px; }
 
 /* ─── GROUP CHIPS ─── */
 .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
@@ -139,34 +147,19 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .f-date { font-family: var(--mono); font-size: 9px; color: var(--text-dim); }
 .f-count { font-family: var(--mono); font-size: 9px; color: var(--text-dim); flex-shrink: 0; }
 
-/* ─── STATS STRIP ─── */
-.stats-strip {
-  display: grid; grid-template-columns: repeat(4,1fr); gap: 6px;
-  margin-bottom: 18px; animation: fadeUp .3s ease both;
-}
-.stat-strip-item {
-  background: var(--text); clip-path: var(--clip-sm); padding: 2px;
-}
-.stat-strip-inner {
-  background: var(--white); clip-path: polygon(6px 0%,100% 0%,100% calc(100% - 6px),calc(100% - 6px) 100%,0% 100%,0% 6px);
-  padding: 10px 12px; text-align: center;
-}
-.stat-strip-num { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1; }
-.stat-strip-lbl { font-size: 8px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-top: 3px; }
+/* ─── DATE INPUTS ─── */
+.date-row { display: flex; gap: 8px; align-items: center; }
+.date-sep  { font-size: 11px; color: var(--text-dim); font-weight: 700; flex-shrink: 0; }
 
 /* ─── EXPORT BUTTON ─── */
-.export-btn-wrap {
-  background: var(--text); clip-path: var(--clip-md); padding: 2px;
-  margin-top: 18px; animation: fadeUp .4s .2s ease both;
-}
 .export-btn {
   display: flex; align-items: center; justify-content: space-between;
-  width: 100%; padding: 15px 22px;
+  width: 100%; padding: 16px 22px;
   background: var(--orange);
-  clip-path: polygon(12px 0%,100% 0%,100% calc(100% - 12px),calc(100% - 12px) 100%,0% 100%,0% 12px);
   font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
   text-transform: uppercase; color: #fff; border: none; cursor: pointer;
   transition: background .15s;
+  clip-path: polygon(12px 0%,100% 0%,100% calc(100% - 12px),calc(100% - 12px) 100%,0% 100%,0% 12px);
 }
 .export-btn:hover { background: var(--orange-dim); }
 .export-btn:disabled { background: var(--bg3); color: var(--text-dim); cursor: not-allowed; }
@@ -193,17 +186,11 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .progress-track { width: 100%; height: 3px; background: var(--bg3); position: relative; }
 .progress-fill  { position: absolute; top:0; left:0; height:100%; background: var(--orange); transition: width .4s ease; }
 
-/* ─── DATE INPUTS ─── */
-.date-row { display: flex; gap: 8px; align-items: center; }
-.date-sep  { font-size: 11px; color: var(--text-dim); font-weight: 700; flex-shrink: 0; }
-
 /* ─── MOBILE ─── */
 @media (max-width: 767px) {
-  .section-card-outer { clip-path: none; border-top: 2px solid var(--text); border-bottom: 2px solid var(--text); padding: 0; }
-  .section-card-outer + .section-card-outer { border-top: none; }
-  .section-card { clip-path: none; }
-  .stats-strip { grid-template-columns: repeat(2,1fr); }
-  .export-btn-wrap { clip-path: none; margin: 18px 20px 0; }
+  .export-block-outer { clip-path: none; border-top: 2px solid var(--text); border-bottom: 2px solid var(--text); padding: 0; }
+  .export-block { clip-path: none; }
+  .exp-stats { grid-template-columns: repeat(2,1fr); }
   .export-btn { clip-path: polygon(8px 0%,100% 0%,100% calc(100% - 8px),calc(100% - 8px) 100%,0% 100%,0% 8px); }
 }
 </style>
@@ -249,145 +236,126 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 <main class="page">
   <div class="page-header" style="animation:fadeUp .3s ease both;">
     <div>
-      <div class="page-title-label">/ Экспорт</div>
+      <div class="page-title-label">/ Данные</div>
       <h1 class="page-title">Выгрузка в PDF<span class="cursor-blink"></span></h1>
     </div>
     <div class="page-meta" id="pageMeta">—</div>
   </div>
 
-  <!-- STATS -->
-  <div class="stats-strip">
-    <div class="stat-strip-item"><div class="stat-strip-inner"><div class="stat-strip-num" id="statTotal">—</div><div class="stat-strip-lbl">Показателей</div></div></div>
-    <div class="stat-strip-item"><div class="stat-strip-inner"><div class="stat-strip-num" id="statDevs">—</div><div class="stat-strip-lbl">Отклонений</div></div></div>
-    <div class="stat-strip-item"><div class="stat-strip-inner"><div class="stat-strip-num" id="statSrc">—</div><div class="stat-strip-lbl">Источников</div></div></div>
-    <div class="stat-strip-item"><div class="stat-strip-inner"><div class="stat-strip-num" id="statGrp">—</div><div class="stat-strip-lbl">Групп</div></div></div>
-  </div>
+  <div class="export-block-outer">
+    <div class="export-block">
 
-  <div class="export-grid">
-
-    <!-- LEFT COLUMN -->
-    <div style="display:flex;flex-direction:column;gap:18px;">
+      <!-- STATS -->
+      <div class="exp-stats">
+        <div class="exp-stat"><div class="exp-stat-num" id="statTotal">—</div><div class="exp-stat-lbl">Показателей</div></div>
+        <div class="exp-stat"><div class="exp-stat-num" id="statDevs">—</div><div class="exp-stat-lbl">Отклонений</div></div>
+        <div class="exp-stat"><div class="exp-stat-num" id="statSrc">—</div><div class="exp-stat-lbl">Источников</div></div>
+        <div class="exp-stat"><div class="exp-stat-num" id="statGrp">—</div><div class="exp-stat-lbl">Групп</div></div>
+      </div>
 
       <!-- GROUPS -->
-      <div class="section-card-outer">
-        <div class="section-card">
-          <div class="section-card-header">
-            <div class="section-card-label">Группы показателей</div>
-            <span id="groupsBadge" class="card-badge badge-neutral">8 групп</span>
+      <div class="exp-section">
+        <div class="exp-section-header">
+          <div class="exp-section-label">Группы показателей</div>
+          <span id="groupsBadge" class="card-badge badge-neutral">8 групп</span>
+        </div>
+        <div class="exp-section-body">
+          <div class="group-grid" id="groupsGrid">
+            <div class="g-chip active" data-g="blood">Кровь</div>
+            <div class="g-chip active" data-g="functional">Биохимия</div>
+            <div class="g-chip active" data-g="hormones">Гормоны</div>
+            <div class="g-chip active" data-g="infections">Иммунитет</div>
+            <div class="g-chip active" data-g="biomaterials">Биомат.</div>
+            <div class="g-chip active" data-g="genetics">Генетика</div>
+            <div class="g-chip active" data-g="microbiome">Микрофлора</div>
+            <div class="g-chip active" data-g="oncology">Онкология</div>
           </div>
-          <div class="section-card-body">
-            <div class="group-grid" id="groupsGrid">
-              <div class="g-chip active" data-g="blood">Кровь</div>
-              <div class="g-chip active" data-g="functional">Биохимия</div>
-              <div class="g-chip active" data-g="hormones">Гормоны</div>
-              <div class="g-chip active" data-g="infections">Иммунитет</div>
-              <div class="g-chip active" data-g="biomaterials">Биомат.</div>
-              <div class="g-chip active" data-g="genetics">Генетика</div>
-              <div class="g-chip active" data-g="microbiome">Микрофлора</div>
-              <div class="g-chip active" data-g="oncology">Онкология</div>
+        </div>
+      </div>
+
+      <!-- SOURCES -->
+      <div class="exp-section">
+        <div class="exp-section-header">
+          <div class="exp-section-label">Источники</div>
+          <span id="srcBadge" class="card-badge badge-neutral">загрузка...</span>
+        </div>
+        <div class="exp-section-body">
+          <div class="file-list" id="fileList">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;color:var(--text-dim);font-size:11px;">
+              <div class="loader-px" style="width:20px;height:20px;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              Загружаем источники...
             </div>
           </div>
         </div>
       </div>
 
       <!-- SCOPE -->
-      <div class="section-card-outer">
-        <div class="section-card">
-          <div class="section-card-header">
-            <div class="section-card-label">Состав</div>
+      <div class="exp-section">
+        <div class="exp-section-header">
+          <div class="exp-section-label">Состав</div>
+        </div>
+        <div class="exp-section-body">
+          <div class="toggle-row" id="scopeRow">
+            <div class="t-btn active" data-s="latest">Актуальные</div>
+            <div class="t-btn" data-s="all">Все результаты</div>
+            <div class="t-btn" data-s="deviations">Только отклонения</div>
           </div>
-          <div class="section-card-body">
-            <div class="toggle-row" id="scopeRow">
-              <div class="t-btn active" data-s="latest">Актуальные</div>
-              <div class="t-btn" data-s="all">Все результаты</div>
-              <div class="t-btn" data-s="deviations">Только отклонения</div>
-            </div>
-            <div class="hint" id="scopeHint">* последний уникальный результат по каждому показателю</div>
-          </div>
+          <div class="hint" id="scopeHint">* последний уникальный результат по каждому показателю</div>
         </div>
       </div>
 
       <!-- PERIOD -->
-      <div class="section-card-outer">
-        <div class="section-card">
-          <div class="section-card-header">
-            <div class="section-card-label">Период</div>
-          </div>
-          <div class="section-card-body">
-            <div class="date-row">
-              <input type="text" id="dateFrom" placeholder="дд.мм.гггг" style="flex:1;">
-              <div class="date-sep">—</div>
-              <input type="text" id="dateTo" placeholder="сегодня" style="flex:1;">
-            </div>
-            <div class="hint">* оставь пустым — весь период наблюдений</div>
-          </div>
+      <div class="exp-section">
+        <div class="exp-section-header">
+          <div class="exp-section-label">Период</div>
         </div>
-      </div>
-
-    </div>
-
-    <!-- RIGHT COLUMN -->
-    <div style="display:flex;flex-direction:column;gap:18px;">
-
-      <!-- SOURCES -->
-      <div class="section-card-outer">
-        <div class="section-card">
-          <div class="section-card-header">
-            <div class="section-card-label">Источники</div>
-            <span id="srcBadge" class="card-badge badge-neutral">загрузка...</span>
+        <div class="exp-section-body">
+          <div class="date-row">
+            <input type="date" id="dateFrom" style="flex:1;">
+            <div class="date-sep">—</div>
+            <input type="date" id="dateTo" style="flex:1;">
           </div>
-          <div class="section-card-body">
-            <div class="file-list" id="fileList">
-              <div style="display:flex;align-items:center;gap:10px;padding:10px 0;color:var(--text-dim);font-size:11px;">
-                <div class="loader-px" style="width:20px;height:20px;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-                Загружаем источники...
-              </div>
-            </div>
-          </div>
+          <div class="hint">* оставь пустым — весь период наблюдений</div>
         </div>
       </div>
 
       <!-- INCLUDE -->
-      <div class="section-card-outer">
-        <div class="section-card">
-          <div class="section-card-header">
-            <div class="section-card-label">Включить в отчёт</div>
-          </div>
-          <div class="section-card-body">
-            <div class="inc-list" id="includeList">
-              <div class="inc-item active" data-i="status">
-                <div class="inc-check"><div class="inc-check-mark"></div></div>
-                <div class="inc-label">Статус (норма / отклонение)</div>
-              </div>
-              <div class="inc-item active" data-i="source">
-                <div class="inc-check"><div class="inc-check-mark"></div></div>
-                <div class="inc-label">Источник анализа</div>
-              </div>
-              <div class="inc-item active" data-i="date">
-                <div class="inc-check"><div class="inc-check-mark"></div></div>
-                <div class="inc-label">Дата измерения</div>
-              </div>
-              <div class="inc-item" data-i="disclaimer">
-                <div class="inc-check"></div>
-                <div class="inc-label">Медицинский дисклеймер</div>
-              </div>
+      <div class="exp-section">
+        <div class="exp-section-header">
+          <div class="exp-section-label">Включить в отчёт</div>
+        </div>
+        <div class="exp-section-body">
+          <div class="inc-list" id="includeList">
+            <div class="inc-item active" data-i="status">
+              <div class="inc-check"><div class="inc-check-mark"></div></div>
+              <div class="inc-label">Статус (норма / отклонение)</div>
+            </div>
+            <div class="inc-item active" data-i="source">
+              <div class="inc-check"><div class="inc-check-mark"></div></div>
+              <div class="inc-label">Источник анализа</div>
+            </div>
+            <div class="inc-item active" data-i="date">
+              <div class="inc-check"><div class="inc-check-mark"></div></div>
+              <div class="inc-label">Дата измерения</div>
+            </div>
+            <div class="inc-item" data-i="disclaimer">
+              <div class="inc-check"></div>
+              <div class="inc-label">Медицинский дисклеймер</div>
             </div>
           </div>
         </div>
       </div>
 
-    </div>
-  </div>
+      <!-- EXPORT BUTTON -->
+      <button class="export-btn" id="exportBtn" onclick="doExport()">
+        <span style="display:flex;align-items:center;gap:9px;">
+          <svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Скачать PDF
+        </span>
+        <span class="export-badge" id="exportBadge">— показ.</span>
+      </button>
 
-  <!-- EXPORT BUTTON -->
-  <div class="export-btn-wrap">
-    <button class="export-btn" id="exportBtn" onclick="doExport()">
-      <span style="display:flex;align-items:center;gap:9px;">
-        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Скачать PDF
-      </span>
-      <span class="export-badge" id="exportBadge">— показ.</span>
-    </button>
+    </div>
   </div>
 
 </main>
@@ -432,7 +400,7 @@ const CATEGORY_LABELS = {
 /* ─── UTILS ─── */
 function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function fmtDate(s){if(!s)return'—';const d=new Date(s);return isNaN(d)?s:d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});}
-function parseDate(str){if(!str)return null;const p=str.split('.');if(p.length===3)return new Date(`${p[2]}-${p[1]}-${p[0]}`);return null;}
+function parseDate(str){if(!str)return null;return new Date(str);}
 async function apiFetch(path,session){const r=await fetch(`${API_BASE}${path}`,{headers:{'Authorization':`Bearer ${session.access_token}`}});if(r.status===401){window.location.href='auth.html';return null;}if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}
 function showToast(msg,ok=true){const t=document.getElementById('toast');document.getElementById('toastMsg').textContent=msg;t.querySelector('svg').style.stroke=ok?'var(--green)':'var(--red)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
