@@ -74,11 +74,21 @@ ai_client = OpenAI(
 )
 
 # Модели OpenRouter (бесплатные, с vision)
-# Основная — Qwen 2.5 VL 72B (сильная vision-модель, читает PDF и изображения)
-# Резервная — Llama 4 Maverick (Meta, поддерживает vision для изображений)
-MODEL_VISION   = "qwen/qwen2.5-vl-72b-instruct:free"  # для извлечения из файлов
-MODEL_TEXT     = "qwen/qwen2.5-vl-72b-instruct:free"  # для анализа текста
-MODEL_FALLBACK = "meta-llama/llama-4-maverick:free"    # резерв при лимите
+# Цепочка из трёх — если первая недоступна, автоматически берётся следующая.
+# Бесплатные модели могут пропадать без предупреждения, поэтому fallback обязателен.
+MODELS_VISION = [
+    "qwen/qwen2.5-vl-32b-instruct:free",   # vision + PDF, стабильная
+    "meta-llama/llama-4-maverick:free",     # vision (изображения)
+    "google/gemma-3-27b-it:free",           # резерв (только текст, без PDF)
+]
+MODELS_TEXT = [
+    "qwen/qwen2.5-vl-32b-instruct:free",
+    "meta-llama/llama-4-maverick:free",
+    "google/gemma-3-27b-it:free",
+]
+# Алиасы для _ai_call (он принимает одну модель + сам добавляет fallback)
+MODEL_TEXT     = MODELS_TEXT[0]
+MODEL_FALLBACK = MODELS_TEXT[1]
 
 VALID_GROUP_KEYS = {
     "blood", "hormones", "infections", "biomaterials",
@@ -282,11 +292,10 @@ def try_get_user(auth_header: str | None) -> dict | None:
 # ──────────────────────────────────────────────
 def _ai_call(messages: list[dict], model: str = MODEL_TEXT) -> str:
     """
-    Текстовый запрос к OpenRouter. При лимите (429) пробует резервную модель.
+    Текстовый запрос к OpenRouter. Перебирает MODELS_TEXT при 404/429/503.
     """
-    models_to_try = [model]
-    if model != MODEL_FALLBACK:
-        models_to_try.append(MODEL_FALLBACK)
+    # Строим цепочку: запрошенная модель первая, потом остальные из списка
+    models_to_try = [model] + [m for m in MODELS_TEXT if m != model]
 
     last_err: Exception | None = None
     for m in models_to_try:
@@ -300,7 +309,7 @@ def _ai_call(messages: list[dict], model: str = MODEL_TEXT) -> str:
             return resp.choices[0].message.content.strip()
         except Exception as e:
             msg = str(e)
-            if any(s in msg for s in ("429", "503", "rate_limit", "overloaded", "quota")):
+            if any(s in msg for s in ("429", "503", "404", "rate_limit", "overloaded", "quota", "No endpoints")):
                 last_err = e
                 log.warning("AI rate limit on %s, trying fallback: %s", m, msg[:100])
                 continue
@@ -336,14 +345,12 @@ def _ai_call_vision(file_bytes: bytes, filename: str, prompt: str) -> str:
         }
     ]
 
-    # Для PDF резервная модель (Llama 4) не используется — она не понимает PDF.
-    # Для изображений — пробуем обе модели.
+    # Для PDF пробуем только модели с реальной поддержкой документов.
+    # Для изображений — всю цепочку.
     if mime == "application/pdf":
-        models_to_try = [MODEL_VISION]
+        models_to_try = [m for m in MODELS_VISION if "gemma" not in m]
     else:
-        models_to_try = [MODEL_VISION]
-        if MODEL_VISION != MODEL_FALLBACK:
-            models_to_try.append(MODEL_FALLBACK)
+        models_to_try = MODELS_VISION
 
     last_err: Exception | None = None
     for m in models_to_try:
@@ -357,7 +364,7 @@ def _ai_call_vision(file_bytes: bytes, filename: str, prompt: str) -> str:
             return resp.choices[0].message.content.strip()
         except Exception as e:
             msg = str(e)
-            if any(s in msg for s in ("429", "503", "rate_limit", "overloaded", "quota")):
+            if any(s in msg for s in ("429", "503", "404", "rate_limit", "overloaded", "quota", "No endpoints")):
                 last_err = e
                 log.warning("Vision rate limit on %s, trying fallback: %s", m, msg[:100])
                 continue
