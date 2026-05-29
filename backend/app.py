@@ -74,11 +74,11 @@ ai_client = OpenAI(
 )
 
 # Модели OpenRouter (бесплатные, с vision)
-# Основная — Gemini 2.0 Flash (тот же Gemini, но через OpenRouter без геоблока)
-# Резервная — Llama 4 Maverick (Meta, тоже поддерживает vision)
-MODEL_VISION   = "google/gemini-2.0-flash-exp:free"   # для извлечения из файлов
-MODEL_TEXT     = "google/gemini-2.0-flash-exp:free"   # для анализа текста
-MODEL_FALLBACK = "meta-llama/llama-4-maverick:free"   # резерв при лимите
+# Основная — Qwen 2.5 VL 72B (сильная vision-модель, читает PDF и изображения)
+# Резервная — Llama 4 Maverick (Meta, поддерживает vision для изображений)
+MODEL_VISION   = "qwen/qwen2.5-vl-72b-instruct:free"  # для извлечения из файлов
+MODEL_TEXT     = "qwen/qwen2.5-vl-72b-instruct:free"  # для анализа текста
+MODEL_FALLBACK = "meta-llama/llama-4-maverick:free"    # резерв при лимите
 
 VALID_GROUP_KEYS = {
     "blood", "hormones", "infections", "biomaterials",
@@ -319,19 +319,12 @@ def _ai_call_vision(file_bytes: bytes, filename: str, prompt: str) -> str:
     mime = get_mime_type(filename) or "image/jpeg"
     b64  = base64.b64encode(file_bytes).decode("utf-8")
 
-    # PDF → передаём как document (поддерживается Gemini через OpenRouter)
-    # Изображения → передаём как image_url с data URI
-    if mime == "application/pdf":
-        # Gemini через OpenRouter поддерживает PDF как image_url с data URI
-        content_part = {
-            "type": "image_url",
-            "image_url": {"url": f"data:{mime};base64,{b64}"},
-        }
-    else:
-        content_part = {
-            "type": "image_url",
-            "image_url": {"url": f"data:{mime};base64,{b64}"},
-        }
+    # Все форматы (PDF, PNG, JPG) передаём как image_url с data URI base64.
+    # Gemini через OpenRouter принимает PDF через data URI так же как изображения.
+    content_part = {
+        "type": "image_url",
+        "image_url": {"url": f"data:{mime};base64,{b64}"},
+    }
 
     messages = [
         {
@@ -343,9 +336,14 @@ def _ai_call_vision(file_bytes: bytes, filename: str, prompt: str) -> str:
         }
     ]
 
-    models_to_try = [MODEL_VISION]
-    if MODEL_VISION != MODEL_FALLBACK:
-        models_to_try.append(MODEL_FALLBACK)
+    # Для PDF резервная модель (Llama 4) не используется — она не понимает PDF.
+    # Для изображений — пробуем обе модели.
+    if mime == "application/pdf":
+        models_to_try = [MODEL_VISION]
+    else:
+        models_to_try = [MODEL_VISION]
+        if MODEL_VISION != MODEL_FALLBACK:
+            models_to_try.append(MODEL_FALLBACK)
 
     last_err: Exception | None = None
     for m in models_to_try:
