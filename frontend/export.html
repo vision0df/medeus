@@ -31,15 +31,81 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 }
 .btn-nav-sm:hover { background: var(--text); color: #fff; }
 
-/* ─── PAGE LAYOUT ─── */
-.export-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 18px;
+/* ─── UNIFIED SETTINGS BLOCK ─── */
+.settings-block {
+  background: var(--text);
+  clip-path: polygon(22px 0%, 100% 0%, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0% 100%, 0% 22px);
+  padding: 2px;
+  animation: fadeUp .4s ease both;
 }
-@media (min-width: 900px) {
-  .export-grid { grid-template-columns: 1fr 1fr; }
-  .export-grid .col-full { grid-column: 1 / -1; }
+.settings-inner {
+  background: var(--white);
+  clip-path: polygon(20px 0%, 100% 0%, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0% 100%, 0% 20px);
+  display: flex;
+  flex-direction: column;
+}
+.settings-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 26px 16px;
+  border-bottom: 1.5px solid var(--text);
+  background: var(--bg2);
+}
+.settings-title {
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.settings-title::before { content: '//'; color: var(--orange); font-size: 13px; }
+.settings-meta {
+  font-family: var(--mono); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-dim); display: flex; align-items: center; gap: 6px;
+}
+
+/* Sections inside the block */
+.s-section {
+  padding: 18px 26px;
+  border-bottom: 1px solid var(--line);
+}
+.s-section:last-of-type { border-bottom: none; }
+.s-section-label {
+  font-family: var(--mono); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim);
+  margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+}
+.s-section-label span { color: var(--orange); }
+
+/* Two-column layout for desktop */
+.s-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.s-two-col > .s-section:first-child {
+  border-right: 1px solid var(--line);
+  border-bottom: none;
+}
+.s-two-col > .s-section:last-child {
+  border-bottom: none;
+}
+@media (max-width: 720px) {
+  .s-two-col { grid-template-columns: 1fr; }
+  .s-two-col > .s-section:first-child {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .s-section { padding: 14px 16px; }
+  .settings-header { padding: 14px 16px 12px; }
+}
+
+/* Include grid (2 col) */
+.include-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+@media (max-width: 480px) {
+  .include-grid { grid-template-columns: 1fr; }
 }
 
 /* ─── STATS ROW ─── */
@@ -297,17 +363,23 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
     </div>
   </div>
 
-  <!-- CARDS GRID -->
-  <div class="export-grid">
+  <!-- UNIFIED SETTINGS BLOCK -->
+  <div class="settings-block">
+    <div class="settings-inner">
 
-    <!-- GROUPS -->
-    <div class="dash-card-wrap">
-      <div class="dash-card">
-        <div class="dash-card-header">
-          <div class="dash-card-label">Группы показателей</div>
+      <!-- Header -->
+      <div class="settings-header">
+        <div class="settings-title">Настройки экспорта</div>
+        <div style="display:flex;align-items:center;gap:8px;">
           <span id="groupsBadge" class="card-badge badge-neutral">8 групп</span>
+          <span id="srcBadge" class="card-badge badge-neutral">загрузка...</span>
         </div>
-        <div class="dash-card-body">
+      </div>
+
+      <!-- Row 1: Groups + Sources -->
+      <div class="s-two-col">
+        <div class="s-section">
+          <div class="s-section-label"><span style="color:var(--orange);margin-right:4px;">/</span>Группы показателей</div>
           <div class="group-grid" id="groupsGrid">
             <div class="g-chip active" data-g="blood">Кровь</div>
             <div class="g-chip active" data-g="functional">Биохимия</div>
@@ -319,17 +391,8 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
             <div class="g-chip active" data-g="oncology">Онкология</div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- SOURCES -->
-    <div class="dash-card-wrap">
-      <div class="dash-card">
-        <div class="dash-card-header">
-          <div class="dash-card-label">Источники</div>
-          <span id="srcBadge" class="card-badge badge-neutral">загрузка...</span>
-        </div>
-        <div class="dash-card-body">
+        <div class="s-section">
+          <div class="s-section-label"><span style="color:var(--orange);margin-right:4px;">/</span>Источники</div>
           <div class="check-list" id="fileList">
             <div style="display:flex;align-items:center;gap:10px;padding:8px 0;color:var(--text-dim);font-size:11px;">
               <div class="loader-px" style="width:20px;height:20px;"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
@@ -338,15 +401,11 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- SCOPE -->
-    <div class="dash-card-wrap">
-      <div class="dash-card">
-        <div class="dash-card-header">
-          <div class="dash-card-label">Состав отчёта</div>
-        </div>
-        <div class="dash-card-body">
+      <!-- Row 2: Scope + Period -->
+      <div class="s-two-col" style="border-top:1px solid var(--line);">
+        <div class="s-section">
+          <div class="s-section-label"><span style="color:var(--orange);margin-right:4px;">/</span>Состав отчёта</div>
           <div class="toggle-row" id="scopeRow">
             <div class="t-btn active" data-s="latest">Актуальные</div>
             <div class="t-btn" data-s="all">Все результаты</div>
@@ -354,16 +413,8 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
           </div>
           <div class="hint" id="scopeHint">* последний уникальный результат по каждому показателю</div>
         </div>
-      </div>
-    </div>
-
-    <!-- PERIOD -->
-    <div class="dash-card-wrap">
-      <div class="dash-card">
-        <div class="dash-card-header">
-          <div class="dash-card-label">Период наблюдений</div>
-        </div>
-        <div class="dash-card-body">
+        <div class="s-section">
+          <div class="s-section-label"><span style="color:var(--orange);margin-right:4px;">/</span>Период наблюдений</div>
           <div class="date-row">
             <input type="date" id="dateFrom" style="flex:1;">
             <div class="date-sep">—</div>
@@ -372,15 +423,11 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
           <div class="hint">* оставь пустым — весь период наблюдений</div>
         </div>
       </div>
-    </div>
 
-    <!-- INCLUDE -->
-    <div class="dash-card-wrap col-full">
-      <div class="dash-card">
-        <div class="dash-card-header">
-          <div class="dash-card-label">Включить в отчёт</div>
-        </div>
-        <div class="dash-card-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:5px;">
+      <!-- Row 3: Include in report -->
+      <div class="s-section" style="border-top:1px solid var(--line);">
+        <div class="s-section-label"><span style="color:var(--orange);margin-right:4px;">/</span>Включить в отчёт</div>
+        <div class="include-grid">
           <div class="check-item active" data-i="status">
             <div class="check-box"><div class="check-mark"></div></div>
             <div class="check-label">Статус (норма / отклонение)</div>
@@ -398,18 +445,20 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
             <div class="check-label">Медицинский дисклеймер</div>
           </div>
         </div>
-        <div class="dash-card-footer">
-          <button class="export-btn" id="exportBtn" onclick="doExport()">
-            <span style="display:flex;align-items:center;gap:9px;">
-              <svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Скачать PDF
-            </span>
-            <span class="export-badge" id="exportBadge">— показ.</span>
-          </button>
-        </div>
       </div>
-    </div>
 
+      <!-- Footer: Export Button -->
+      <div style="border-top:2px solid var(--text);">
+        <button class="export-btn" id="exportBtn" onclick="doExport()">
+          <span style="display:flex;align-items:center;gap:9px;">
+            <svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Скачать PDF
+          </span>
+          <span class="export-badge" id="exportBadge">— показ.</span>
+        </button>
+      </div>
+
+    </div>
   </div>
 </main>
 
