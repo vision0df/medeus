@@ -465,10 +465,21 @@ document.querySelectorAll('.g-chip').forEach(c=>c.addEventListener('click',()=>{
   updateStats();
 }));
 
-document.querySelectorAll('#scopeRow .t-btn').forEach(b=>b.addEventListener('click',()=>{
+document.querySelectorAll('#scopeRow .t-btn').forEach(b=>b.addEventListener('click',async()=>{
   document.querySelectorAll('#scopeRow .t-btn').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active'); scopeMode=b.dataset.s;
+  b.classList.add('active');
+  const prev=scopeMode;
+  scopeMode=b.dataset.s;
   document.getElementById('scopeHint').textContent=SCOPE_HINTS[scopeMode];
+  // Reload data if switching between deduped and full
+  const needsAll=(scopeMode==='all');
+  const wasAll=(prev==='all');
+  if(needsAll!==wasAll && window._exportSession){
+    try{
+      const data=await apiFetch(`/indicators${needsAll?'?all=true':''}`,window._exportSession);
+      allIndicators=(data.indicators||[]).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    }catch(e){console.error(e);}
+  }
   updateStats();
 }));
 
@@ -600,6 +611,7 @@ function buildPdf(indicators){
   const session=await requireAuth();
   if(!session)return;
   try{
+    window._exportSession=session;
     const data=await apiFetch('/indicators',session);
     allIndicators=(data.indicators||[]).sort((a,b)=>new Date(b.date)-new Date(a.date));
     const srcMap={};
