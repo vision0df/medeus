@@ -70,9 +70,9 @@ ai_client = genai.Client(api_key=GEMINI_API_KEY)
 
 MODEL_TEXT     = "gemini-2.0-flash"
 MODEL_VISION   = "gemini-2.0-flash"
-MODELS_TEXT    = ["gemini-2.0-flash", "gemini-1.5-flash"]
-MODELS_VISION  = ["gemini-2.0-flash", "gemini-1.5-flash"]
-MODEL_FALLBACK = "gemini-1.5-flash"
+MODELS_TEXT    = ["gemini-2.0-flash", "gemini-2.5-flash"]
+MODELS_VISION  = ["gemini-2.0-flash", "gemini-2.5-flash"]
+MODEL_FALLBACK = "gemini-2.5-flash"
 
 
 VALID_GROUP_KEYS = {
